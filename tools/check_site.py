@@ -93,7 +93,14 @@ try:
                     fails.append('checklist link did not open the filtered question log')
                 pg.click('[data-act="qclear"]'); pg.wait_for_timeout(200)
                 if 'of 75 questions' not in pg.inner_text('#qCount'):
-                    fails.append('question log does not show all 75 questions: ' + pg.inner_text('#qCount'))
+                    fails.append('question log does not show all 75 of MK\'s questions: ' + pg.inner_text('#qCount'))
+                pg.click('[data-act="qwho"][data-v="b"]'); pg.wait_for_timeout(300)
+                if 'of 39 questions' not in pg.inner_text('#qCount') or '37' not in pg.inner_text('#t-qlog'):
+                    fails.append('ZK question log wrong: ' + pg.inner_text('#qCount'))
+                pg.fill('#qSearch', 'VAT'); pg.wait_for_timeout(200)
+                if 'Q33' not in pg.inner_text('#qList') or 'Q35' not in pg.inner_text('#qList'):
+                    fails.append('ZK search for VAT failed')
+                pg.click('[data-act="qwho"][data-v="a"]'); pg.wait_for_timeout(300)
                 pg.fill('#qSearch', 'moles of ions'); pg.wait_for_timeout(200)
                 if 'Mg(NO₃)₂' not in pg.inner_text('#qList'):
                     fails.append('search did not find the moles of ions question')
@@ -116,6 +123,8 @@ try:
                 if 'Fixed so far' not in pg.inner_text('#t-qlog') or n_open.startswith('41 of'):
                     pass
                 pg.click('[data-tab="maths"]'); pg.wait_for_timeout(400)
+                if 'marked work' not in pg.inner_text('#t-maths').lower() or '37' not in pg.inner_text('#t-maths'):
+                    fails.append('ZK marked-work section missing')
                 pg.fill('form[data-form="bprac"] [name="label"]', 'AMC 8 2024'); pg.fill('form[data-form="bprac"] [name="score"]', '17')
                 pg.click('form[data-form="bprac"] button[type="submit"]')
                 pg.check('[data-act="road"][data-k="0:0"]')

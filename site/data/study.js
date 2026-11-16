@@ -5,8 +5,8 @@ window.STUDY = {
   updated: "2026-11-16",
 
   students: {
-    a: { label: "Year 12", school: "Arcadia British School", track: "Edexcel International A Level · Maths, Physics, Chemistry", goal: "Astrophysics at Princeton or Rutgers–New Brunswick, entry fall 2028" },
-    b: { label: "Year 7", school: "Sunmarke School", track: "Key Stage 3 · strong in Maths", goal: "Excel in maths now; US university entry fall 2033" }
+    a: { label: "MK", yr: "Year 12", school: "Arcadia British School", track: "Edexcel International A Level · Maths, Physics, Chemistry", goal: "Astrophysics at Princeton or Rutgers–New Brunswick, entry fall 2028" },
+    b: { label: "ZK", yr: "Year 7", school: "Sunmarke School", track: "Key Stage 3 · strong in Maths", goal: "Excel in maths now; US university entry fall 2033" }
   },
 
   cats: { school: "School", exam: "Exams", sat: "SAT / PSAT", apply: "Applications", comp: "Competitions", mile: "Milestone" },
@@ -85,15 +85,15 @@ window.STUDY = {
 
   // Overview countdown: the first four that have not finished are shown. "asfirst" is the first AS paper.
   countdown: [
-    { id: "asfirst", l: "AS exams begin", s: "Year 12" },
+    { id: "asfirst", l: "AS exams begin", s: "MK" },
     { id: "sat1", l: "First SAT", s: "register by 19 Feb" },
-    { id: "amc8", l: "AMC 8 window", s: "Year 7" },
-    { id: "jmc", l: "UKMT Junior Challenge", s: "expected · Year 7" },
+    { id: "amc8", l: "AMC 8 window", s: "ZK" },
+    { id: "jmc", l: "UKMT Junior Challenge", s: "expected · ZK" },
     { id: "sat2", l: "Second SAT", s: "register by 21 May" },
-    { id: "asresults", l: "AS results", s: "Year 12" },
+    { id: "asresults", l: "AS results", s: "MK" },
     { id: "ea", l: "Early applications due", s: "Princeton and Rutgers · expected" },
-    { id: "amc8y8", l: "AMC 8 (Year 8)", s: "expected · Year 7" },
-    { id: "a2", l: "A2 exams", s: "expected · Year 12" }
+    { id: "amc8y8", l: "AMC 8 (Year 8)", s: "expected · ZK" },
+    { id: "a2", l: "A2 exams", s: "expected · MK" }
   ],
 
   // Marked past papers, November 2026. Grades for single papers are judged against Pearson's raw boundaries.
@@ -126,6 +126,20 @@ window.STUDY = {
     maths: { level: "A", note: "Statistics S1 (WST01), tutor's grade",
       strengths: [ "Probability and discrete distributions", "Normal distribution and standardising", "Correlation and regression", "Representing data" ],
       fixes: [ "P1 and P2 not yet assessed: get a P1 paper marked next" ] },
+    zk: {
+      paper: "zk1",
+      asOf: "2026-11-16",
+      sections: { A: "Decimals, rounding and estimation", B: "Order of operations and negatives", C: "Factors, primes, HCF and LCM", D: "Algebra: expanding and solving", E: "Fractions", F: "Percentages and multipliers", Exam: "Exam challenge (IGCSE)" },
+      strengths: [ "Decimals and place value: all of Q1–3 correct", "Negatives and substitution: 7 and 32 in Q7", "Forming and solving equations: Q9, Q20, Q21", "Expanding brackets with negative signs: Q19(a)", "A clever percentage method: 17.5% = 20% − 2.5%" ],
+      priorities: [
+        { sev: "high", t: "Percentage changes one after another", d: "Q33 and Q35 both took the second percentage from the original price instead of the new one.", r: "Use multipliers: 640 × 1.25 × 1.05 = 840. The overall change is the product (× 1.3125 = +31.25%), not 25% + 5%." },
+        { sev: "high", t: "Finish every part", d: "Stopped before the final answer in Q6, Q14, Q19(b), Q23, Q25, Q27, Q32 and Q34.", r: "Underline what is asked, box each final answer, and tick each part off before moving on." },
+        { sev: "med", t: "Factors, HCF and LCM", d: "Section C was mostly not tried; Q14 used lists of multiples, which is too slow for big numbers.", r: "Factor trees and index form: HCF takes the lower power of each shared prime, LCM the higher power of every prime." },
+        { sev: "med", t: "Fractions: multiplying and 'of'", d: "Q25 changed everything to 24ths before multiplying.", r: "To multiply: improper fractions, cancel, multiply. Common denominators are only for adding and subtracting." },
+        { sev: "low", t: "Checking arithmetic and copying", d: "630 − 72.5 written as 558.5, 45 − 13.5 as 32.5, and 2688 copied as 2668.", r: "Check every subtraction by adding back, and copy the final number from the working letter by letter." },
+        { sev: "low", t: "Finish the sheet", d: "15 questions are not tried yet, including the 11-mark exam challenge.", r: "Do Q36 and the rest of sections C and E first, then the exam challenge last: timed, then marked with the mark scheme." }
+      ]
+    },
     baseline: {
       "WCH11:0": 2, "WCH11:1": 1, "WCH11:2": 2, "WCH11:3": 0, "WCH11:5": 1, "WCH11:6": 1, "WCH11:7": 0, "WCH11:8": 1, "WCH11:9": 1,
       "WPH11:0": 2, "WPH11:1": 1, "WPH11:3": 1, "WPH11:4": 2, "WPH11:7": 2,
