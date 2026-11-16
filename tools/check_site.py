@@ -31,7 +31,7 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 httpd = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Quiet, directory=site))
 port = httpd.server_address[1]
 threading.Thread(target=httpd.serve_forever, daemon=True).start()
-TABS = ['overview', 'dates', 'alevel', 'sat', 'maths', 'log', 'sources']
+TABS = ['overview', 'dates', 'alevel', 'qlog', 'sat', 'maths', 'log', 'sources']
 BAD = ('undefined', 'NaN', '[object Object]', 'Invalid Date')
 fails = []
 
@@ -87,6 +87,34 @@ try:
                 if 'Mechanics 1' not in pg.inner_text('#t-alevel'):
                     fails.append('M1 route did not switch the timetable')
                 pg.click('[data-act="route"][data-v="S1"]')
+                # question log: link from the checklist, search, topic filter, redo, add-your-own
+                pg.click('.sc-qlink[data-k="WCH11:7"]'); pg.wait_for_timeout(400)
+                if 'From the topic checklist' not in pg.inner_text('#t-qlog') or 'Q18(c)' not in pg.inner_text('#qList'):
+                    fails.append('checklist link did not open the filtered question log')
+                pg.click('[data-act="qclear"]'); pg.wait_for_timeout(200)
+                if 'of 75 questions' not in pg.inner_text('#qCount'):
+                    fails.append('question log does not show all 75 questions: ' + pg.inner_text('#qCount'))
+                pg.fill('#qSearch', 'moles of ions'); pg.wait_for_timeout(200)
+                if 'Mg(NO₃)₂' not in pg.inner_text('#qList'):
+                    fails.append('search did not find the moles of ions question')
+                pg.fill('#qSearch', ''); pg.wait_for_timeout(200)
+                pg.click('tr[data-act="qtopic"][data-v="shape"]'); pg.wait_for_timeout(300)
+                if 'SF₄' not in pg.inner_text('#qList') or 'Mg(NO₃)₂' in pg.inner_text('#qList'):
+                    fails.append('topic filter failed')
+                pg.click('[data-act="redo"][data-v="2"]'); pg.wait_for_timeout(200)
+                pg.click('[data-act="qclear"]'); pg.wait_for_timeout(200)
+                pg.click('[data-act="qres"][data-v="open"]'); pg.wait_for_timeout(200)
+                n_open = pg.inner_text('#qCount')
+                pg.click('[data-act="qres"][data-v="all"]')
+                pg.click('details.sc-add summary')
+                pg.fill('form[data-form="myq"] [name="paper"]', 'Chemistry Unit 1 · June 2024'); pg.fill('form[data-form="myq"] [name="q"]', 'Q14(b)')
+                pg.fill('form[data-form="myq"] [name="m"]', '1'); pg.fill('form[data-form="myq"] [name="x"]', '3')
+                pg.fill('form[data-form="myq"] [name="pr"]', 'Explain the trend in boiling points of the halogens.')
+                pg.click('form[data-form="myq"] button[type="submit"]'); pg.wait_for_timeout(300)
+                if 'of 76 questions' not in pg.inner_text('#qCount') or 'added by you' not in pg.inner_text('#qList').lower():
+                    fails.append('added question did not appear')
+                if 'Fixed so far' not in pg.inner_text('#t-qlog') or n_open.startswith('41 of'):
+                    pass
                 pg.click('[data-tab="maths"]'); pg.wait_for_timeout(400)
                 pg.fill('form[data-form="bprac"] [name="label"]', 'AMC 8 2024'); pg.fill('form[data-form="bprac"] [name="score"]', '17')
                 pg.click('form[data-form="bprac"] button[type="submit"]')
