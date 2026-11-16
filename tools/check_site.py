@@ -81,10 +81,12 @@ try:
                 pg.click('form[data-form="paper"] button[type="submit"]')
                 if 'Jan 2024' not in pg.inner_text('#t-alevel'):
                     fails.append('past paper did not appear')
-                pg.click('[data-act="route"][data-v="S1"]')
-                if 'Statistics 1' not in pg.inner_text('#t-alevel'):
-                    fails.append('S1 route did not switch the timetable')
+                if 'Statistics 1' not in pg.inner_text('#t-alevel') or 'Where 47 out of 80 lands' not in pg.inner_text('#t-alevel'):
+                    fails.append('S1 default or the marked-papers section is missing')
                 pg.click('[data-act="route"][data-v="M1"]')
+                if 'Mechanics 1' not in pg.inner_text('#t-alevel'):
+                    fails.append('M1 route did not switch the timetable')
+                pg.click('[data-act="route"][data-v="S1"]')
                 pg.click('[data-tab="maths"]'); pg.wait_for_timeout(400)
                 pg.fill('form[data-form="bprac"] [name="label"]', 'AMC 8 2024'); pg.fill('form[data-form="bprac"] [name="score"]', '17')
                 pg.click('form[data-form="bprac"] button[type="submit"]')

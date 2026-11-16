@@ -96,7 +96,45 @@ window.STUDY = {
     { id: "a2", l: "A2 exams", s: "expected · Year 12" }
   ],
 
+  // Marked past papers, November 2026. Grades for single papers are judged against Pearson's raw boundaries.
+  assessment: {
+    asOf: "2026-11-16",
+    chemPapers: [
+      { paper: "Initial assessment paper", pct: "55–60%", own: "B (tutor's estimate)" },
+      { paper: "Paper P71886A", pct: "55–60%", own: "B (tutor's estimate)" },
+      { paper: "January 2024 (P73455A)", score: 47, max: 80, own: "Check Jan 2024 boundaries" },
+      { paper: "January 2025 (P78455A)", score: 47, max: 80, own: "B (B 45, A 52 that series)" }
+    ],
+    juneBounds: [ { s: "June 2023", a: 58, b: 51, c: 44 }, { s: "June 2024", a: 57, b: 51, c: 45 }, { s: "June 2025", a: 64, b: 56, c: 48 }, { s: "June 2026", a: 59, b: 52, c: 45 } ],
+    chemCats: [
+      { cat: "Quantitative chemistry and formulae", items: [ [ "Jan 2024 Q20 · Moles, titration and bonding", 20, 22 ], [ "Jan 2024 Q21 · Empirical and molecular formula", 9, 9 ], [ "Jan 2025 Q23 · Isotopes and atomic structure", 7, 8 ], [ "Jan 2025 Q24 · Ideal gas equation and alkene formulae", 9, 11 ] ] },
+      { cat: "Structure, bonding and shapes", items: [ [ "Jan 2025 Q26 · Dot-and-cross and VSEPR shapes", 9, 15 ], [ "Jan 2025 Q22 · Atomic orbitals and energy levels", 1, 4 ] ] },
+      { cat: "Organic chemistry", items: [ [ "Jan 2024 Q18 · Alkenes and isomerism", 2, 10 ], [ "Jan 2024 Q19 · Halogenoalkanes and mechanisms", 6, 13 ], [ "Jan 2025 Q21 · Chloroalkenes and polymers", 6, 11 ], [ "Jan 2025 Q25 · Free-radical substitution and electrophilic addition", 8, 11 ] ] },
+      { cat: "Section A multiple choice", items: [ [ "Jan 2024 Q1–20", 10, 20 ], [ "Jan 2025 Q1–20", 7, 20 ] ] },
+      { cat: "Left blank", items: [ [ "Jan 2024 Q22 · Ideal gas calculation", 0, 6 ] ] }
+    ],
+    priorities: [
+      { sev: "high", t: "Section A multiple choice", d: "10/20 in Jan 2024, then 7/20 in Jan 2025: a quarter of the paper.", r: "15 timed questions a day. Moving from 7 to 15 is worth 8 marks, about 10% of the paper." },
+      { sev: "high", t: "Organic chemistry: isomerism and mechanisms", d: "22/45 across four questions (49%), with isomerism weakest at 2/10. The latest question, 8/11, shows it is improving.", r: "Curly-arrow mechanisms from memory daily; structural and E/Z isomer drills. Reaching 75% here adds about 6 marks a paper." },
+      { sev: "med", t: "Shapes and atomic orbitals", d: "VSEPR shapes 9/15; orbitals and energy levels 1/4.", r: "Learn the shape, angle and lone-pair table; s, p and d sub-shell filling and its link to ionisation energy." },
+      { sev: "med", t: "Leaving questions blank", d: "Jan 2024 Q22 (6 marks) was left blank, yet the same skill scored well a year later.", r: "Always write the equation and the first step: method marks are given without the final answer." },
+      { sev: "low", t: "Physics: moments and projectiles", d: "Grade A overall on the Unit 1 paper.", r: "Take moments about one chosen pivot; resolve v cos θ and v sin θ into separate columns before any equation." }
+    ],
+    physics: { level: "A", note: "One full Unit 1 paper (WPH11), tutor's grade",
+      strengths: [ "Kinematics: suvat and motion graphs", "Momentum and impulse", "Materials: Young modulus, stress and strain" ],
+      fixes: [ "Moments and static equilibrium: one pivot, clockwise = anticlockwise", "Projectiles: horizontal and vertical components kept separate" ] },
+    maths: { level: "A", note: "Statistics S1 (WST01), tutor's grade",
+      strengths: [ "Probability and discrete distributions", "Normal distribution and standardising", "Correlation and regression", "Representing data" ],
+      fixes: [ "P1 and P2 not yet assessed: get a P1 paper marked next" ] },
+    baseline: {
+      "WCH11:0": 2, "WCH11:1": 1, "WCH11:2": 2, "WCH11:3": 0, "WCH11:5": 1, "WCH11:6": 1, "WCH11:7": 0, "WCH11:8": 1, "WCH11:9": 1,
+      "WPH11:0": 2, "WPH11:1": 1, "WPH11:3": 1, "WPH11:4": 2, "WPH11:7": 2,
+      "WST01:0": 2, "WST01:1": 2, "WST01:2": 2, "WST01:3": 2, "WST01:4": 2, "WST01:5": 2, "WST01:6": 2
+    }
+  },
+
   alevel: {
+    defaultRoute: "S1",
     note: "Sessions are as listed in Pearson's final timetable. The school confirms local start times in Dubai.",
     papers: [
       { d: "2027-05-05", s: "PM", subj: "Chemistry",   unit: "Unit 1", code: "WCH11", title: "Structure, Bonding and Introduction to Organic Chemistry", dur: "1h 30m" },
@@ -138,7 +176,7 @@ window.STUDY = {
         "Modelling with statistics", "Measures of location and spread", "Box plots, histograms and outliers", "Probability",
         "Correlation and regression", "Discrete random variables", "The normal distribution" ] },
       { code: "WCH11", subj: "Chemistry", unit: "Unit 1", title: "Structure, Bonding and Introduction to Organic Chemistry", topics: [
-        "Moles, concentration, yield and atom economy", "Atomic structure, isotopes and mass spectra", "Electronic configuration and ionisation energies",
+        "Moles, concentration, yield and atom economy", "Ideal gas equation (pV = nRT) and unit conversions", "Atomic structure, isotopes and mass spectra", "Electronic configuration and ionisation energies",
         "Periodicity", "Ionic bonding", "Covalent and metallic bonding; shapes of molecules", "Organic naming and isomerism",
         "Alkanes and fuels", "Alkenes and addition polymers" ] },
       { code: "WCH12", subj: "Chemistry", unit: "Unit 2", title: "Energetics, Group Chemistry, Halogenoalkanes and Alcohols", topics: [
@@ -188,16 +226,18 @@ window.STUDY = {
 
   plans: {
     a: [
-      { from: "2026-11-16", to: "2026-12-11", title: "Physics first",
-        hours: { Physics: 4.5, Maths: 3, Chemistry: 3, SAT: 0.5 },
-        focus: [ "Make Physics Unit 1 the priority: one topic a week, with past-paper questions on that topic.",
-                 "Rate every Physics topic on the A Level tab and fix the 'Not yet' and 'Shaky' ones first.",
-                 "Keep Maths and Chemistry in step with class: homework plus 20 minutes of extra questions.",
-                 "Bring marked Physics practice to the December review to show the improvement.",
+      { from: "2026-11-16", to: "2026-12-11", title: "Chemistry push, Physics polish",
+        hours: { Chemistry: 4.5, Physics: 3, Maths: 2.5, SAT: 0.5 },
+        focus: [ "Chemistry Section A: 15 timed multiple-choice questions a day from past papers, one minute each; write one line on why each wrong answer was wrong.",
+                 "Organic chemistry: draw one mechanism from memory each day (free-radical substitution, electrophilic addition) and practise structural and E/Z isomers.",
+                 "Shapes and orbitals: learn the VSEPR table with lone pairs and bond angles, and s/p/d orbital filling.",
+                 "Never leave a question blank: write the formula and the first step; method marks add up.",
+                 "Physics: one Unit 1 question set a week on moments and projectiles; bring marked work to the December review.",
+                 "Maths: S1 is exam-ready, so keep it warm with one paper a fortnight and get a P1 paper marked next.",
                  "Take one free Bluebook SAT practice test to set a baseline." ] },
       { from: "2026-12-14", to: "2027-01-03", title: "Winter break: consolidate",
         hours: { Physics: 5, Maths: 4, Chemistry: 4, SAT: 2 },
-        focus: [ "Two timed Unit 1 past papers each in Physics and Chemistry, and P1 practice.",
+        focus: [ "Two timed Chemistry Unit 1 papers (June series, the harder boundaries) and one Physics Unit 1 paper; P1 practice.",
                  "Start an error log: every lost mark, why it was lost, and the fix.",
                  "A second Bluebook test; confirm the SAT plan (6 March and 5 June).",
                  "Keep at least four full days off." ] },

@@ -208,6 +208,25 @@ a:hover { color: var(--pf-ivory); }
 .sc-hours span { font-size: 11px; color: var(--pf-steel); border: 1px solid var(--pf-line-2); border-radius: var(--pf-radius-sm); padding: 0 6px; }
 .sc-hours span b { color: var(--pf-ivory); font-weight: 500; }
 
+/* action list */
+.pf-act { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.pf-act li { display: grid; grid-template-columns: auto 1fr; gap: var(--cds-gap-sm); align-items: start; padding: var(--cds-pad-sm) var(--cds-pad-md);
+  border: 1px solid var(--pf-line); border-left: 3px solid var(--pf-line-2); border-radius: var(--pf-radius); background: var(--pf-card-2); }
+.pf-act li.high { border-left-color: var(--pf-bad); } .pf-act li.med { border-left-color: var(--pf-warn); }
+.pf-act .sev { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; padding: 2px 4px; border-radius: var(--pf-radius-sm); border: 1px solid currentColor; white-space: nowrap; margin-top: 2px; }
+.pf-act .sev.high { color: var(--pf-bad); background: rgba(240,114,111,.08); } .pf-act .sev.med { color: var(--pf-warn); background: rgba(236,154,82,.08); } .pf-act .sev.low { color: var(--pf-steel); }
+.pf-act .t { font-weight: 500; color: var(--pf-ivory); }
+.pf-act .d { font-size: 12px; color: var(--pf-steel); margin-top: 2px; line-height: 1.5; }
+.pf-act .r { font-size: 12px; color: var(--pf-gold-hi); margin-top: 6px; padding-top: 6px; line-height: 1.55; border-top: 1px dashed var(--pf-line-2); }
+.sc-cat { margin-top: var(--cds-gap-md); }
+.sc-cat .hd { display: grid; grid-template-columns: 1fr 9rem 5.2rem; gap: var(--cds-gap-sm); align-items: center; font-size: 12.5px; }
+.sc-cat .hd b { font-weight: 500; color: var(--pf-ivory); }
+.sc-cat .hd .num { text-align: right; color: var(--pf-steel); }
+.sc-cat ul { list-style: none; margin: 4px 0 0; padding: 0 0 0 .9rem; border-left: 1px solid var(--pf-line-2); }
+.sc-cat li { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); font-size: 11.5px; color: var(--pf-steel); padding: 2px 0; }
+.sc-cat li span:last-child { white-space: nowrap; }
+.sc-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--cds-gap-md); }
+
 /* key-value */
 .sc-kv { display: grid; grid-template-columns: minmax(8rem, 11rem) 1fr; gap: 6px var(--cds-gap-md); margin: var(--cds-gap-sm) 0 0; font-size: 12.5px; }
 .sc-kv dt { color: var(--pf-steel); }
@@ -369,7 +388,7 @@ function download(name, text, type) {
 }
 
 /* ---------- data views ---------- */
-function route() { return sget('route', 'M1'); }
+function route() { return sget('route', D.alevel.defaultRoute || 'M1'); }
 function papers() { var r = route(); return D.alevel.papers.filter(function (p) { return !p.opt || p.opt === r; }); }
 function asUnits() { var r = route(); return D.alevel.as.filter(function (u) { return !u.opt || u.opt === r; }); }
 function events() {
@@ -389,9 +408,10 @@ function phaseNow(who) {
 }
 function phaseFor(who, d) { var ps = D.plans[who]; for (var i = 0; i < ps.length; i++) if (ps[i].from <= d && d <= ps[i].to) return ps[i]; return null; }
 function topicState() { return sget('topics', {}); }
+function rating(st, k) { if (Object.prototype.hasOwnProperty.call(st, k)) return st[k]; var b = D.assessment && D.assessment.baseline; return b && b[k] != null ? b[k] : 0; }
 function unitPct(u) {
   var st = topicState(), sec = 0, sh = 0;
-  u.topics.forEach(function (_, i) { var v = st[u.code + ':' + i] || 0; if (v === 2) sec++; else if (v === 1) sh++; });
+  u.topics.forEach(function (_, i) { var v = rating(st, u.code + ':' + i); if (v === 2) sec++; else if (v === 1) sh++; });
   return { secure: sec, shaky: sh, n: u.topics.length, pct: Math.round(100 * (sec + sh * 0.5) / u.topics.length) };
 }
 function logFor(who) { return sget('log', []).filter(function (r) { return r.who === who; }); }
@@ -569,7 +589,8 @@ R.overview = function () {
     stat('AS topics secure', sec + ' / ' + n, Math.round(100 * sec / Math.max(1, n)) + '% of AS topics') +
     stat('Latest SAT score', ls ? String(ls.rw + ls.m) : '—', ls ? esc(fmt(ls.date)) + ' · ' + (ls.kind === 'official' ? 'official' : 'practice') : 'Log a practice test') +
     stat('Past papers logged', String(pp.length), pp.length ? 'average ' + Math.round(pp.reduce(function (s, r) { return s + r.pct; }, 0) / pp.length) + '%' : 'Log one on the A Level tab') +
-    stat('Hours this week', h1(wa.total), 'target ' + h1(ta) + 'h') + '</div></div>';
+    stat('Hours this week', h1(wa.total), 'target ' + h1(ta) + 'h') +
+    (D.assessment ? stat('Chemistry Unit 1', '47 / 80', 'marked paper · aim for about 60 in June') : '') + '</div></div>';
   var bp = sget('bprac', []), wb = weekHours('b', ws), tb = targetTotal(phaseFor('b', TODAY) || phaseNow('b'));
   var best = bp.reduce(function (m, r) { return Math.max(m, Math.round(100 * r.score / r.outof)); }, 0);
   var road = sget('road', {}), rdone = 0, rn = 0; D.roadmapB.forEach(function (y, yi) { y.items.forEach(function (_, ii) { rn++; if (road[yi + ':' + ii]) rdone++; }); });
@@ -637,7 +658,8 @@ R.alevel = function () {
     kpi('AS papers', String(ps.length), 'papers', 'Maths P1, P2, ' + r + ' · Physics and Chemistry Units 1–3') +
     countKpi('Last AS paper', ps[ps.length - 1].d, esc(ps[ps.length - 1].subj + ' ' + ps[ps.length - 1].unit)) +
     countKpi('AS results', evById('asresults').d, 'from Pearson') + '</div>';
-  html += '<div class="pf-card"><div class="pf-ch"><div><h2>AS timetable</h2><p class="pf-note">' + esc(D.alevel.note) + '</p></div>' +
+  html += assessmentHtml();
+  html += '<div class="pf-over">Timetable</div><div class="pf-card"><div class="pf-ch"><div><h2>AS timetable</h2><p class="pf-note">' + esc(D.alevel.note) + '</p></div>' +
     '<div><span class="pf-note" style="margin-right:6px">Applied maths unit</span><span class="pf-seg" role="group" aria-label="Applied maths unit">' +
     ['M1', 'S1'].map(function (o) { return '<button data-act="route" data-v="' + o + '" aria-pressed="' + (r === o) + '">' + o + '</button>'; }).join('') + '</span></div></div>' +
     '<div class="pf-scroll"><table class="pf-table"><thead><tr><th>Date</th><th>Session</th><th>Subject</th><th>Paper</th><th>Code</th><th class="r">Length</th><th class="r">When</th></tr></thead><tbody>' +
@@ -646,7 +668,7 @@ R.alevel = function () {
     }).join('') + '</tbody></table></div>' +
     '<p class="pf-note" style="margin-bottom:0">Physics is the priority subject this year: it carries the astrophysics application. The applied maths unit is the school\'s choice; M1 (mechanics) supports Physics best.</p></div>';
 
-  html += '<div class="pf-over">Topic confidence · AS units</div><p class="pf-note" style="margin:0">Mark each topic as you go. "Shaky" counts as half. Fix "Not yet" and "Shaky" topics before moving to full past papers.</p><div class="pf-grid">' + asUnits().map(unitCard).join('') + '</div>';
+  html += '<div class="pf-over">Topic confidence · AS units</div><p class="pf-note" style="margin:0">Starting ratings come from the papers marked in November 2026; change them as you go. "Shaky" counts as half. Fix "Not yet" and "Shaky" topics before moving to full past papers.</p><div class="pf-grid">' + asUnits().map(unitCard).join('') + '</div>';
 
   // paper log
   var all = D.alevel.as.concat(D.alevel.a2), logs = sget('papers', []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
@@ -675,13 +697,45 @@ R.alevel = function () {
   html += '<div class="pf-over">Year 13 units · preview</div><p class="pf-note" style="margin:0">A2 units sat in Year 13 (May/June 2028). Physics Unit 5 includes stars and cosmology. Confirm the maths applied unit for Year 13 with the school.</p><div class="pf-grid">' + D.alevel.a2.map(unitCard).join('') + '</div>';
   el.innerHTML = html;
 };
+function gradeFor(sc, b) { return sc >= b.a ? 'A' : sc >= b.b ? 'B' : sc >= b.c ? 'C' : 'D or below'; }
+function assessmentHtml() {
+  var A = D.assessment; if (!A) return '';
+  var jb = A.juneBounds, avgA = Math.round(jb.reduce(function (s, b) { return s + b.a; }, 0) / jb.length);
+  var minA = Math.min.apply(null, jb.map(function (b) { return b.a; })), maxA = Math.max.apply(null, jb.map(function (b) { return b.a; }));
+  var cp = A.chemPapers.filter(function (p) { return p.score != null; }), latest = cp[cp.length - 1];
+  var h = '<div class="pf-over">Marked papers · ' + esc(fmt(A.asOf).replace(/^\d+ /, '')) + '</div><div class="pf-kpis">' +
+    kpi('Chemistry Unit 1', String(latest.score), '/ ' + latest.max, 'Jan 2024 and Jan 2025 papers · ' + (100 * latest.score / latest.max).toFixed(1) + '%') +
+    kpi('Marks to an A in June', '+' + (avgA - latest.score), 'marks', 'June A boundary ' + minA + '–' + maxA + ' of 80 (2023–26), about ' + avgA) +
+    kpi('Physics Unit 1', A.physics.level, '', esc(A.physics.note)) +
+    kpi('Maths S1', A.maths.level, '', esc(A.maths.note)) + '</div>';
+  h += '<div class="pf-grid wide"><div class="pf-card"><h2>Chemistry Unit 1 by topic</h2><p class="pf-note">Marks across the two fully marked papers (January 2024 and January 2025).</p>' +
+    A.chemCats.map(function (c) {
+      var got = 0, max = 0; c.items.forEach(function (i) { got += i[1]; max += i[2]; });
+      var pc = Math.round(100 * got / max), col = pc >= 80 ? 'var(--pf-ok)' : pc >= 60 ? 'var(--pf-warn)' : 'var(--pf-bad)';
+      return '<div class="sc-cat"><div class="hd"><b>' + esc(c.cat) + '</b><div class="sc-track"><span style="width:' + pc + '%;background:' + col + '"></span></div><span class="num"><b style="color:var(--pf-ivory)">' + got + '</b> / ' + max + ' · ' + pc + '%</span></div>' +
+        '<ul>' + c.items.map(function (i) { return '<li><span>' + esc(i[0]) + '</span><span>' + i[1] + ' / ' + i[2] + '</span></li>'; }).join('') + '</ul></div>';
+    }).join('') + '</div>' +
+    '<div class="pf-card"><h2>Path to an A in Chemistry</h2><p class="pf-note">From ' + latest.score + ' to about ' + avgA + ' marks. Quantitative chemistry is already at 90%; the marks are in the other four areas.</p><ul class="pf-act">' +
+    A.priorities.map(function (p) { return '<li class="' + p.sev + '"><span class="sev ' + p.sev + '">' + ({ high: 'First', med: 'Next', low: 'Polish' })[p.sev] + '</span><div><div class="t">' + esc(p.t) + '</div><div class="d">' + esc(p.d) + '</div><div class="r">' + esc(p.r) + '</div></div></li>'; }).join('') + '</ul></div></div>';
+  h += '<div class="pf-grid wide"><div class="pf-card"><h2>Where 47 out of 80 lands</h2><p class="pf-note">The same mark earns a different grade in each series. The May/June series she sits has had higher boundaries than January, so aim for June\'s.</p>' +
+    '<div class="pf-scroll"><table class="pf-table"><thead><tr><th>Paper marked</th><th class="r">Score</th><th>Grade on that paper</th></tr></thead><tbody>' +
+    A.chemPapers.map(function (p) { return '<tr><td>' + esc(p.paper) + '</td><td class="r nw">' + (p.score != null ? p.score + ' / ' + p.max + ' · ' + (100 * p.score / p.max).toFixed(1) + '%' : esc(p.pct)) + '</td><td>' + esc(p.own) + '</td></tr>'; }).join('') +
+    '</tbody></table></div><h3>June boundaries, Chemistry Unit 1 (raw, out of 80)</h3><div class="pf-scroll"><table class="pf-table"><thead><tr><th>Series</th><th class="r">A</th><th class="r">B</th><th class="r">C</th><th>47 would be</th></tr></thead><tbody>' +
+    jb.map(function (b) { var g = gradeFor(latest.score, b); return '<tr><td>' + esc(b.s) + '</td><td class="r strong">' + b.a + '</td><td class="r">' + b.b + '</td><td class="r">' + b.c + '</td><td><span class="pf-badge ' + (g === 'A' ? 'ok' : g === 'B' ? 'warn' : 'bad') + '">' + g + '</span></td></tr>'; }).join('') +
+    '</tbody></table></div><p class="pf-note" style="margin-bottom:0">AS unit grades run from a to e; A* is awarded only for the full A Level. Boundaries from Pearson\'s published grade boundary documents.</p></div>' +
+    '<div class="pf-card"><h2>Physics and Maths</h2><div class="sc-two">' + [['Physics Unit 1', A.physics], ['Maths S1', A.maths]].map(function (x) {
+      return '<div><h3>' + esc(x[0]) + ' · grade ' + esc(x[1].level) + '</h3><p class="pf-note" style="margin:0 0 6px">' + esc(x[1].note) + '</p><ul class="sc-list" style="margin-top:0">' + x[1].strengths.map(function (t) { return '<li><span class="pos">Strong:</span> ' + esc(t) + '</li>'; }).join('') +
+        x[1].fixes.map(function (t) { return '<li><span class="warn">Work on:</span> ' + esc(t) + '</li>'; }).join('') + '</ul></div>';
+    }).join('') + '</div><p class="pf-note" style="margin:12px 0 0">Physics at grade A on a full Unit 1 paper is the evidence to bring to the December Physics review. Log each new marked paper in the past-paper log below so progress shows over time.</p></div></div>';
+  return h;
+}
 function unitCard(u) {
   var st = topicState(), q = unitPct(u);
   return '<div class="pf-card"><div class="sc-uh"><div><h2>' + esc(u.subj + ' ' + u.unit) + (u.star ? ' <span class="pf-badge gold">' + esc(u.star) + '</span>' : '') + '</h2><p class="pf-note" style="margin-bottom:6px">' + esc(u.code + ' · ' + u.title) + '</p></div>' +
     '<div class="sc-pct">' + q.pct + '%<small>' + q.secure + ' secure</small></div></div>' +
     '<div class="sc-bar"><span class="g" style="width:' + (100 * q.secure / q.n) + '%"></span><span class="w" style="width:' + (100 * q.shaky / q.n) + '%"></span></div>' +
     '<ul class="sc-topics">' + u.topics.map(function (t, i) {
-      var v = st[u.code + ':' + i] || 0;
+      var v = rating(st, u.code + ':' + i);
       return '<li><span>' + esc(t) + '</span><span class="pf-seg sc-rag" role="group" aria-label="' + esc(t) + '">' + ['Not yet', 'Shaky', 'Secure'].map(function (l, k) {
         return '<button class="r' + k + '" data-act="topic" data-k="' + u.code + ':' + i + '" data-v="' + k + '" aria-pressed="' + (v === k) + '">' + l + '</button>'; }).join('') + '</span></li>';
     }).join('') + '</ul></div>';
