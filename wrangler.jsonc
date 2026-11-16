@@ -1,0 +1,9 @@
+{
+  // Static site served by Cloudflare Workers (assets only, no code).
+  "name": "study-companion",
+  "compatibility_date": "2025-06-01",
+  "assets": {
+    "directory": "./site",
+    "not_found_handling": "404-page"
+  }
+}
