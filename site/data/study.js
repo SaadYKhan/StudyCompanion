@@ -172,6 +172,61 @@ window.STUDY = {
     }
   },
 
+  // Key focus areas at the top of the Overview. Each area's score, marks lost and "fixed" count are worked out
+  // live from the question log with the filter f (subj, paper, sec, topics, why); a question counts if it matches.
+  // "soon" items finish themselves when their questions are all fixed (f) or a score is logged (auto); others are ticked.
+  focus: {
+    asOf: "2026-11-18",
+    by: "2026-12-11",
+    a: {
+      note: "From her three marked papers: Chemistry January 2024 and January 2025, Physics June 2021. In order of marks lost; a question can count in more than one area.",
+      items: [
+        { t: "Finish every question", f: { why: ["blank", "incomplete"] },
+          d: "Parts left blank or stopped after a line or two, on all three papers. This is the biggest single source of lost marks.",
+          r: "Write the equation and the first step for every part, even when stuck: method marks do not need the final answer. In a timed paper, mark the question and come back to it before the end." },
+        { t: "Multiple choice in both sciences", f: { sec: "A" },
+          d: "Chemistry 10/20, then 7/20; Physics 2/10. Most misses are concept slips; seven are counting or multiplier slips.",
+          r: "Every day: 15 Chemistry and 10 Physics multiple-choice questions, about a minute each, with one line on why each wrong option is wrong. Redo every miss a week later." },
+        { t: "Organic chemistry: isomers, alkenes and mechanisms", f: { topics: ["iso", "add", "fuel", "poly"] },
+          d: "Structural and E/Z isomers, electrophilic addition, addition polymers, and alkanes and cracking.",
+          r: "One mechanism from memory every day with curly arrows (free-radical substitution, electrophilic addition), and five isomer questions a week." },
+        { t: "Physics forces and motion", f: { topics: ["force", "kin", "vec", "mo"] },
+          d: "Newton's laws, weight and mass, slopes, moments and motion graphs. The 6-mark rocket question scored nothing.",
+          r: "Draw a free-body diagram before every mechanics question. Newtons ÷ g = kilograms; use g sin θ on a slope. In 6-mark answers, name each force and the Newton's law that applies, in time order." },
+        { t: "Mark-scheme wording", f: { why: ["wording"] },
+          d: "Right idea, wrong words: σ and π overlap, the two E/Z conditions, free radicals, and what counts as an observation.",
+          r: "After every marked paper, copy the mark-scheme phrase for each lost mark into a phrases list, and learn the list word for word." }
+      ],
+      soon: [
+        { id: "ph21", t: "Redo every lost question from the June 2021 Physics paper", why: "Before the school's December Physics review", f: { paper: "ph21" } },
+        { id: "p1", t: "Sit a Maths P1 paper and get it marked", why: "P1 and P2 have not been assessed yet; S1 is already at grade A" },
+        { id: "sat", t: "Take a free Bluebook SAT practice test", why: "Sets her baseline for the 6 March SAT; log the score on the SAT tab", auto: "sat" }
+      ]
+    },
+    b: {
+      note: "From his challenge worksheet: 39 questions, marked 16 November 2026. In order of priority.",
+      items: [
+        { t: "Percentages one after another", f: { topics: ["pct"] },
+          d: "Q33 and Q35 took the second percentage from the original price instead of the new one. Q36 and Q39 are not tried yet.",
+          r: "Use multipliers: 640 × 1.25 × 1.05 = 840. The overall change is the product (× 1.3125, so +31.25%), not 25% + 5%." },
+        { t: "Finish what he starts", f: { why: ["incomplete"] },
+          d: "Right method, but stopped before the final answer.",
+          r: "Underline what is asked, box each final answer, and tick each part off before moving on." },
+        { t: "Fractions: multiplying and 'of'", f: { topics: ["frac"] },
+          d: "Q25 changed everything to 24ths before multiplying. Five of the seven fraction questions are not tried yet.",
+          r: "To multiply: make improper fractions, cancel, then multiply. Common denominators are only for adding and subtracting." },
+        { t: "Factors, primes, HCF and LCM", f: { topics: ["fac"] },
+          d: "Six of the seven are not tried yet; Q14 listed multiples, which is too slow for big numbers.",
+          r: "Factor trees and index form: HCF takes the lower power of each shared prime, LCM the higher power of every prime." }
+      ],
+      soon: [
+        { id: "zk1", t: "Finish the questions not tried yet", why: "Sections C and E first, then the exam challenge last, timed", f: { why: ["notyet"] } },
+        { id: "amc", t: "Find an AMC 8 centre in Dubai", why: "Centre registration closes 5 January; the AMC 8 is sat between 21 and 27 January" },
+        { id: "jmc", t: "One past UKMT Junior Mathematical Challenge paper", why: "Untimed, then marked together; log it on the ZK maths tab", auto: "bprac" }
+      ]
+    }
+  },
+
   alevel: {
     defaultRoute: "S1",
     note: "Sessions are as listed in Pearson's final timetable. The school confirms local start times in Dubai.",

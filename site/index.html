@@ -218,6 +218,33 @@ a:hover { color: var(--pf-ivory); }
 .pf-act .t { font-weight: 500; color: var(--pf-ivory); }
 .pf-act .d { font-size: 12px; color: var(--pf-steel); margin-top: 2px; line-height: 1.5; }
 .pf-act .r { font-size: 12px; color: var(--pf-gold-hi); margin-top: 6px; padding-top: 6px; line-height: 1.55; border-top: 1px dashed var(--pf-line-2); }
+/* key focus areas */
+.sc-focus { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.sc-focus > li { display: grid; grid-template-columns: 1.9rem 1fr; gap: var(--cds-gap-sm); padding: var(--cds-pad-sm) var(--cds-pad-md);
+  border: 1px solid var(--pf-line); border-left: 3px solid var(--pf-gold); border-radius: var(--pf-radius); background: var(--pf-card-2); }
+.sc-focus .n { font-family: var(--font-serif); font-size: 24px; line-height: 1; color: var(--pf-gold-hi); }
+.sc-focus .hd { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); }
+.sc-focus .t { font-weight: 500; color: var(--pf-ivory); }
+.sc-focus .sc { font-family: var(--font-serif); font-size: 17px; color: var(--pf-ivory); white-space: nowrap; }
+.sc-focus .sc small { font-family: var(--font-sans); font-size: 11.5px; color: var(--pf-steel); margin-left: .25rem; }
+.sc-focus .d { font-size: 12px; color: var(--pf-steel); margin-top: 3px; line-height: 1.5; }
+.sc-focus .r { font-size: 12px; color: var(--pf-gold-hi); margin-top: 6px; padding-top: 6px; line-height: 1.55; border-top: 1px dashed var(--pf-line-2); }
+.sc-focus .r b { font-weight: 500; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; margin-right: .3rem; }
+.sc-focus .ft { display: grid; grid-template-columns: minmax(4rem, 1fr) auto auto; gap: var(--cds-gap-sm); align-items: center; margin-top: 8px; font-size: 11.5px; color: var(--pf-steel); }
+.sc-focus .ft .sc-track { height: 6px; }
+.sc-focus .ft b { color: var(--pf-ivory); font-weight: 500; }
+@media (max-width: 34rem) { .sc-focus .ft { grid-template-columns: 1fr auto; } .sc-focus .ft .sc-track { grid-column: 1 / -1; } .sc-focus > li { grid-template-columns: 1.4rem 1fr; } }
+.sc-soon { margin-top: var(--cds-gap-md); padding-top: var(--cds-gap-sm); border-top: 1px solid var(--pf-line); }
+.sc-soon .sh { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--pf-table-head); }
+.sc-soon .sh span { letter-spacing: 0; text-transform: none; font-size: 12px; color: var(--pf-steel); }
+.sc-soon ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sc-soon li { display: grid; grid-template-columns: 1.4rem 1fr auto; gap: var(--cds-gap-sm); align-items: start; font-size: 12.5px; }
+.sc-soon .w { display: block; font-size: 11.5px; color: var(--pf-steel); margin-top: 1px; }
+.sc-soon .st { font-size: 11.5px; color: var(--pf-steel); white-space: nowrap; text-align: right; }
+.sc-soon li.done .tx { color: var(--pf-steel); text-decoration: line-through; text-decoration-color: rgba(156,173,202,.5); }
+.sc-box { width: 1.1rem; height: 1.1rem; margin-top: 1px; border: 1px solid var(--pf-line-2); border-radius: var(--pf-radius-sm); background: none; color: var(--pf-ok); font-size: 12px; line-height: 1; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+button.sc-box { cursor: pointer; } button.sc-box:hover { border-color: var(--pf-gold); }
+.sc-box.on { border-color: var(--pf-ok); background: rgba(70,195,145,.1); }
 .sc-cat { margin-top: var(--cds-gap-md); }
 .sc-cat .hd { display: grid; grid-template-columns: 1fr 9rem 5.2rem; gap: var(--cds-gap-sm); align-items: center; font-size: 12.5px; }
 .sc-cat .hd b { font-weight: 500; color: var(--pf-ivory); }
@@ -601,13 +628,14 @@ R.overview = function () {
   }).filter(function (x) { return x && !isPast(x.e); }).slice(0, 4);
   var html = '<div class="pf-over">Countdown</div><div class="pf-kpis">' +
     tiles.map(function (x) { return countKpi(x.c.l, x.e.d, x.c.s, x.e.end); }).join('') + '</div>';
+  html += focusHtml();
   html += '<div class="pf-over">Coming up</div><div class="pf-grid">';
   ['a', 'b'].forEach(function (w) {
     var st = D.students[w], list = upcoming(w).slice(0, 6);
     html += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(st.label) + ' · ' + esc(st.yr) + ' · ' + esc(st.school) + '</h2><p class="pf-note">' + esc(st.track) + '</p></div>' + whoBadges([w]) + '</div>' +
       '<ul class="sc-evs">' + list.map(function (e) { return evRow(e, { cat: true }); }).join('') + '</ul></div>';
   });
-  html += '</div><div class="pf-over">Current focus</div><div class="pf-grid">';
+  html += '</div><div class="pf-over">Current plan phase</div><div class="pf-grid">';
   ['a', 'b'].forEach(function (w) {
     var p = phaseNow(w);
     html += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(p.title) + '</h2><p class="pf-note">' + esc(D.students[w].label) + ' · ' + esc(fmtRange(p.from, p.to)) + '</p></div>' + whoBadges([w]) + '</div>' +
@@ -636,6 +664,59 @@ R.overview = function () {
   html += '</div>';
   el.innerHTML = html;
 };
+/* ---------- Key focus areas ---------- */
+function focusOf(w) { return (D.focus && D.focus[w]) || null; }
+function focusItem(key) { var p = String(key || '').split(':'), F = focusOf(p[0]); return F && F.items[+p[1]] ? F.items[+p[1]] : null; }
+function focusHit(q, f) {
+  if (!f || !q.x) return false;
+  if (f.subj && qPaper(q).subj !== f.subj) return false;
+  if (f.paper && q.p !== f.paper) return false;
+  if (f.sec && q.s !== f.sec) return false;
+  if (f.topics && !f.topics.some(function (t) { return qHas(q, t); })) return false;
+  if (f.why && !(q.w || []).some(function (x) { return f.why.indexOf(x) >= 0; })) return false;
+  return true;
+}
+function focusStats(w, f) {
+  var rd = redoState(), m = 0, x = 0, qs = stuQs(w).filter(function (q) { return focusHit(q, f); });
+  qs.forEach(function (q) { m += +q.m || 0; x += +q.x || 0; });
+  var miss = qs.filter(function (q) { return qStatus(q) !== 'correct'; });
+  return { m: m, x: x, lost: x - m, n: miss.length, fixed: miss.filter(function (q) { return rd[qid(q)] === 2; }).length };
+}
+function soonState(w, s) {
+  if (s.f) { var t = focusStats(w, s.f); return { done: t.n > 0 && t.fixed === t.n, st: t.fixed + ' of ' + t.n + ' done', link: true }; }
+  if (s.auto) { var n = sget(s.auto, []).length; return { done: n > 0, st: n ? 'logged' : 'not logged yet' }; }
+  return { done: !!sget('fdone', {})[w + ':' + s.id], manual: true };
+}
+function focusHtml() {
+  if (!D.focus) return '';
+  var h = '<div class="pf-over">Key focus areas</div><div class="pf-grid">';
+  ['a', 'b'].forEach(function (w) {
+    var F = focusOf(w); if (!F) return;
+    h += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(D.students[w].label) + ': what moves the marks most</h2><p class="pf-note">' + esc(F.note) + '</p></div></div><ol class="sc-focus">';
+    F.items.forEach(function (it, i) {
+      var s = focusStats(w, it.f), pct = s.x ? Math.round(100 * s.m / s.x) : 0;
+      h += '<li><span class="n">' + (i + 1) + '</span><div>' +
+        '<div class="hd"><span class="t">' + esc(it.t) + '</span><span class="sc">' + s.m + ' / ' + s.x + '<small>' + pct + '%</small></span></div>' +
+        '<div class="d">' + esc(it.d) + '</div><div class="r"><b>Do</b>' + esc(it.r) + '</div>' +
+        '<div class="ft"><div class="sc-track" title="Questions marked Got it in the question log"><span style="width:' + (s.n ? 100 * s.fixed / s.n : 0) + '%;background:var(--pf-ok)"></span></div>' +
+        '<span><b>' + s.lost + '</b> marks lost · <b>' + s.fixed + '</b> of ' + s.n + ' fixed</span>' +
+        (s.n ? '<button class="sc-qlink" data-act="qfocus" data-v="' + w + ':' + i + '">See the ' + s.n + ' question' + (s.n === 1 ? '' : 's') + '</button>' : '<span></span>') + '</div></div></li>';
+    });
+    h += '</ol>';
+    if (F.soon && F.soon.length) {
+      h += '<div class="sc-soon"><div class="sh">By the end of term<span>' + esc(fmt(D.focus.by)) + ' · ' + relD(D.focus.by) + '</span></div><ul>' +
+        F.soon.map(function (s, i) {
+          var x = soonState(w, s), box = x.manual
+            ? '<button class="sc-box' + (x.done ? ' on' : '') + '" data-act="fdone" data-v="' + w + ':' + esc(s.id) + '" aria-pressed="' + x.done + '" aria-label="Done: ' + esc(s.t) + '">' + (x.done ? '✓' : '') + '</button>'
+            : '<span class="sc-box' + (x.done ? ' on' : '') + '" title="Ticks itself">' + (x.done ? '✓' : '') + '</span>';
+          return '<li class="' + (x.done ? 'done' : '') + '">' + box + '<div><span class="tx">' + esc(s.t) + '</span><span class="w">' + esc(s.why) + '</span></div>' +
+            '<span class="st">' + (x.link ? '<button class="sc-qlink" data-act="qsoon" data-v="' + w + ':' + i + '">' + esc(x.st) + '</button>' : esc(x.st || '')) + '</span></li>';
+        }).join('') + '</ul></div>';
+    }
+    h += '</div>';
+  });
+  return h + '</div>';
+}
 function fixedStat(w) { var rd = redoState(), tf = stuQs(w).filter(function (q) { return qStatus(q) !== 'correct'; }); return stat('Questions fixed', tf.filter(function (q) { return rd[qid(q)] === 2; }).length + ' / ' + tf.length, 'marked "Got it" in the question log'); }
 function zkStat() { var Z = D.assessment && D.assessment.zk; if (!Z) return ''; var qs = QL.q.filter(function (q) { return q.p === Z.paper; }); var m = qs.reduce(function (a, q) { return a + q.m; }, 0), x = qs.reduce(function (a, q) { return a + q.x; }, 0); return stat('Challenge worksheet', m + ' / ' + x, 'marked ' + fmt(Z.asOf)); }
 function stat(l, v, s) { return '<div class="sc-stat"><div class="lbl">' + esc(l) + '</div><div class="v">' + esc(v) + '</div><div class="s">' + s + '</div></div>'; }
@@ -851,6 +932,7 @@ function qMatch(q, f, text) {
   if (f.paper !== 'all' && q.p !== f.paper) return false;
   if (f.topic !== 'all' && !qHas(q, f.topic)) return false;
   if (f.why !== 'all' && (q.w || []).indexOf(f.why) < 0) return false;
+  if (f.focus) { var fi = focusItem(f.focus); if (fi && !focusHit(q, fi.f)) return false; }
   if (f.chk) { var hit = qTopic(q.t).chk === f.chk || (q.also || []).some(function (t) { return qTopic(t).chk === f.chk; }); if (!hit) return false; }
   if (f.res === 'fix' && st === 'correct') return false;
   if (f.res === 'open' && (st === 'correct' || rd === 2)) return false;
@@ -957,7 +1039,9 @@ R.qlog = function () {
     '<label>Mistake<select class="pf-select" data-act="qwhysel"><option value="all">Any</option>' + Object.keys(QL.why).map(function (k) { return '<option value="' + k + '"' + (f.why === k ? ' selected' : '') + '>' + esc(QL.why[k]) + '</option>'; }).join('') + '</select></label>' +
     '<label>Order<select class="pf-select" data-act="qsort"><option value="paper"' + (f.sort !== 'lost' ? ' selected' : '') + '>By paper</option><option value="lost"' + (f.sort === 'lost' ? ' selected' : '') + '>Most marks lost</option></select></label>' +
     '<button class="pf-btn ghost" type="button" data-act="qclear">Clear</button></div>' +
-    (f.chk ? '<div style="margin:-4px 0 10px"><span class="sc-chipx">From the topic checklist: ' + esc(chkName(f.chk)) + '<button data-act="qchkx" aria-label="Remove">✕</button></span></div>' : '') +
+    (f.chk || focusItem(f.focus) ? '<div style="margin:-4px 0 10px;display:flex;gap:6px;flex-wrap:wrap">' +
+      (focusItem(f.focus) ? '<span class="sc-chipx">Focus area: ' + esc(focusItem(f.focus).t) + '<button data-act="qfocusx" aria-label="Remove">✕</button></span>' : '') +
+      (f.chk ? '<span class="sc-chipx">From the topic checklist: ' + esc(chkName(f.chk)) + '<button data-act="qchkx" aria-label="Remove">✕</button></span>' : '') + '</div>' : '') +
     '<div id="qList"></div></div>';
 
   h += '<div class="pf-card"><details class="sc-add"' + (sget('qaddOpen', false) ? ' open' : '') + '><summary>Add a question you got wrong</summary><p class="pf-note">For new papers marked at school or at home. It is saved in this browser and appears in the log with the rest.</p>' +
@@ -1189,11 +1273,15 @@ app.addEventListener('click', function (ev) {
   if (a === 'qclear') { sset('qf', { subj: 'all', paper: 'all', res: 'all', topic: 'all', why: 'all', chk: '', sort: 'paper' }); sset('qtext', ''); return refresh(); }
   if (a === 'qchk') { sset('qwho', 'a'); sset('qf', { subj: 'all', paper: 'all', res: 'all', topic: 'all', why: 'all', chk: b.getAttribute('data-k'), sort: 'paper' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
   if (a === 'qchkx') { setQF({ chk: '' }); return refresh(); }
+  if (a === 'qfocus') { sset('qwho', v.split(':')[0]); sset('qf', { subj: 'all', paper: 'all', res: 'fix', topic: 'all', why: 'all', chk: '', focus: v, sort: 'lost' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
+  if (a === 'qfocusx') { setQF({ focus: '' }); return refresh(); }
+  if (a === 'qsoon') { var sp = v.split(':'), so = focusOf(sp[0]).soon[+sp[1]].f; sset('qwho', sp[0]); sset('qf', { subj: 'all', paper: so.paper || 'all', res: 'fix', topic: 'all', why: so.why ? so.why[0] : 'all', chk: '', focus: '', sort: 'paper' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
+  if (a === 'fdone') { var fd = sget('fdone', {}); if (fd[v]) delete fd[v]; else fd[v] = 1; sset('fdone', fd); return refresh(); }
   if (a === 'qdel') { sset('myq', myQs().filter(function (q) { return qid(q) !== b.getAttribute('data-id'); })); return refresh(); }
   if (a === 'ics') return makeIcs();
   if (a === 'backup') {
     var out = { app: 'study-companion', v: 1, saved: new Date().toISOString(), data: {} };
-    ['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq'].forEach(function (k) { var x = sget(k, null); if (x != null) out.data[k] = x; });
+    ['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone'].forEach(function (k) { var x = sget(k, null); if (x != null) out.data[k] = x; });
     return download('study-companion-backup-' + TODAY + '.json', JSON.stringify(out, null, 1), 'application/json');
   }
 });
@@ -1212,7 +1300,7 @@ app.addEventListener('change', function (ev) {
       var msg = document.getElementById('bkMsg');
       try {
         var o = JSON.parse(fr.result); if (!o || o.app !== 'study-companion' || typeof o.data !== 'object') throw new Error('not a backup');
-        Object.keys(o.data).forEach(function (k) { if (['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq'].indexOf(k) >= 0) sset(k, o.data[k]); });
+        Object.keys(o.data).forEach(function (k) { if (['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone'].indexOf(k) >= 0) sset(k, o.data[k]); });
         refresh(); document.getElementById('bkMsg').textContent = 'Restored the backup from ' + fmt(String(o.saved).slice(0, 10)) + '.';
       } catch (e) { if (msg) msg.textContent = 'That file is not a Study Companion backup.'; }
     };

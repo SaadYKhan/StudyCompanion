@@ -149,6 +149,23 @@ try:
                 ov = pg.inner_text('#t-overview')
                 if '1 / ' not in ov and '1420' not in ov:
                     fails.append('saved progress did not survive a reload')
+                # key focus areas: live scores, auto-ticks, manual ticks, and the link into the question log
+                for want in ['Key focus areas', 'Finish every question', '13 / 53', 'Multiple choice in both sciences', '19 / 50', 'Percentages one after another', '7 / 21']:
+                    if want.lower() not in ov.lower():
+                        fails.append('focus areas missing: ' + want)
+                if 'logged' not in pg.inner_text('.sc-soon >> nth=1'):
+                    fails.append('ZK practice paper did not tick the focus checklist')
+                pg.click('[data-act="fdone"][data-v="a:p1"]'); pg.wait_for_timeout(200)
+                if pg.get_attribute('[data-act="fdone"][data-v="a:p1"]', 'aria-pressed') != 'true':
+                    fails.append('focus checklist tick did not save')
+                pg.click('[data-act="qfocus"][data-v="a:1"]'); pg.wait_for_timeout(400)
+                if 'Focus area: Multiple choice' not in pg.inner_text('#t-qlog') or not pg.inner_text('#qCount').startswith('31 of'):
+                    fails.append('focus link did not filter the question log: ' + pg.inner_text('#qCount'))
+                pg.click('[data-act="qfocusx"]'); pg.wait_for_timeout(200)
+                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(300)
+                pg.click('[data-act="qsoon"][data-v="a:0"]'); pg.wait_for_timeout(400)
+                if not pg.inner_text('#qCount').startswith('21 of'):
+                    fails.append('Physics redo link did not open the 21 lost parts: ' + pg.inner_text('#qCount'))
                 if shots:
                     for t in TABS:
                         pg.click(f'[data-tab="{t}"]'); pg.wait_for_timeout(120)
