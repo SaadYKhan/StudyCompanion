@@ -95,6 +95,15 @@ try:
                 if 'From the topic checklist' not in pg.inner_text('#t-qlog') or 'Q18(c)' not in pg.inner_text('#qList'):
                     fails.append('checklist link did not open the filtered question log')
                 pg.click('[data-act="qclear"]'); pg.wait_for_timeout(200)
+                # the why-marks panel follows the subject switch
+                why = lambda: pg.locator('.pf-card', has_text='Why marks were lost').first.inner_text()
+                w_all = why()
+                pg.click('[data-act="qsubj"][data-v="Physics"]'); pg.wait_for_timeout(250); w_phys = why()
+                pg.click('[data-act="qsubj"][data-v="Chemistry"]'); pg.wait_for_timeout(250); w_chem = why()
+                pg.click('[data-act="qsubj"][data-v="Maths"]'); pg.wait_for_timeout(250); w_maths = why()
+                pg.click('[data-act="qsubj"][data-v="all"]'); pg.wait_for_timeout(250)
+                if 'Multipliers and counting' in w_phys or 'Multipliers and counting' not in w_chem or w_phys == w_all or '25 marks' not in w_phys or 'no marks lost' not in w_maths.lower():
+                    fails.append('why-marks panel does not follow the subject switch')
                 if 'of 109 questions' not in pg.inner_text('#qCount'):
                     fails.append('question log does not show all 109 of MK\'s questions: ' + pg.inner_text('#qCount'))
                 pg.click('[data-act="qwho"][data-v="b"]'); pg.wait_for_timeout(300)

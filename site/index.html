@@ -990,8 +990,9 @@ R.qlog = function () {
   });
   var trows = Object.keys(tops).map(function (k) { return tops[k]; }).filter(function (t) { return f.subj === 'all' || who !== 'a' || qTopic(t.k).subj === f.subj; })
     .sort(function (a, b) { return ((b.x - b.m) - (a.x - a.m)) || (b.open - a.open); });
-  // why marks were lost (not counting questions not tried yet)
-  var whys = {}, notyet = 0, notyetM = 0; all.forEach(function (q) {
+  // why marks were lost (not counting questions not tried yet), following the subject switch like the topic table
+  var bySubj = who === 'a' && f.subj !== 'all', scope = bySubj ? all.filter(function (q) { return qPaper(q).subj === f.subj; }) : all;
+  var whys = {}, notyet = 0, notyetM = 0; scope.forEach(function (q) {
     if ((q.w || []).indexOf('notyet') >= 0) { notyet++; notyetM += q.x || 0; return; }
     (q.w || []).forEach(function (w, i) { var o = whys[w] || (whys[w] = { k: w, n: 0, lost: 0 }); o.n++; if (i === 0 && q.x != null) o.lost += q.x - q.m; });
   });
@@ -1022,11 +1023,11 @@ R.qlog = function () {
       return '<tr class="pick' + (f.topic === t.k ? ' on' : '') + '" data-act="qtopic" data-v="' + t.k + '"><td class="strong">' + esc(qTopic(t.k).n) + '</td><td class="r">' + t.n + '</td><td class="r nw">' + (t.x ? t.m + ' / ' + t.x : '—') + '</td>' +
         '<td><div class="sc-track"><span style="width:' + (pc == null ? 100 : pc) + '%;background:' + col + (pc == null ? ';opacity:.4' : '') + '"></span></div></td><td class="r">' + (t.open ? '<span class="warn">' + t.open + '</span>' : '<span class="pos">0</span>') + '</td></tr>';
     }).join('') + '</tbody></table></div></div>' +
-    '<div class="pf-card"><h2>Why marks were lost</h2><p class="pf-note">Each mistake is tagged with its cause. Concept gaps need re-learning; the rest are technique and are the quickest marks to win back. Click one to filter.' +
+    '<div class="pf-card"><h2>Why marks were lost' + (bySubj ? ' · ' + esc(f.subj) : '') + '</h2><p class="pf-note">' + (bySubj ? esc(f.subj) + ' questions only; switch subject in the topic table. ' : '') + 'Each mistake is tagged with its cause. Concept gaps need re-learning; the rest are technique and are the quickest marks to win back. Click one to filter.' +
     (notyet ? ' Not counted here: ' + notyet + ' questions (' + notyetM + ' marks) not tried yet.' : '') + '</p><div class="sc-sbars">' +
     wrows.map(function (w) {
-      return '<div class="sc-sbar pick" data-act="qwhy" data-v="' + w.k + '" style="cursor:pointer' + (f.why === w.k ? ';outline:1px solid var(--pf-gold);outline-offset:3px;border-radius:2px' : '') + '"><span>' + esc(QL.why[w.k] || w.k) + '</span><div class="sc-track"><span style="width:' + (100 * w.lost / wmax) + '%;background:' + (w.k === 'concept' ? 'var(--pf-bad)' : 'var(--pf-warn)') + '"></span></div><span class="num"><b>' + w.lost + '</b> marks · ' + w.n + ' Q</span></div>';
-    }).join('') + '</div></div></div>';
+      return '<div class="sc-sbar pick" data-act="qwhy" data-v="' + w.k + '" style="cursor:pointer' + (f.why === w.k ? ';outline:1px solid var(--pf-gold);outline-offset:3px;border-radius:2px' : '') + '"><span>' + esc(QL.why[w.k] || w.k) + '</span><div class="sc-track"><span style="width:' + (100 * w.lost / wmax) + '%;background:' + (w.k === 'concept' ? 'var(--pf-bad)' : 'var(--pf-warn)') + '"></span></div><span class="num"><b>' + w.lost + '</b> mark' + (w.lost === 1 ? '' : 's') + ' · ' + w.n + ' Q</span></div>';
+    }).join('') + (wrows.length ? '' : '<div class="pf-empty" style="padding:12px 0">No marks lost on ' + (bySubj ? esc(f.subj) + ' ' : '') + 'questions logged so far.</div>') + '</div></div></div>';
 
   var paperOpts = Object.keys(QL.papers).filter(function (k) { return QL.papers[k].who === who; }).map(function (k) { return [k, QL.papers[k].label]; }); if (myQs().some(function (q) { return qWho(q) === who; })) paperOpts.push(['mine', 'Added by you']);
   var topicOpts = Object.keys(QL.topics).filter(function (k) { return QL.topics[k].who === who && (who !== 'a' || f.subj === 'all' || QL.topics[k].subj === f.subj); });
