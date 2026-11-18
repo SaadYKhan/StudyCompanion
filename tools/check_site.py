@@ -84,7 +84,7 @@ try:
                 if 'Statistics 1' not in pg.inner_text('#t-alevel') or 'Where 47 out of 80 lands' not in pg.inner_text('#t-alevel'):
                     fails.append('S1 default or the marked-papers section is missing')
                 at = pg.inner_text('#t-alevel')
-                if '38/80' not in at.replace(' ', '') or '40/80' not in at.replace(' ', '') or 'Path to an A in Physics' not in at:
+                if '45/80' not in at.replace(' ', '') or '40/80' not in at.replace(' ', '') or 'Path to an A in Physics' not in at:
                     fails.append('Physics re-mark section missing or wrong total')
                 pg.click('[data-act="route"][data-v="M1"]')
                 if 'Mechanics 1' not in pg.inner_text('#t-alevel'):
@@ -102,7 +102,7 @@ try:
                 pg.click('[data-act="qsubj"][data-v="Chemistry"]'); pg.wait_for_timeout(250); w_chem = why()
                 pg.click('[data-act="qsubj"][data-v="Maths"]'); pg.wait_for_timeout(250); w_maths = why()
                 pg.click('[data-act="qsubj"][data-v="all"]'); pg.wait_for_timeout(250)
-                if 'Multipliers and counting' in w_phys or 'Multipliers and counting' not in w_chem or w_phys == w_all or '47 marks' not in w_phys or 'no marks lost' not in w_maths.lower():
+                if 'Multipliers and counting' in w_phys or 'Multipliers and counting' not in w_chem or w_phys == w_all or '49 marks' not in w_phys or 'no marks lost' not in w_maths.lower():
                     fails.append('why-marks panel does not follow the subject switch')
                 if 'of 144 questions' not in pg.inner_text('#qCount'):
                     fails.append('question log does not show all 144 of MK\'s questions: ' + pg.inner_text('#qCount'))
@@ -159,7 +159,7 @@ try:
                 if '1 / ' not in ov and '1420' not in ov:
                     fails.append('saved progress did not survive a reload')
                 # key focus areas: live scores, auto-ticks, manual ticks, and the link into the question log
-                for want in ['Key focus areas', 'Finish every question', '16 / 84', 'Multiple choice in both sciences', '25 / 60', 'Percentages one after another', '7 / 21']:
+                for want in ['Key focus areas', 'Finish every question', '19 / 78', 'Multiple choice in both sciences', '25 / 60', 'Percentages one after another', '7 / 21']:
                     if want.lower() not in ov.lower():
                         fails.append('focus areas missing: ' + want)
                 if 'logged' not in pg.inner_text('.sc-soon >> nth=1'):
@@ -173,8 +173,8 @@ try:
                 pg.click('[data-act="qfocusx"]'); pg.wait_for_timeout(200)
                 pg.click('[data-tab="overview"]'); pg.wait_for_timeout(300)
                 pg.click('[data-act="qsoon"][data-v="a:0"]'); pg.wait_for_timeout(400)
-                if not pg.inner_text('#qCount').startswith('39 of'):
-                    fails.append('Physics redo link did not open the 39 lost parts: ' + pg.inner_text('#qCount'))
+                if not pg.inner_text('#qCount').startswith('37 of'):
+                    fails.append('Physics redo link did not open the 37 lost parts: ' + pg.inner_text('#qCount'))
                 if shots:
                     for t in TABS:
                         pg.click(f'[data-tab="{t}"]'); pg.wait_for_timeout(120)

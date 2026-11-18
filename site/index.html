@@ -851,7 +851,7 @@ function physicsHtml() {
       return '<tr><td class="strong">' + esc(p.label) + '<div class="pf-note" style="margin:2px 0 0">' + esc(p.note || '') + '</div></td><td class="r">' + a.m + ' / ' + a.x + '</td><td class="r">' + b.m + ' / ' + b.x + '</td><td class="r strong" style="color:var(--pf-gold-hi)">' + t.m + ' / ' + t.x + '</td>' +
         '<td>' + (own ? '<span class="pf-badge ' + gcls(own) + '">' + own + '</span>' : '<span class="pf-note" style="margin:0">not published</span>') + '</td><td><span class="pf-badge ' + gcls(now) + '">' + now + '</span></td></tr>';
     }).join('') + '</tbody></table></div>' +
-    '<p class="pf-note" style="margin-bottom:0">Both papers land at about 40/80. Multiple choice improved from 2/10 to 6/10. The marks still go in questions not attempted, 6-mark explanations and projectile set-up.</p>' +
+    '<p class="pf-note" style="margin-bottom:0">' + PP.map(function (p) { return p.s + ': ' + physScore(p.id).m; }).join(' · ') + '. Multiple choice improved from 2/10 to 6/10. The marks still go in 6-mark explanations, projectile set-up and unfinished parts.</p>' +
     '<button class="pf-btn ghost" data-act="qopen" data-v="a" style="margin-top:8px">Open the question log</button></div>' +
     '<div class="pf-card"><h2>Path to an A in Physics</h2><p class="pf-note">From ' + lt.m + ' to about ' + aAvg + ' marks. Recent A boundaries have been 53–60 out of 80.</p><ul class="pf-act">' +
     P.priorities.map(function (p) { return '<li class="' + p.sev + '"><span class="sev ' + p.sev + '">' + ({ high: 'First', med: 'Next', low: 'Then' })[p.sev] + '</span><div><div class="t">' + esc(p.t) + '</div><div class="d">' + esc(p.d) + '</div><div class="r">' + esc(p.r) + '</div></div></li>'; }).join('') + '</ul></div></div>';

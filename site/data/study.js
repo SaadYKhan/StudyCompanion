@@ -126,7 +126,7 @@ window.STUDY = {
       paper: "ph21", latest: "ph22", asOf: "2026-11-18", label: "June 2021 paper (P66393A)",
       // Every marked Physics Unit 1 paper, newest first. 'own' = that series' Pearson raw boundaries, when known.
       papers: [
-        { id: "ph22", s: "June 2022", label: "June 2022 paper (P70968A)", own: { a: 43, b: 38, c: 33, d: 28 }, note: "Q19 (14 marks) and Q16(a) (4 marks) not attempted" },
+        { id: "ph22", s: "June 2022", label: "June 2022 paper (P70968A)", own: { a: 43, b: 38, c: 33, d: 28 }, note: "multiple choice 6/10 (from 2/10); Q16(a) left blank" },
         { id: "ph21", s: "June 2021", label: "June 2021 paper (P66393A)", own: null, note: "tutor's review said 53/80; checked 40/80" }
       ],
       // Tutor's marks (from the review's final summary) next to the marks checked against Pearson's mark scheme.
@@ -143,9 +143,9 @@ window.STUDY = {
       ],
       // Raw boundaries for WPH11 (out of 80). The June 2021 boundaries were not found.
       bounds: [ { s: "June 2022", a: 43, b: 38, c: 33, d: 28, src: "Pearson" }, { s: "Oct 2023", a: 53, b: 47, c: 42, d: 37, src: "Pearson" }, { s: "Oct 2025", a: 59, b: 52, c: 46, d: 40, src: "Pearson" }, { s: "June 2026", a: 60, b: 53, c: 46, d: 39, src: "as reported" } ],
-      strengths: [ "Single-formula calculations: momentum, F = ma, efficiency, stress and strain (June 2022: 21 of 21 marks on these parts)", "Multiple choice up from 2/10 to 6/10", "The coat-hook reaction force most students missed (June 2022 Q13(a))", "Buoyancy and upthrust calculations (June 2021 Q13: 8/9)", "Stokes' law and laminar flow reasoning (June 2021 Q18(c)(i))" ],
+      strengths: [ "Single-formula calculations: momentum, F = ma, efficiency, stress and strain (June 2022: 21 of 21 marks on these parts)", "Multiple choice up from 2/10 to 6/10", "The coat-hook reaction force most students missed (June 2022 Q13(a))", "Buoyancy and upthrust calculations (June 2021 Q13: 8/9)", "Stokes' law: drag 6πηrv and the laminar-flow condition (June 2021 Q18(c)(i), June 2022 Q19)" ],
       priorities: [
-        { sev: "high", t: "Finish the paper: 18 marks never attempted", d: "June 2022: Q19 (14 marks) and Q16(a) (4) not attempted, Q18(b) crossed out. June 2021: 12 marks blank or stopped early.", r: "About 1 minute per mark. Write the first line of every part, and leave 15 minutes for the last question: its first parts are often one-line marks." },
+        { sev: "high", t: "Finish every part, and check 'show that' answers", d: "June 2022: Q16(a) (4 marks) blank, Q18(b) crossed out, no conclusion in Q13(b), Q18(c) or Q19(b)(ii); Q19(b)(i) gave 1.36 N against the 4.8 × 10⁻³ N stated (r² instead of r³). June 2021: 12 marks blank or stopped early.", r: "Write the first line of every part, end every 'deduce' with the comparison and yes or no, and if a 'show that' doesn't match, find the slip." },
         { sev: "high", t: "6-mark explanations: 0/6 on both papers", d: "The rocket (2021) and the Galilean thermometer (2022) were answered without the forces Pearson credits.", r: "Name the forces (weight, upthrust, contact), say which is bigger and what changes, then the resultant force and what happens. Six linked points." },
         { sev: "high", t: "Projectiles and suvat set-up", d: "June 2022 Q18(b)–(c): u = 0 for the vertical motion and an acceleration horizontally. June 2021 Q12(b): g on a slope.", r: "Split the motion: vertical (u = launch component, a = −9.81, solve the quadratic) and horizontal (constant speed, s = vt)." },
         { sev: "med", t: "Multiple choice: 6/10, up from 2/10", d: "June 2022 misses: upthrust constant while drag rises, Young modulus = gradient, which way an error moves g = 2s/t², displacement = area above − area below.", r: "Keep the daily 10 questions with a reason for each wrong option." },
