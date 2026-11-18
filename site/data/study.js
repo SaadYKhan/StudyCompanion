@@ -123,7 +123,12 @@ window.STUDY = {
       { sev: "med", t: "Physics: see the Physics card", d: "The June 2021 Physics paper re-marks to 40/80, so Physics needs as much time as Chemistry before the December review.", r: "Work through the Physics priorities alongside these." }
     ],
     physics: {
-      paper: "ph21", asOf: "2026-11-18", label: "June 2021 paper (P66393A)",
+      paper: "ph21", latest: "ph22", asOf: "2026-11-18", label: "June 2021 paper (P66393A)",
+      // Every marked Physics Unit 1 paper, newest first. 'own' = that series' Pearson raw boundaries, when known.
+      papers: [
+        { id: "ph22", s: "June 2022", label: "June 2022 paper (P70968A)", own: { a: 43, b: 38, c: 33, d: 28 }, note: "Q19 (14 marks) and Q16(a) (4 marks) not attempted" },
+        { id: "ph21", s: "June 2021", label: "June 2021 paper (P66393A)", own: null, note: "tutor's review said 53/80; checked 40/80" }
+      ],
       // Tutor's marks (from the review's final summary) next to the marks checked against Pearson's mark scheme.
       rows: [
         { q: "Section A (Q1–10)", topic: "Multiple choice", tutor: 4, max: 10, why: "Q3 and Q9: the review's answer key was wrong; Pearson's answers are C and D" },
@@ -138,14 +143,14 @@ window.STUDY = {
       ],
       // Raw boundaries for WPH11 (out of 80). The June 2021 boundaries were not found.
       bounds: [ { s: "June 2022", a: 43, b: 38, c: 33, d: 28, src: "Pearson" }, { s: "Oct 2023", a: 53, b: 47, c: 42, d: 37, src: "Pearson" }, { s: "Oct 2025", a: 59, b: 52, c: 46, d: 40, src: "Pearson" }, { s: "June 2026", a: 60, b: 53, c: 46, d: 39, src: "as reported" } ],
-      strengths: [ "Buoyancy and upthrust (Q13: 8/9)", "Projectiles and work–energy (Q14: 7/8)", "Stiffness and Young modulus (Q17(a), (b)(i))", "Stokes' law and laminar flow reasoning (Q18(c)(i))", "Momentum conservation (Q11(a), (b))" ],
+      strengths: [ "Single-formula calculations: momentum, F = ma, efficiency, stress and strain (June 2022: 21 of 21 marks on these parts)", "Multiple choice up from 2/10 to 6/10", "The coat-hook reaction force most students missed (June 2022 Q13(a))", "Buoyancy and upthrust calculations (June 2021 Q13: 8/9)", "Stokes' law and laminar flow reasoning (June 2021 Q18(c)(i))" ],
       priorities: [
-        { sev: "high", t: "Section A multiple choice: 2/10", d: "Eight concept slips: friction as a driving force, scalars and vectors, yield point, power = energy ÷ time, compression shortens, P = Fs/t, and the a–t graph to terminal velocity.", r: "10 Unit 1 multiple-choice questions a day; for each, write why the other three options are wrong. Unit-check every option." },
-        { sev: "high", t: "Questions left blank or stopped early: 12 marks", d: "Q18(c)(ii) and (iii) (5 marks), Q17(c) (2), Q16(a) after one line (2), Q18(b) (5).", r: "Gradient = constant in y = kx; 'assess' = compare two numbers; always write the next line." },
-        { sev: "high", t: "Weight is not mass", d: "Q16(b): used the weight (1.23 × 10⁴ N) as the mass, so the force was 9.81 times too big.", r: "Read the unit: N is a weight, so divide by g for the mass." },
-        { sev: "med", t: "Terminal velocity force balance", d: "Q18(b): started with Stokes' law without η or v.", r: "At terminal velocity, weight = upthrust + drag, so drag = W − U from the densities." },
-        { sev: "med", t: "6-mark explanations with Newton's laws", d: "Q15 scored nothing: it described energy, not forces.", r: "Name each force, apply Newton's second and third laws, then say what changes and why, in time order." },
-        { sev: "low", t: "Read the diagram; sanity-check answers", d: "Q17(b)(ii) missed the two rope sections; Q11(c)'s energy change was bigger than the total; Q12(b) used g on a slope.", r: "Count rope sections, check an answer is physically possible, and use g sin θ on slopes." }
+        { sev: "high", t: "Finish the paper: 18 marks never attempted", d: "June 2022: Q19 (14 marks) and Q16(a) (4) not attempted, Q18(b) crossed out. June 2021: 12 marks blank or stopped early.", r: "About 1 minute per mark. Write the first line of every part, and leave 15 minutes for the last question: its first parts are often one-line marks." },
+        { sev: "high", t: "6-mark explanations: 0/6 on both papers", d: "The rocket (2021) and the Galilean thermometer (2022) were answered without the forces Pearson credits.", r: "Name the forces (weight, upthrust, contact), say which is bigger and what changes, then the resultant force and what happens. Six linked points." },
+        { sev: "high", t: "Projectiles and suvat set-up", d: "June 2022 Q18(b)–(c): u = 0 for the vertical motion and an acceleration horizontally. June 2021 Q12(b): g on a slope.", r: "Split the motion: vertical (u = launch component, a = −9.81, solve the quadratic) and horizontal (constant speed, s = vt)." },
+        { sev: "med", t: "Multiple choice: 6/10, up from 2/10", d: "June 2022 misses: upthrust constant while drag rises, Young modulus = gradient, which way an error moves g = 2s/t², displacement = area above − area below.", r: "Keep the daily 10 questions with a reason for each wrong option." },
+        { sev: "med", t: "Moments and Newton's-law wording", d: "Q13(b) paired each force with the wrong distance; Q11(a) and Q17(b) missed 'equal', 'same type of force' and the second-law link.", r: "Perpendicular distance from the pivot to each force's line. Third-law pairs: same type, different objects, equal and opposite." },
+        { sev: "low", t: "Resolve forces at a point", d: "June 2022: Q16(a) scale drawing left blank; Q16(b) wrote T = W instead of T cos θ = W.", r: "Only the component of a force along a direction balances forces in that direction." }
       ]
     },
     maths: { level: "A", note: "Statistics S1 (WST01), tutor's grade",
@@ -179,13 +184,13 @@ window.STUDY = {
     asOf: "2026-11-18",
     by: "2026-12-11",
     a: {
-      note: "From her three marked papers: Chemistry January 2024 and January 2025, Physics June 2021. In order of marks lost; a question can count in more than one area.",
+      note: "From her four marked papers: Chemistry January 2024 and January 2025, Physics June 2021 and June 2022. In order of marks lost; a question can count in more than one area.",
       items: [
         { t: "Finish every question", f: { why: ["blank", "incomplete"] },
           d: "Parts left blank or stopped after a line or two, on all three papers. This is the biggest single source of lost marks.",
           r: "Write the equation and the first step for every part, even when stuck: method marks do not need the final answer. In a timed paper, mark the question and come back to it before the end." },
         { t: "Multiple choice in both sciences", f: { sec: "A" },
-          d: "Chemistry 10/20, then 7/20; Physics 2/10. Most misses are concept slips; seven are counting or multiplier slips.",
+          d: "Chemistry 10/20, then 7/20; Physics 2/10, then 6/10. Most misses are concept slips; seven are counting or multiplier slips.",
           r: "Every day: 15 Chemistry and 10 Physics multiple-choice questions, about a minute each, with one line on why each wrong option is wrong. Redo every miss a week later." },
         { t: "Organic chemistry: isomers, alkenes and mechanisms", f: { topics: ["iso", "add", "fuel", "poly"] },
           d: "Structural and E/Z isomers, electrophilic addition, addition polymers, and alkanes and cracking.",
@@ -198,7 +203,7 @@ window.STUDY = {
           r: "After every marked paper, copy the mark-scheme phrase for each lost mark into a phrases list, and learn the list word for word." }
       ],
       soon: [
-        { id: "ph21", t: "Redo every lost question from the June 2021 Physics paper", why: "Before the school's December Physics review", f: { paper: "ph21" } },
+        { id: "ph21", t: "Redo every lost question from both Physics papers", why: "June 2021 and June 2022, before the school's December Physics review", f: { subj: "Physics" } },
         { id: "p1", t: "Sit a Maths P1 paper and get it marked", why: "P1 and P2 have not been assessed yet; S1 is already at grade A" },
         { id: "sat", t: "Take a free Bluebook SAT practice test", why: "Sets her baseline for the 6 March SAT; log the score on the SAT tab", auto: "sat" }
       ]

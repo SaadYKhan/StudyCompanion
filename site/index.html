@@ -651,7 +651,7 @@ R.overview = function () {
     stat('Latest SAT score', ls ? String(ls.rw + ls.m) : '—', ls ? esc(fmt(ls.date)) + ' · ' + (ls.kind === 'official' ? 'official' : 'practice') : 'Log a practice test') +
     stat('Past papers logged', String(pp.length), pp.length ? 'average ' + Math.round(pp.reduce(function (s, r) { return s + r.pct; }, 0) / pp.length) + '%' : 'Log one on the A Level tab') +
     stat('Hours this week', h1(wa.total), 'target ' + h1(ta) + 'h') +
-    (D.assessment ? stat('Chemistry Unit 1', '47 / 80', 'marked paper · aim for about 60 in June') + stat('Physics Unit 1', physScore().m + ' / ' + physScore().x, 'June 2021 paper · aim for about ' + physAim()) : '') +
+    (D.assessment ? stat('Chemistry Unit 1', '47 / 80', 'marked paper · aim for about 60 in June') + stat('Physics Unit 1', physScore().m + ' / ' + physScore().x, D.assessment.physics.papers[0].s + ' paper (' + physSub() + ') · aim for about ' + physAim()) : '') +
     fixedStat('a') + '</div></div>';
   var bp = sget('bprac', []), wb = weekHours('b', ws), tb = targetTotal(phaseFor('b', TODAY) || phaseNow('b'));
   var best = bp.reduce(function (m, r) { return Math.max(m, Math.round(100 * r.score / r.outof)); }, 0);
@@ -666,7 +666,11 @@ R.overview = function () {
 };
 /* ---------- Key focus areas ---------- */
 function focusOf(w) { return (D.focus && D.focus[w]) || null; }
-function focusItem(key) { var p = String(key || '').split(':'), F = focusOf(p[0]); return F && F.items[+p[1]] ? F.items[+p[1]] : null; }
+function focusItem(key) {
+  var p = String(key || '').split(':'), F = focusOf(p[0]); if (!F || p[1] == null) return null;
+  if (p[1].charAt(0) === 's') { var so = (F.soon || [])[+p[1].slice(1)]; return so && so.f ? so : null; }
+  return F.items[+p[1]] || null;
+}
 function focusHit(q, f) {
   if (!f || !q.x) return false;
   if (f.subj && qPaper(q).subj !== f.subj) return false;
@@ -814,10 +818,14 @@ R.alevel = function () {
   html += '<div class="pf-over">Year 13 units · preview</div><p class="pf-note" style="margin:0">A2 units sat in Year 13 (May/June 2028). Physics Unit 5 includes stars and cosmology. Confirm the maths applied unit for Year 13 with the school.</p><div class="pf-grid">' + D.alevel.a2.map(unitCard).join('') + '</div>';
   el.innerHTML = html;
 };
-function physScore() {
-  var P = D.assessment && D.assessment.physics, m = 0, x = 0;
-  if (P) QL.q.forEach(function (q) { if (q.p === P.paper) { m += q.m; x += q.x; } });
+function physScore(id, sec) {
+  var P = D.assessment && D.assessment.physics, m = 0, x = 0, pid = id || (P && (P.latest || P.paper));
+  if (P) QL.q.forEach(function (q) { if (q.p === pid && (!sec || q.s === sec)) { m += q.m; x += q.x; } });
   return { m: m, x: x };
+}
+function physSub() {
+  var P = D.assessment && D.assessment.physics; if (!P || !P.papers || P.papers.length < 2) return '';
+  var prev = P.papers[1]; return prev.s + ' paper: ' + physScore(prev.id).m + '/' + physScore(prev.id).x;
 }
 function physAim() {
   var P = D.assessment && D.assessment.physics; if (!P || !P.bounds) return 60;
@@ -826,15 +834,28 @@ function physAim() {
 }
 function physicsHtml() {
   var P = D.assessment && D.assessment.physics; if (!P || !P.rows) return '';
-  var qs = QL.q.filter(function (q) { return q.p === P.paper; }), sc = physScore();
+  var qs = QL.q.filter(function (q) { return q.p === P.paper; }), sc = physScore(P.paper), lt = physScore();
+  var PP = P.papers || [{ id: P.paper, s: P.label, own: null, note: '' }], ref = P.bounds[P.bounds.length - 1];
   var checked = P.rows.map(function (r) {
     var got = qs.filter(function (q) { return r.q.indexOf('Section A') === 0 ? q.s === 'A' : q.q.replace(/\(.*$/, '') === r.q; }).reduce(function (a, q) { return a + q.m; }, 0);
     return { r: r, got: got };
   });
   var tTot = P.rows.reduce(function (a, r) { return a + r.tutor; }, 0);
   var aAvg = physAim();
-  var h = '<div class="pf-over">Physics Unit 1 · ' + esc(P.label) + '</div>';
-  h += '<div class="pf-grid wide"><div class="pf-card"><h2>Tutor\'s marks, checked against Pearson\'s mark scheme</h2><p class="pf-note">The tutor\'s review gave ' + tTot + '/80. Marked strictly to Pearson\'s published scheme for this paper, it is <b style="color:var(--pf-gold-hi)">' + sc.m + '/80</b>. Every part, with the correct working, is in the question log.</p>' +
+  var g5 = function (v, b) { return v >= b.a ? 'A' : v >= b.b ? 'B' : v >= b.c ? 'C' : v >= b.d ? 'D' : 'E or below'; }, gcls = function (x) { return x === 'A' ? 'ok' : x === 'B' ? 'warn' : 'bad'; };
+  var h = '<div class="pf-over">Physics Unit 1 · ' + PP.length + ' paper' + (PP.length === 1 ? '' : 's') + ' marked</div>';
+  h += '<div class="pf-grid wide"><div class="pf-card"><h2>Physics papers so far</h2><p class="pf-note">Each paper marked against Pearson\'s published mark scheme. Every part, with her answer, the correct answer and the fix, is in the question log.</p>' +
+    '<div class="pf-scroll" style="max-height:none"><table class="pf-table"><thead><tr><th>Paper</th><th class="r">Multiple choice</th><th class="r">Section B</th><th class="r">Total</th><th>That series</th><th>' + esc(ref.s) + ' boundaries</th></tr></thead><tbody>' +
+    PP.map(function (p) {
+      var a = physScore(p.id, 'A'), b = physScore(p.id, 'B'), t = physScore(p.id), own = p.own ? g5(t.m, p.own) : null, now = g5(t.m, ref);
+      return '<tr><td class="strong">' + esc(p.label) + '<div class="pf-note" style="margin:2px 0 0">' + esc(p.note || '') + '</div></td><td class="r">' + a.m + ' / ' + a.x + '</td><td class="r">' + b.m + ' / ' + b.x + '</td><td class="r strong" style="color:var(--pf-gold-hi)">' + t.m + ' / ' + t.x + '</td>' +
+        '<td>' + (own ? '<span class="pf-badge ' + gcls(own) + '">' + own + '</span>' : '<span class="pf-note" style="margin:0">not published</span>') + '</td><td><span class="pf-badge ' + gcls(now) + '">' + now + '</span></td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    '<p class="pf-note" style="margin-bottom:0">Both papers land at about 40/80. Multiple choice improved from 2/10 to 6/10. The marks still go in questions not attempted, 6-mark explanations and projectile set-up.</p>' +
+    '<button class="pf-btn ghost" data-act="qopen" data-v="a" style="margin-top:8px">Open the question log</button></div>' +
+    '<div class="pf-card"><h2>Path to an A in Physics</h2><p class="pf-note">From ' + lt.m + ' to about ' + aAvg + ' marks. Recent A boundaries have been 53–60 out of 80.</p><ul class="pf-act">' +
+    P.priorities.map(function (p) { return '<li class="' + p.sev + '"><span class="sev ' + p.sev + '">' + ({ high: 'First', med: 'Next', low: 'Then' })[p.sev] + '</span><div><div class="t">' + esc(p.t) + '</div><div class="d">' + esc(p.d) + '</div><div class="r">' + esc(p.r) + '</div></div></li>'; }).join('') + '</ul></div></div>';
+  h += '<div class="pf-grid wide"><div class="pf-card"><h2>June 2021 paper: tutor\'s marks checked against Pearson\'s scheme</h2><p class="pf-note">The tutor\'s review gave ' + tTot + '/80. Marked strictly to Pearson\'s published scheme for this paper, it is <b style="color:var(--pf-gold-hi)">' + sc.m + '/80</b>. Every part, with the correct working, is in the question log.</p>' +
     '<div class="pf-scroll" style="max-height:none"><table class="pf-table"><thead><tr><th>Question</th><th>Topic</th><th class="r">Tutor</th><th class="r">Checked</th><th class="r">Out of</th><th>What changed</th></tr></thead><tbody>' +
     checked.map(function (c) {
       var d = c.got - c.r.tutor;
@@ -842,17 +863,16 @@ function physicsHtml() {
     }).join('') +
     '<tr><td class="strong">Total</td><td></td><td class="r strong">' + tTot + '</td><td class="r strong" style="color:var(--pf-gold-hi)">' + sc.m + ' <span class="neg">(' + (sc.m - tTot) + ')</span></td><td class="r strong">' + sc.x + '</td><td>' + (100 * sc.m / sc.x).toFixed(1) + '% (tutor: ' + (100 * tTot / sc.x).toFixed(1) + '%)</td></tr>' +
     '</tbody></table></div><p class="pf-note" style="margin-bottom:0">Two parts are judged from the figures in the tutor\'s review rather than her script: Q14(a) (distance 31.9 m) and Q17(b)(iii), credited 2/2 on the assumption she used ½ × F × Δx. Even with every benefit of the doubt the paper is no higher than 45/80.</p></div>' +
-    '<div class="pf-card"><h2>Path to an A in Physics</h2><p class="pf-note">From ' + sc.m + ' to about ' + aAvg + ' marks. Recent A boundaries have been 53–60 out of 80.</p><ul class="pf-act">' +
-    P.priorities.map(function (p) { return '<li class="' + p.sev + '"><span class="sev ' + p.sev + '">' + ({ high: 'First', med: 'Next', low: 'Then' })[p.sev] + '</span><div><div class="t">' + esc(p.t) + '</div><div class="d">' + esc(p.d) + '</div><div class="r">' + esc(p.r) + '</div></div></li>'; }).join('') + '</ul></div></div>';
-  h += '<div class="pf-grid wide"><div class="pf-card"><h2>Where ' + sc.m + ' out of 80 lands</h2><p class="pf-note">Physics Unit 1 raw boundaries have risen sharply since 2022. The June 2021 boundaries for this paper were not found, so recent series are shown.</p>' +
-    '<div class="pf-scroll"><table class="pf-table"><thead><tr><th>Series</th><th class="r">A</th><th class="r">B</th><th class="r">C</th><th class="r">D</th><th>' + sc.m + ' would be</th><th>' + tTot + ' would be</th></tr></thead><tbody>' +
+    '';
+  h += '<div class="pf-card"><h2>Where her scores land</h2><p class="pf-note">Unit 1 raw boundaries rose sharply after June 2022, which was graded generously after the pandemic. Use 2023 onwards as the guide.</p>' +
+    '<div class="pf-scroll"><table class="pf-table"><thead><tr><th>Series</th><th class="r">A</th><th class="r">B</th><th class="r">C</th><th class="r">D</th>' + PP.map(function (p) { return '<th>' + esc(p.s) + ' paper (' + physScore(p.id).m + ')</th>'; }).join('') + '</tr></thead><tbody>' +
     P.bounds.map(function (b) {
-      var g = function (v) { return v >= b.a ? 'A' : v >= b.b ? 'B' : v >= b.c ? 'C' : v >= b.d ? 'D' : 'E or below'; }, cls = function (x) { return x === 'A' ? 'ok' : x === 'B' ? 'warn' : 'bad'; };
-      return '<tr><td>' + esc(b.s) + (b.src !== 'Pearson' ? ' <span class="pf-note" style="margin:0">(' + esc(b.src) + ')</span>' : '') + '</td><td class="r strong">' + b.a + '</td><td class="r">' + b.b + '</td><td class="r">' + b.c + '</td><td class="r">' + b.d + '</td><td><span class="pf-badge ' + cls(g(sc.m)) + '">' + g(sc.m) + '</span></td><td><span class="pf-badge ' + cls(g(tTot)) + '">' + g(tTot) + '</span></td></tr>';
-    }).join('') + '</tbody></table></div></div>' +
+      return '<tr><td>' + esc(b.s) + (b.src !== 'Pearson' ? ' <span class="pf-note" style="margin:0">(' + esc(b.src) + ')</span>' : '') + '</td><td class="r strong">' + b.a + '</td><td class="r">' + b.b + '</td><td class="r">' + b.c + '</td><td class="r">' + b.d + '</td>' +
+        PP.map(function (p) { var gr = g5(physScore(p.id).m, b); return '<td><span class="pf-badge ' + gcls(gr) + '">' + gr + '</span></td>'; }).join('') + '</tr>';
+    }).join('') + '</tbody></table></div></div></div>';
+  h += '<div class="pf-grid wide">' +
     '<div class="pf-card"><h2>What she does well</h2><ul class="sc-list">' + P.strengths.map(function (t) { return '<li><span class="pos">Strong:</span> ' + esc(t) + '</li>'; }).join('') + '</ul>' +
-    '<p class="pf-note" style="margin:12px 0 0">Section B long calculations are her strength (38/70); the marks went in Section A (2/10) and in parts left unfinished. Both are quick to fix with daily practice.</p>' +
-    '<button class="pf-btn ghost" data-act="qopen" data-v="a" style="margin-top:6px">Open the question log</button></div></div>';
+    '<p class="pf-note" style="margin:12px 0 0">Calculations with one clear formula are reliable. The marks go in unattempted questions, 6-mark explanations and projectile set-up; all three improve quickly with timed practice.</p></div></div>';
   return h;
 }
 function gradeFor(sc, b) { return sc >= b.a ? 'A' : sc >= b.b ? 'B' : sc >= b.c ? 'C' : 'D or below'; }
@@ -864,7 +884,7 @@ function assessmentHtml() {
   var h = '<div class="pf-over">Marked papers · ' + esc(fmt(A.asOf).replace(/^\d+ /, '')) + '</div><div class="pf-kpis">' +
     kpi('Chemistry Unit 1', String(latest.score), '/ ' + latest.max, 'Jan 2024 and Jan 2025 papers · ' + (100 * latest.score / latest.max).toFixed(1) + '%') +
     kpi('Marks to an A in June', '+' + (avgA - latest.score), 'marks', 'June A boundary ' + minA + '–' + maxA + ' of 80 (2023–26), about ' + avgA) +
-    kpi('Physics Unit 1', String(physScore().m), '/ ' + physScore().x, 'June 2021 paper, checked to Pearson\'s scheme · aim for about ' + physAim()) +
+    kpi('Physics Unit 1', String(physScore().m), '/ ' + physScore().x, D.assessment.physics.papers[0].s + ' paper, checked to Pearson\'s scheme · ' + physSub() + ' · aim for about ' + physAim()) +
     kpi('Maths S1', A.maths.level, '', esc(A.maths.note)) + '</div>';
   h += '<div class="pf-grid wide"><div class="pf-card"><h2>Chemistry Unit 1 by topic</h2><p class="pf-note">Marks across the two fully marked papers (January 2024 and January 2025).</p>' +
     A.chemCats.map(function (c) {
@@ -1010,7 +1030,7 @@ R.qlog = function () {
     (who === 'a'
       ? kpi('Questions logged', String(all.length), '', nPapers + ' papers · Chemistry and Physics question by question') +
         (function () { var c = marked.filter(function (q) { return qPaper(q).subj === 'Chemistry'; }), cm = c.reduce(function (a, q) { return a + q.m; }, 0), cx = c.reduce(function (a, q) { return a + q.x; }, 0); return kpi('Chemistry marks', String(cm), '/ ' + cx, (100 * cm / Math.max(1, cx)).toFixed(1) + '% across the two Jan papers'); })() +
-        kpi('Physics marks', String(physScore().m), '/ ' + physScore().x, 'June 2021 paper, checked to Pearson\'s scheme')
+        (function () { var c = marked.filter(function (q) { return qPaper(q).subj === 'Physics'; }), cm = c.reduce(function (a, q) { return a + q.m; }, 0), cx = c.reduce(function (a, q) { return a + q.x; }, 0); return kpi('Physics marks', String(cm), '/ ' + cx, (100 * cm / Math.max(1, cx)).toFixed(1) + '% across the June 2021 and June 2022 papers'); })()
       : kpi('Worksheet marks', String(mm), '/ ' + mx, 'all ' + all.filter(function (q) { return q.p !== 'mine'; }).length + ' questions, including ' + notyet + ' not tried yet') +
         kpi('On questions tried', String(tm), '/ ' + tx, Math.round(100 * tm / Math.max(1, tx)) + '% · ' + tried.length + ' questions tried')) +
     kpi('Questions to fix', String(tofix.length), '', who === 'a' ? 'marked wrong, partial or left blank' : 'wrong, partial or not tried yet') +
@@ -1041,7 +1061,7 @@ R.qlog = function () {
     '<label>Order<select class="pf-select" data-act="qsort"><option value="paper"' + (f.sort !== 'lost' ? ' selected' : '') + '>By paper</option><option value="lost"' + (f.sort === 'lost' ? ' selected' : '') + '>Most marks lost</option></select></label>' +
     '<button class="pf-btn ghost" type="button" data-act="qclear">Clear</button></div>' +
     (f.chk || focusItem(f.focus) ? '<div style="margin:-4px 0 10px;display:flex;gap:6px;flex-wrap:wrap">' +
-      (focusItem(f.focus) ? '<span class="sc-chipx">Focus area: ' + esc(focusItem(f.focus).t) + '<button data-act="qfocusx" aria-label="Remove">✕</button></span>' : '') +
+      (focusItem(f.focus) ? '<span class="sc-chipx">' + (String(f.focus).indexOf(':s') > 0 ? 'Checklist: ' : 'Focus area: ') + esc(focusItem(f.focus).t) + '<button data-act="qfocusx" aria-label="Remove">✕</button></span>' : '') +
       (f.chk ? '<span class="sc-chipx">From the topic checklist: ' + esc(chkName(f.chk)) + '<button data-act="qchkx" aria-label="Remove">✕</button></span>' : '') + '</div>' : '') +
     '<div id="qList"></div></div>';
 
@@ -1276,7 +1296,7 @@ app.addEventListener('click', function (ev) {
   if (a === 'qchkx') { setQF({ chk: '' }); return refresh(); }
   if (a === 'qfocus') { sset('qwho', v.split(':')[0]); sset('qf', { subj: 'all', paper: 'all', res: 'fix', topic: 'all', why: 'all', chk: '', focus: v, sort: 'lost' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
   if (a === 'qfocusx') { setQF({ focus: '' }); return refresh(); }
-  if (a === 'qsoon') { var sp = v.split(':'), so = focusOf(sp[0]).soon[+sp[1]].f; sset('qwho', sp[0]); sset('qf', { subj: 'all', paper: so.paper || 'all', res: 'fix', topic: 'all', why: so.why ? so.why[0] : 'all', chk: '', focus: '', sort: 'paper' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
+  if (a === 'qsoon') { var sp = v.split(':'); sset('qwho', sp[0]); sset('qf', { subj: 'all', paper: 'all', res: 'fix', topic: 'all', why: 'all', chk: '', focus: sp[0] + ':s' + sp[1], sort: 'paper' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
   if (a === 'fdone') { var fd = sget('fdone', {}); if (fd[v]) delete fd[v]; else fd[v] = 1; sset('fdone', fd); return refresh(); }
   if (a === 'qdel') { sset('myq', myQs().filter(function (q) { return qid(q) !== b.getAttribute('data-id'); })); return refresh(); }
   if (a === 'ics') return makeIcs();
