@@ -623,7 +623,7 @@ R.overview = function () {
     stat('Latest SAT score', ls ? String(ls.rw + ls.m) : '—', ls ? esc(fmt(ls.date)) + ' · ' + (ls.kind === 'official' ? 'official' : 'practice') : 'Log a practice test') +
     stat('Past papers logged', String(pp.length), pp.length ? 'average ' + Math.round(pp.reduce(function (s, r) { return s + r.pct; }, 0) / pp.length) + '%' : 'Log one on the A Level tab') +
     stat('Hours this week', h1(wa.total), 'target ' + h1(ta) + 'h') +
-    (D.assessment ? stat('Chemistry Unit 1', '47 / 80', 'marked paper · aim for about 60 in June') : '') +
+    (D.assessment ? stat('Chemistry Unit 1', '47 / 80', 'marked paper · aim for about 60 in June') + stat('Physics Unit 1', physScore().m + ' / ' + physScore().x, 'June 2021 paper · aim for about ' + physAim()) : '') +
     fixedStat('a') + '</div></div>';
   var bp = sget('bprac', []), wb = weekHours('b', ws), tb = targetTotal(phaseFor('b', TODAY) || phaseNow('b'));
   var best = bp.reduce(function (m, r) { return Math.max(m, Math.round(100 * r.score / r.outof)); }, 0);
@@ -733,6 +733,47 @@ R.alevel = function () {
   html += '<div class="pf-over">Year 13 units · preview</div><p class="pf-note" style="margin:0">A2 units sat in Year 13 (May/June 2028). Physics Unit 5 includes stars and cosmology. Confirm the maths applied unit for Year 13 with the school.</p><div class="pf-grid">' + D.alevel.a2.map(unitCard).join('') + '</div>';
   el.innerHTML = html;
 };
+function physScore() {
+  var P = D.assessment && D.assessment.physics, m = 0, x = 0;
+  if (P) QL.q.forEach(function (q) { if (q.p === P.paper) { m += q.m; x += q.x; } });
+  return { m: m, x: x };
+}
+function physAim() {
+  var P = D.assessment && D.assessment.physics; if (!P || !P.bounds) return 60;
+  var r = P.bounds.filter(function (b) { return b.s !== 'June 2022'; });
+  return Math.round(r.reduce(function (a, b) { return a + b.a; }, 0) / r.length);
+}
+function physicsHtml() {
+  var P = D.assessment && D.assessment.physics; if (!P || !P.rows) return '';
+  var qs = QL.q.filter(function (q) { return q.p === P.paper; }), sc = physScore();
+  var checked = P.rows.map(function (r) {
+    var got = qs.filter(function (q) { return r.q.indexOf('Section A') === 0 ? q.s === 'A' : q.q.replace(/\(.*$/, '') === r.q; }).reduce(function (a, q) { return a + q.m; }, 0);
+    return { r: r, got: got };
+  });
+  var tTot = P.rows.reduce(function (a, r) { return a + r.tutor; }, 0);
+  var aAvg = physAim();
+  var h = '<div class="pf-over">Physics Unit 1 · ' + esc(P.label) + '</div>';
+  h += '<div class="pf-grid wide"><div class="pf-card"><h2>Tutor\'s marks, checked against Pearson\'s mark scheme</h2><p class="pf-note">The tutor\'s review gave ' + tTot + '/80. Marked strictly to Pearson\'s published scheme for this paper, it is <b style="color:var(--pf-gold-hi)">' + sc.m + '/80</b>. Every part, with the correct working, is in the question log.</p>' +
+    '<div class="pf-scroll" style="max-height:none"><table class="pf-table"><thead><tr><th>Question</th><th>Topic</th><th class="r">Tutor</th><th class="r">Checked</th><th class="r">Out of</th><th>What changed</th></tr></thead><tbody>' +
+    checked.map(function (c) {
+      var d = c.got - c.r.tutor;
+      return '<tr><td class="strong nw">' + esc(c.r.q) + '</td><td>' + esc(c.r.topic) + '</td><td class="r">' + c.r.tutor + '</td><td class="r strong">' + c.got + (d ? ' <span class="neg">(' + d + ')</span>' : '') + '</td><td class="r">' + c.r.max + '</td><td>' + (d ? esc(c.r.why) : '<span class="pf-note" style="margin:0">No change</span>') + '</td></tr>';
+    }).join('') +
+    '<tr><td class="strong">Total</td><td></td><td class="r strong">' + tTot + '</td><td class="r strong" style="color:var(--pf-gold-hi)">' + sc.m + ' <span class="neg">(' + (sc.m - tTot) + ')</span></td><td class="r strong">' + sc.x + '</td><td>' + (100 * sc.m / sc.x).toFixed(1) + '% (tutor: ' + (100 * tTot / sc.x).toFixed(1) + '%)</td></tr>' +
+    '</tbody></table></div><p class="pf-note" style="margin-bottom:0">Two parts are judged from the figures in the tutor\'s review rather than her script: Q14(a) (distance 31.9 m) and Q17(b)(iii), credited 2/2 on the assumption she used ½ × F × Δx. Even with every benefit of the doubt the paper is no higher than 45/80.</p></div>' +
+    '<div class="pf-card"><h2>Path to an A in Physics</h2><p class="pf-note">From ' + sc.m + ' to about ' + aAvg + ' marks. Recent A boundaries have been 53–60 out of 80.</p><ul class="pf-act">' +
+    P.priorities.map(function (p) { return '<li class="' + p.sev + '"><span class="sev ' + p.sev + '">' + ({ high: 'First', med: 'Next', low: 'Then' })[p.sev] + '</span><div><div class="t">' + esc(p.t) + '</div><div class="d">' + esc(p.d) + '</div><div class="r">' + esc(p.r) + '</div></div></li>'; }).join('') + '</ul></div></div>';
+  h += '<div class="pf-grid wide"><div class="pf-card"><h2>Where ' + sc.m + ' out of 80 lands</h2><p class="pf-note">Physics Unit 1 raw boundaries have risen sharply since 2022. The June 2021 boundaries for this paper were not found, so recent series are shown.</p>' +
+    '<div class="pf-scroll"><table class="pf-table"><thead><tr><th>Series</th><th class="r">A</th><th class="r">B</th><th class="r">C</th><th class="r">D</th><th>' + sc.m + ' would be</th><th>' + tTot + ' would be</th></tr></thead><tbody>' +
+    P.bounds.map(function (b) {
+      var g = function (v) { return v >= b.a ? 'A' : v >= b.b ? 'B' : v >= b.c ? 'C' : v >= b.d ? 'D' : 'E or below'; }, cls = function (x) { return x === 'A' ? 'ok' : x === 'B' ? 'warn' : 'bad'; };
+      return '<tr><td>' + esc(b.s) + (b.src !== 'Pearson' ? ' <span class="pf-note" style="margin:0">(' + esc(b.src) + ')</span>' : '') + '</td><td class="r strong">' + b.a + '</td><td class="r">' + b.b + '</td><td class="r">' + b.c + '</td><td class="r">' + b.d + '</td><td><span class="pf-badge ' + cls(g(sc.m)) + '">' + g(sc.m) + '</span></td><td><span class="pf-badge ' + cls(g(tTot)) + '">' + g(tTot) + '</span></td></tr>';
+    }).join('') + '</tbody></table></div></div>' +
+    '<div class="pf-card"><h2>What she does well</h2><ul class="sc-list">' + P.strengths.map(function (t) { return '<li><span class="pos">Strong:</span> ' + esc(t) + '</li>'; }).join('') + '</ul>' +
+    '<p class="pf-note" style="margin:12px 0 0">Section B long calculations are her strength (38/70); the marks went in Section A (2/10) and in parts left unfinished. Both are quick to fix with daily practice.</p>' +
+    '<button class="pf-btn ghost" data-act="qopen" data-v="a" style="margin-top:6px">Open the question log</button></div></div>';
+  return h;
+}
 function gradeFor(sc, b) { return sc >= b.a ? 'A' : sc >= b.b ? 'B' : sc >= b.c ? 'C' : 'D or below'; }
 function assessmentHtml() {
   var A = D.assessment; if (!A) return '';
@@ -742,7 +783,7 @@ function assessmentHtml() {
   var h = '<div class="pf-over">Marked papers · ' + esc(fmt(A.asOf).replace(/^\d+ /, '')) + '</div><div class="pf-kpis">' +
     kpi('Chemistry Unit 1', String(latest.score), '/ ' + latest.max, 'Jan 2024 and Jan 2025 papers · ' + (100 * latest.score / latest.max).toFixed(1) + '%') +
     kpi('Marks to an A in June', '+' + (avgA - latest.score), 'marks', 'June A boundary ' + minA + '–' + maxA + ' of 80 (2023–26), about ' + avgA) +
-    kpi('Physics Unit 1', A.physics.level, '', esc(A.physics.note)) +
+    kpi('Physics Unit 1', String(physScore().m), '/ ' + physScore().x, 'June 2021 paper, checked to Pearson\'s scheme · aim for about ' + physAim()) +
     kpi('Maths S1', A.maths.level, '', esc(A.maths.note)) + '</div>';
   h += '<div class="pf-grid wide"><div class="pf-card"><h2>Chemistry Unit 1 by topic</h2><p class="pf-note">Marks across the two fully marked papers (January 2024 and January 2025).</p>' +
     A.chemCats.map(function (c) {
@@ -759,11 +800,12 @@ function assessmentHtml() {
     '</tbody></table></div><h3>June boundaries, Chemistry Unit 1 (raw, out of 80)</h3><div class="pf-scroll"><table class="pf-table"><thead><tr><th>Series</th><th class="r">A</th><th class="r">B</th><th class="r">C</th><th>47 would be</th></tr></thead><tbody>' +
     jb.map(function (b) { var g = gradeFor(latest.score, b); return '<tr><td>' + esc(b.s) + '</td><td class="r strong">' + b.a + '</td><td class="r">' + b.b + '</td><td class="r">' + b.c + '</td><td><span class="pf-badge ' + (g === 'A' ? 'ok' : g === 'B' ? 'warn' : 'bad') + '">' + g + '</span></td></tr>'; }).join('') +
     '</tbody></table></div><p class="pf-note" style="margin-bottom:0">AS unit grades run from a to e; A* is awarded only for the full A Level. Boundaries from Pearson\'s published grade boundary documents.</p></div>' +
-    '<div class="pf-card"><h2>Physics and Maths</h2><div class="sc-two">' + [['Physics Unit 1', A.physics], ['Maths S1', A.maths]].map(function (x) {
-      return '<div><h3>' + esc(x[0]) + ' · grade ' + esc(x[1].level) + '</h3><p class="pf-note" style="margin:0 0 6px">' + esc(x[1].note) + '</p><ul class="sc-list" style="margin-top:0">' + x[1].strengths.map(function (t) { return '<li><span class="pos">Strong:</span> ' + esc(t) + '</li>'; }).join('') +
-        x[1].fixes.map(function (t) { return '<li><span class="warn">Work on:</span> ' + esc(t) + '</li>'; }).join('') + '</ul></div>';
-    }).join('') + '</div><p class="pf-note" style="margin:12px 0 0">Physics at grade A on a full Unit 1 paper is the evidence to bring to the December Physics review. Log each new marked paper in the past-paper log below so progress shows over time.</p>' +
+    '<div class="pf-card"><h2>Maths S1 · grade ' + esc(A.maths.level) + '</h2><p class="pf-note">' + esc(A.maths.note) + '</p><ul class="sc-list" style="margin-top:0">' +
+      A.maths.strengths.map(function (t) { return '<li><span class="pos">Strong:</span> ' + esc(t) + '</li>'; }).join('') +
+      A.maths.fixes.map(function (t) { return '<li><span class="warn">Work on:</span> ' + esc(t) + '</li>'; }).join('') + '</ul>' +
+    '<p class="pf-note" style="margin:12px 0 0">Log each new marked paper in the past-paper log below so progress shows over time.</p>' +
     '<button class="pf-btn ghost" data-act="qopen" data-v="a" style="margin-top:10px">Open MK\'s question log: every question, answer and fix</button></div></div>';
+  h += physicsHtml();
   return h;
 }
 function unitCard(u) {
@@ -826,6 +868,7 @@ function qCard(q) {
   return '<div class="sc-q ' + st + '" id="q-' + esc(id.replace(/[^A-Za-z0-9]/g, '-')) + '"><div class="hd"><span class="qn">' + esc(q.q) + '</span><span>' + esc(P.label) + '</span>' +
     (q.s && q.s !== '—' ? '<span class="pf-badge">Section ' + esc(q.s) + '</span>' : '') +
     '<span class="pf-badge gold">' + esc(qTopic(q.t).n) + '</span><span class="pf-badge ' + QST[st][1] + '">' + QST[st][0] + '</span>' + (mine ? '<span class="pf-badge">Added by you</span>' : '') +
+    (q.tm != null && q.tm !== q.m ? '<span class="pf-badge" title="Mark in the tutor\'s review">Tutor gave ' + q.tm + '</span>' : '') +
     (mk ? '<span class="mk">' + mk + '</span>' : '') + '</div>' +
     '<div class="pr">' + esc(q.pr) + '</div>' +
     '<div class="sc-ans"><div><span class="sc-lab ' + (st === 'correct' ? 'ok' : st === 'todo' ? '' : 'bad') + '">Your answer</span>' + esc(q.a || '—') + '</div><div><span class="sc-lab ok">Correct answer</span>' + esc(q.c || '—') + '</div></div>' +
@@ -882,8 +925,9 @@ R.qlog = function () {
     [['a', 'MK · Year 12'], ['b', 'ZK · Year 7']].map(function (o) { return '<button data-act="qwho" data-v="' + o[0] + '" aria-pressed="' + (who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span></div></div>';
   h += '<div class="pf-kpis">' +
     (who === 'a'
-      ? kpi('Questions logged', String(all.length), '', nPapers + ' papers · Chemistry question by question, Physics and S1 by topic') +
-        kpi('Chemistry marks', String(mm), '/ ' + mx, (100 * mm / Math.max(1, mx)).toFixed(1) + '% across the two Jan papers')
+      ? kpi('Questions logged', String(all.length), '', nPapers + ' papers · Chemistry and Physics question by question') +
+        (function () { var c = marked.filter(function (q) { return qPaper(q).subj === 'Chemistry'; }), cm = c.reduce(function (a, q) { return a + q.m; }, 0), cx = c.reduce(function (a, q) { return a + q.x; }, 0); return kpi('Chemistry marks', String(cm), '/ ' + cx, (100 * cm / Math.max(1, cx)).toFixed(1) + '% across the two Jan papers'); })() +
+        kpi('Physics marks', String(physScore().m), '/ ' + physScore().x, 'June 2021 paper, checked to Pearson\'s scheme')
       : kpi('Worksheet marks', String(mm), '/ ' + mx, 'all ' + all.filter(function (q) { return q.p !== 'mine'; }).length + ' questions, including ' + notyet + ' not tried yet') +
         kpi('On questions tried', String(tm), '/ ' + tx, Math.round(100 * tm / Math.max(1, tx)) + '% · ' + tried.length + ' questions tried')) +
     kpi('Questions to fix', String(tofix.length), '', who === 'a' ? 'marked wrong, partial or left blank' : 'wrong, partial or not tried yet') +

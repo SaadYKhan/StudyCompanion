@@ -83,6 +83,9 @@ try:
                     fails.append('past paper did not appear')
                 if 'Statistics 1' not in pg.inner_text('#t-alevel') or 'Where 47 out of 80 lands' not in pg.inner_text('#t-alevel'):
                     fails.append('S1 default or the marked-papers section is missing')
+                at = pg.inner_text('#t-alevel')
+                if '40/80' not in at.replace(' ', '') or 'Path to an A in Physics' not in at:
+                    fails.append('Physics re-mark section missing or wrong total')
                 pg.click('[data-act="route"][data-v="M1"]')
                 if 'Mechanics 1' not in pg.inner_text('#t-alevel'):
                     fails.append('M1 route did not switch the timetable')
@@ -92,8 +95,8 @@ try:
                 if 'From the topic checklist' not in pg.inner_text('#t-qlog') or 'Q18(c)' not in pg.inner_text('#qList'):
                     fails.append('checklist link did not open the filtered question log')
                 pg.click('[data-act="qclear"]'); pg.wait_for_timeout(200)
-                if 'of 75 questions' not in pg.inner_text('#qCount'):
-                    fails.append('question log does not show all 75 of MK\'s questions: ' + pg.inner_text('#qCount'))
+                if 'of 109 questions' not in pg.inner_text('#qCount'):
+                    fails.append('question log does not show all 109 of MK\'s questions: ' + pg.inner_text('#qCount'))
                 pg.click('[data-act="qwho"][data-v="b"]'); pg.wait_for_timeout(300)
                 if 'of 39 questions' not in pg.inner_text('#qCount') or '37' not in pg.inner_text('#t-qlog'):
                     fails.append('ZK question log wrong: ' + pg.inner_text('#qCount'))
@@ -118,7 +121,7 @@ try:
                 pg.fill('form[data-form="myq"] [name="m"]', '1'); pg.fill('form[data-form="myq"] [name="x"]', '3')
                 pg.fill('form[data-form="myq"] [name="pr"]', 'Explain the trend in boiling points of the halogens.')
                 pg.click('form[data-form="myq"] button[type="submit"]'); pg.wait_for_timeout(300)
-                if 'of 76 questions' not in pg.inner_text('#qCount') or 'added by you' not in pg.inner_text('#qList').lower():
+                if 'of 110 questions' not in pg.inner_text('#qCount') or 'added by you' not in pg.inner_text('#qList').lower():
                     fails.append('added question did not appear')
                 if 'Fixed so far' not in pg.inner_text('#t-qlog') or n_open.startswith('41 of'):
                     pass

@@ -2,7 +2,7 @@
    To update the site, edit this file and push. Dates are YYYY-MM-DD, or YYYY-MM when only the month is known.
    st: "confirmed" = published by the exam board / organiser; "expected" = usual pattern or a school's calendar. */
 window.STUDY = {
-  updated: "2026-11-16",
+  updated: "2026-11-18",
 
   students: {
     a: { label: "MK", yr: "Year 12", school: "Arcadia British School", track: "Edexcel International A Level · Maths, Physics, Chemistry", goal: "Astrophysics at Princeton or Rutgers–New Brunswick, entry fall 2028" },
@@ -23,7 +23,9 @@ window.STUDY = {
     khda:      { name: "KHDA: academic calendar for Dubai private schools 2026–27", url: "https://web.khda.gov.ae/en/Resources/academic-calendar-dubai-private-schools" },
     maa:       { name: "MAA American Mathematics Competitions (AMC 8: 21–27 Jan 2027)", url: "https://www.maa.org/AMC" },
     ukmt:      { name: "UKMT: Junior and Intermediate Mathematical Challenges (2027 dates from UK school calendars)", url: "https://ukmt.org.uk" },
-    commonapp: { name: "Common App", url: "https://www.commonapp.org" }
+    commonapp: { name: "Common App", url: "https://www.commonapp.org" },
+    physms:    { name: "Pearson: WPH11 Unit 1 June 2021 mark scheme (P66393A), used to re-mark MK's Physics paper", url: "https://qualifications.pearson.com/content/dam/pdf/International%20Advanced%20Level/Physics/2018/Exam-materials/WPH11_01_msc_20210517.pdf" },
+    physgb:    { name: "Pearson: IAL grade boundaries (WPH11 June 2022, Oct 2023, Oct 2025)", url: "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-A-level/2510-ial-subject-grade-boundaries.pdf" }
   },
 
   events: [
@@ -118,11 +120,34 @@ window.STUDY = {
       { sev: "high", t: "Organic chemistry: isomerism and mechanisms", d: "22/45 across four questions (49%), with isomerism weakest at 2/10. The latest question, 8/11, shows it is improving.", r: "Curly-arrow mechanisms from memory daily; structural and E/Z isomer drills. Reaching 75% here adds about 6 marks a paper." },
       { sev: "med", t: "Shapes and atomic orbitals", d: "VSEPR shapes 9/15; orbitals and energy levels 1/4.", r: "Learn the shape, angle and lone-pair table; s, p and d sub-shell filling and its link to ionisation energy." },
       { sev: "med", t: "Leaving questions blank", d: "Jan 2024 Q22 (6 marks) was left blank, yet the same skill scored well a year later.", r: "Always write the equation and the first step: method marks are given without the final answer." },
-      { sev: "low", t: "Physics: moments and projectiles", d: "Grade A overall on the Unit 1 paper.", r: "Take moments about one chosen pivot; resolve v cos θ and v sin θ into separate columns before any equation." }
+      { sev: "med", t: "Physics: see the Physics card", d: "The June 2021 Physics paper re-marks to 40/80, so Physics needs as much time as Chemistry before the December review.", r: "Work through the Physics priorities alongside these." }
     ],
-    physics: { level: "A", note: "One full Unit 1 paper (WPH11), tutor's grade",
-      strengths: [ "Kinematics: suvat and motion graphs", "Momentum and impulse", "Materials: Young modulus, stress and strain" ],
-      fixes: [ "Moments and static equilibrium: one pivot, clockwise = anticlockwise", "Projectiles: horizontal and vertical components kept separate" ] },
+    physics: {
+      paper: "ph21", asOf: "2026-11-18", label: "June 2021 paper (P66393A)",
+      // Tutor's marks (from the review's final summary) next to the marks checked against Pearson's mark scheme.
+      rows: [
+        { q: "Section A (Q1–10)", topic: "Multiple choice", tutor: 4, max: 10, why: "Q3 and Q9: the review's answer key was wrong; Pearson's answers are C and D" },
+        { q: "Q11", topic: "Momentum and collisions", tutor: 6, max: 6, why: "(c) her answer 2.16 × 10⁶ J; correct 6.5 × 10⁴ J. Part (c) is worth 2, not the 6 listed" },
+        { q: "Q12", topic: "Trolley on a ramp", tutor: 3, max: 7, why: "(b) using a = 9.81 m s⁻² on a slope meets no marking point" },
+        { q: "Q13", topic: "Submarine buoyancy", tutor: 9, max: 9, why: "(b)(ii) 88 800 kg; correct 1.17 × 10⁵ kg pumped out" },
+        { q: "Q14", topic: "Ski jump projectile, braking", tutor: 8, max: 8, why: "(a) her distance 31.9 m; correct 32.7 m" },
+        { q: "Q15", topic: "Rocket launch (6-marker)", tutor: 2, max: 6, why: "Energy changes and gravity are not on Pearson's list of points" },
+        { q: "Q16", topic: "Dragster moments, force", tutor: 5, max: 7, why: "(b) used the weight in N as the mass; correct 6.77 × 10⁴ N" },
+        { q: "Q17", topic: "Rope stiffness, pulley", tutor: 10, max: 12, why: "(b)(ii) missed the two rope sections: 1.85 × 10⁻² m" },
+        { q: "Q18", topic: "Terminal velocity, Stokes' law", tutor: 6, max: 15, why: "(b) converting to the radius alone scores nothing on Pearson's scheme" }
+      ],
+      // Raw boundaries for WPH11 (out of 80). The June 2021 boundaries were not found.
+      bounds: [ { s: "June 2022", a: 43, b: 38, c: 33, d: 28, src: "Pearson" }, { s: "Oct 2023", a: 53, b: 47, c: 42, d: 37, src: "Pearson" }, { s: "Oct 2025", a: 59, b: 52, c: 46, d: 40, src: "Pearson" }, { s: "June 2026", a: 60, b: 53, c: 46, d: 39, src: "as reported" } ],
+      strengths: [ "Buoyancy and upthrust (Q13: 8/9)", "Projectiles and work–energy (Q14: 7/8)", "Stiffness and Young modulus (Q17(a), (b)(i))", "Stokes' law and laminar flow reasoning (Q18(c)(i))", "Momentum conservation (Q11(a), (b))" ],
+      priorities: [
+        { sev: "high", t: "Section A multiple choice: 2/10", d: "Eight concept slips: friction as a driving force, scalars and vectors, yield point, power = energy ÷ time, compression shortens, P = Fs/t, and the a–t graph to terminal velocity.", r: "10 Unit 1 multiple-choice questions a day; for each, write why the other three options are wrong. Unit-check every option." },
+        { sev: "high", t: "Questions left blank or stopped early: 12 marks", d: "Q18(c)(ii) and (iii) (5 marks), Q17(c) (2), Q16(a) after one line (2), Q18(b) (5).", r: "Gradient = constant in y = kx; 'assess' = compare two numbers; always write the next line." },
+        { sev: "high", t: "Weight is not mass", d: "Q16(b): used the weight (1.23 × 10⁴ N) as the mass, so the force was 9.81 times too big.", r: "Read the unit: N is a weight, so divide by g for the mass." },
+        { sev: "med", t: "Terminal velocity force balance", d: "Q18(b): started with Stokes' law without η or v.", r: "At terminal velocity, weight = upthrust + drag, so drag = W − U from the densities." },
+        { sev: "med", t: "6-mark explanations with Newton's laws", d: "Q15 scored nothing: it described energy, not forces.", r: "Name each force, apply Newton's second and third laws, then say what changes and why, in time order." },
+        { sev: "low", t: "Read the diagram; sanity-check answers", d: "Q17(b)(ii) missed the two rope sections; Q11(c)'s energy change was bigger than the total; Q12(b) used g on a slope.", r: "Count rope sections, check an answer is physically possible, and use g sin θ on slopes." }
+      ]
+    },
     maths: { level: "A", note: "Statistics S1 (WST01), tutor's grade",
       strengths: [ "Probability and discrete distributions", "Normal distribution and standardising", "Correlation and regression", "Representing data" ],
       fixes: [ "P1 and P2 not yet assessed: get a P1 paper marked next" ] },
@@ -142,7 +167,7 @@ window.STUDY = {
     },
     baseline: {
       "WCH11:0": 2, "WCH11:1": 1, "WCH11:2": 2, "WCH11:3": 0, "WCH11:5": 1, "WCH11:6": 1, "WCH11:7": 0, "WCH11:8": 1, "WCH11:9": 1,
-      "WPH11:0": 2, "WPH11:1": 1, "WPH11:3": 1, "WPH11:4": 2, "WPH11:7": 2,
+      "WPH11:0": 1, "WPH11:1": 2, "WPH11:2": 0, "WPH11:3": 1, "WPH11:4": 2, "WPH11:5": 1, "WPH11:6": 1, "WPH11:7": 1,
       "WST01:0": 2, "WST01:1": 2, "WST01:2": 2, "WST01:3": 2, "WST01:4": 2, "WST01:5": 2, "WST01:6": 2
     }
   },
@@ -240,13 +265,13 @@ window.STUDY = {
 
   plans: {
     a: [
-      { from: "2026-11-16", to: "2026-12-11", title: "Chemistry push, Physics polish",
-        hours: { Chemistry: 4.5, Physics: 3, Maths: 2.5, SAT: 0.5 },
+      { from: "2026-11-16", to: "2026-12-11", title: "Chemistry and Physics push",
+        hours: { Chemistry: 4, Physics: 4, Maths: 2, SAT: 0.5 },
         focus: [ "Chemistry Section A: 15 timed multiple-choice questions a day from past papers, one minute each; write one line on why each wrong answer was wrong.",
                  "Organic chemistry: draw one mechanism from memory each day (free-radical substitution, electrophilic addition) and practise structural and E/Z isomers.",
                  "Shapes and orbitals: learn the VSEPR table with lone pairs and bond angles, and s/p/d orbital filling.",
                  "Never leave a question blank: write the formula and the first step; method marks add up.",
-                 "Physics: one Unit 1 question set a week on moments and projectiles; bring marked work to the December review.",
+                 "Physics: 10 Unit 1 multiple-choice questions a day with a reason for each option, and redo every lost question from the June 2021 paper (Question log) before the December review.",
                  "Maths: S1 is exam-ready, so keep it warm with one paper a fortnight and get a P1 paper marked next.",
                  "Take one free Bluebook SAT practice test to set a baseline." ] },
       { from: "2026-12-14", to: "2027-01-03", title: "Winter break: consolidate",
