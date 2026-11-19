@@ -825,7 +825,7 @@ function physScore(id, sec) {
 }
 function physSub() {
   var P = D.assessment && D.assessment.physics; if (!P || !P.papers || P.papers.length < 2) return '';
-  var prev = P.papers[1]; return prev.s + ' paper: ' + physScore(prev.id).m + '/' + physScore(prev.id).x;
+  return P.papers.slice(1).map(function (p) { return p.s + ': ' + physScore(p.id).m; }).join(', ');
 }
 function physAim() {
   var P = D.assessment && D.assessment.physics; if (!P || !P.bounds) return 60;
@@ -842,7 +842,7 @@ function physicsHtml() {
   });
   var tTot = P.rows.reduce(function (a, r) { return a + r.tutor; }, 0);
   var aAvg = physAim();
-  var g5 = function (v, b) { return v >= b.a ? 'A' : v >= b.b ? 'B' : v >= b.c ? 'C' : v >= b.d ? 'D' : 'E or below'; }, gcls = function (x) { return x === 'A' ? 'ok' : x === 'B' ? 'warn' : 'bad'; };
+  var g5 = function (v, b) { return v >= b.a ? 'A' : v >= b.b ? 'B' : v >= b.c ? 'C' : v >= b.d ? 'D' : b.e == null ? 'E or below' : v >= b.e ? 'E' : 'U'; }, gcls = function (x) { return x === 'A' ? 'ok' : x === 'B' ? 'warn' : 'bad'; };
   var h = '<div class="pf-over">Physics Unit 1 · ' + PP.length + ' paper' + (PP.length === 1 ? '' : 's') + ' marked</div>';
   h += '<div class="pf-grid wide"><div class="pf-card"><h2>Physics papers so far</h2><p class="pf-note">Each paper marked against Pearson\'s published mark scheme. Every part, with her answer, the correct answer and the fix, is in the question log.</p>' +
     '<div class="pf-scroll" style="max-height:none"><table class="pf-table"><thead><tr><th>Paper</th><th class="r">Multiple choice</th><th class="r">Section B</th><th class="r">Total</th><th>That series</th><th>' + esc(ref.s) + ' boundaries</th></tr></thead><tbody>' +
@@ -851,7 +851,7 @@ function physicsHtml() {
       return '<tr><td class="strong">' + esc(p.label) + '<div class="pf-note" style="margin:2px 0 0">' + esc(p.note || '') + '</div></td><td class="r">' + a.m + ' / ' + a.x + '</td><td class="r">' + b.m + ' / ' + b.x + '</td><td class="r strong" style="color:var(--pf-gold-hi)">' + t.m + ' / ' + t.x + '</td>' +
         '<td>' + (own ? '<span class="pf-badge ' + gcls(own) + '">' + own + '</span>' : '<span class="pf-note" style="margin:0">not published</span>') + '</td><td><span class="pf-badge ' + gcls(now) + '">' + now + '</span></td></tr>';
     }).join('') + '</tbody></table></div>' +
-    '<p class="pf-note" style="margin-bottom:0">' + PP.map(function (p) { return p.s + ': ' + physScore(p.id).m; }).join(' · ') + '. Multiple choice improved from 2/10 to 6/10. The marks still go in 6-mark explanations, projectile set-up and unfinished parts.</p>' +
+    '<p class="pf-note" style="margin-bottom:0">Scores ' + PP.slice().reverse().map(function (p) { return physScore(p.id).m; }).join(' → ') + ' out of 80 (oldest first); multiple choice ' + PP.slice().reverse().map(function (p) { return physScore(p.id, 'A').m + '/10'; }).join(' → ') + '. The marks still go in unfinished parts, force explanations and graph questions.</p>' +
     '<button class="pf-btn ghost" data-act="qopen" data-v="a" style="margin-top:8px">Open the question log</button></div>' +
     '<div class="pf-card"><h2>Path to an A in Physics</h2><p class="pf-note">From ' + lt.m + ' to about ' + aAvg + ' marks. Recent A boundaries have been 53–60 out of 80.</p><ul class="pf-act">' +
     P.priorities.map(function (p) { return '<li class="' + p.sev + '"><span class="sev ' + p.sev + '">' + ({ high: 'First', med: 'Next', low: 'Then' })[p.sev] + '</span><div><div class="t">' + esc(p.t) + '</div><div class="d">' + esc(p.d) + '</div><div class="r">' + esc(p.r) + '</div></div></li>'; }).join('') + '</ul></div></div>';
@@ -1030,7 +1030,7 @@ R.qlog = function () {
     (who === 'a'
       ? kpi('Questions logged', String(all.length), '', nPapers + ' papers · Chemistry and Physics question by question') +
         (function () { var c = marked.filter(function (q) { return qPaper(q).subj === 'Chemistry'; }), cm = c.reduce(function (a, q) { return a + q.m; }, 0), cx = c.reduce(function (a, q) { return a + q.x; }, 0); return kpi('Chemistry marks', String(cm), '/ ' + cx, (100 * cm / Math.max(1, cx)).toFixed(1) + '% across the two Jan papers'); })() +
-        (function () { var c = marked.filter(function (q) { return qPaper(q).subj === 'Physics'; }), cm = c.reduce(function (a, q) { return a + q.m; }, 0), cx = c.reduce(function (a, q) { return a + q.x; }, 0); return kpi('Physics marks', String(cm), '/ ' + cx, (100 * cm / Math.max(1, cx)).toFixed(1) + '% across the June 2021 and June 2022 papers'); })()
+        (function () { var c = marked.filter(function (q) { return qPaper(q).subj === 'Physics'; }), cm = c.reduce(function (a, q) { return a + q.m; }, 0), cx = c.reduce(function (a, q) { return a + q.x; }, 0); return kpi('Physics marks', String(cm), '/ ' + cx, (100 * cm / Math.max(1, cx)).toFixed(1) + '% across ' + (D.assessment.physics.papers || []).length + ' marked Physics papers'); })()
       : kpi('Worksheet marks', String(mm), '/ ' + mx, 'all ' + all.filter(function (q) { return q.p !== 'mine'; }).length + ' questions, including ' + notyet + ' not tried yet') +
         kpi('On questions tried', String(tm), '/ ' + tx, Math.round(100 * tm / Math.max(1, tx)) + '% · ' + tried.length + ' questions tried')) +
     kpi('Questions to fix', String(tofix.length), '', who === 'a' ? 'marked wrong, partial or left blank' : 'wrong, partial or not tried yet') +
