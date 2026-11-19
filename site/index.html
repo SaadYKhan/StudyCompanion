@@ -823,6 +823,15 @@ function physScore(id, sec) {
   if (P) QL.q.forEach(function (q) { if (q.p === pid && (!sec || q.s === sec)) { m += q.m; x += q.x; } });
   return { m: m, x: x };
 }
+function mathsScore() {
+  var M = D.assessment && D.assessment.maths, m = 0, x = 0;
+  if (M && M.paper) QL.q.forEach(function (q) { if (q.p === M.paper) { m += q.m; x += q.x; } });
+  return { m: m, x: x };
+}
+function mathsGrades() {
+  var M = D.assessment.maths, sc = mathsScore().m;
+  return (M.bounds || []).map(function (b) { var g = sc >= b.a ? 'A' : sc >= b.b ? 'B' : sc >= b.c ? 'C' : sc >= b.d ? 'D' : sc >= b.e ? 'E' : 'U'; return { s: b.s, g: g, b: b }; });
+}
 function physSub() {
   var P = D.assessment && D.assessment.physics; if (!P || !P.papers || P.papers.length < 2) return '';
   return P.papers.slice(1).map(function (p) { return p.s + ': ' + physScore(p.id).m; }).join(', ');
@@ -885,7 +894,7 @@ function assessmentHtml() {
     kpi('Chemistry Unit 1', String(latest.score), '/ ' + latest.max, 'Jan 2024 and Jan 2025 papers · ' + (100 * latest.score / latest.max).toFixed(1) + '%') +
     kpi('Marks to an A in June', '+' + (avgA - latest.score), 'marks', 'June A boundary ' + minA + '–' + maxA + ' of 80 (2023–26), about ' + avgA) +
     kpi('Physics Unit 1', String(physScore().m), '/ ' + physScore().x, D.assessment.physics.papers[0].s + ' paper, checked to Pearson\'s scheme · ' + physSub() + ' · aim for about ' + physAim()) +
-    kpi('Maths S1', A.maths.level, '', esc(A.maths.note)) + '</div>';
+    (A.maths.paper ? kpi('Maths S1', String(mathsScore().m), '/ ' + mathsScore().x, 'June 2022 paper · ' + mathsGrades().map(function (g) { return g.g + ' on ' + g.s + ' boundaries'; }).join(', ')) : kpi('Maths S1', A.maths.level, '', esc(A.maths.note))) + '</div>';
   h += '<div class="pf-grid wide"><div class="pf-card"><h2>Chemistry Unit 1 by topic</h2><p class="pf-note">Marks across the two fully marked papers (January 2024 and January 2025).</p>' +
     A.chemCats.map(function (c) {
       var got = 0, max = 0; c.items.forEach(function (i) { got += i[1]; max += i[2]; });
@@ -901,7 +910,7 @@ function assessmentHtml() {
     '</tbody></table></div><h3>June boundaries, Chemistry Unit 1 (raw, out of 80)</h3><div class="pf-scroll"><table class="pf-table"><thead><tr><th>Series</th><th class="r">A</th><th class="r">B</th><th class="r">C</th><th>47 would be</th></tr></thead><tbody>' +
     jb.map(function (b) { var g = gradeFor(latest.score, b); return '<tr><td>' + esc(b.s) + '</td><td class="r strong">' + b.a + '</td><td class="r">' + b.b + '</td><td class="r">' + b.c + '</td><td><span class="pf-badge ' + (g === 'A' ? 'ok' : g === 'B' ? 'warn' : 'bad') + '">' + g + '</span></td></tr>'; }).join('') +
     '</tbody></table></div><p class="pf-note" style="margin-bottom:0">AS unit grades run from a to e; A* is awarded only for the full A Level. Boundaries from Pearson\'s published grade boundary documents.</p></div>' +
-    '<div class="pf-card"><h2>Maths S1 · grade ' + esc(A.maths.level) + '</h2><p class="pf-note">' + esc(A.maths.note) + '</p><ul class="sc-list" style="margin-top:0">' +
+    '<div class="pf-card"><h2>Maths S1 · ' + (A.maths.paper ? mathsScore().m + ' / ' + mathsScore().x : 'grade ' + esc(A.maths.level)) + '</h2><p class="pf-note">' + esc(A.maths.note) + (A.maths.paper ? '. Grade on that series\' boundaries and on a recent series: ' + mathsGrades().map(function (g) { return g.s + ' (A at ' + g.b.a + ', B at ' + g.b.b + '): <b>' + g.g + '</b>'; }).join('; ') + '.' : '') + '</p><ul class="sc-list" style="margin-top:0">' +
       A.maths.strengths.map(function (t) { return '<li><span class="pos">Strong:</span> ' + esc(t) + '</li>'; }).join('') +
       A.maths.fixes.map(function (t) { return '<li><span class="warn">Work on:</span> ' + esc(t) + '</li>'; }).join('') + '</ul>' +
     '<p class="pf-note" style="margin:12px 0 0">Log each new marked paper in the past-paper log below so progress shows over time.</p>' +

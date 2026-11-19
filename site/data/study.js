@@ -2,7 +2,7 @@
    To update the site, edit this file and push. Dates are YYYY-MM-DD, or YYYY-MM when only the month is known.
    st: "confirmed" = published by the exam board / organiser; "expected" = usual pattern or a school's calendar. */
 window.STUDY = {
-  updated: "2026-11-18",
+  updated: "2026-11-19",
 
   students: {
     a: { label: "MK", yr: "Year 12", school: "Arcadia British School", track: "Edexcel International A Level · Maths, Physics, Chemistry", goal: "Astrophysics at Princeton or Rutgers–New Brunswick, entry fall 2028" },
@@ -154,9 +154,11 @@ window.STUDY = {
         { sev: "low", t: "Energy questions: compare energies, not forces", d: "October 2024 Q17(b) compared forces and used 35 m instead of the 18 m extension; Q6 multiplied by efficiency instead of dividing.", r: "How far does it go? Compare energies. Input power = useful power ÷ efficiency." }
       ]
     },
-    maths: { level: "A", note: "Statistics S1 (WST01), tutor's grade",
-      strengths: [ "Probability and discrete distributions", "Normal distribution and standardising", "Correlation and regression", "Representing data" ],
-      fixes: [ "P1 and P2 not yet assessed: get a P1 paper marked next" ] },
+    maths: { level: "A", paper: "st22", note: "June 2022 S1 paper, checked to Pearson's mark scheme",
+      // WST01 raw boundaries out of 75 (Pearson). June 2022 was graded generously; October 2024 is a recent standard.
+      bounds: [ { s: "June 2022", a: 48, b: 39, c: 31, d: 23, e: 15 }, { s: "Oct 2024", a: 60, b: 51, c: 43, d: 35, e: 27 } ],
+      strengths: [ "Correlation and regression: 12/14 (r, regression line, interpretation, reliability)", "Discrete random variables: E(R²), standard deviation and solving for unknowns, 9/9", "Stem-and-leaf quartiles, outliers, box plot and skewness: 10/11", "Independence and conditional probability: 6/6" ],
+      fixes: [ "Conditional normal probability: P(v < V < 104.9) ÷ P(V < 104.9) = 0.2801, then standardise (Q6(c), 6 marks)", "Coding: Var(w) = Var(y) ÷ 0.5², the scale factor is squared (Q3(e)(ii))", "Venn diagrams: subtract overlaps, include the outside region and box; all regions add to 1 (Q4(c))", "Histograms: bar width is proportional to class width (Q3(a))", "Finish the paper: Q3(c)–(d) and Q5(e)–(f) left blank (8 marks)", "P1 and P2 not yet assessed: get a P1 paper marked next" ] },
     zk: {
       paper: "zk1",
       asOf: "2026-11-16",
@@ -174,7 +176,7 @@ window.STUDY = {
     baseline: {
       "WCH11:0": 2, "WCH11:1": 1, "WCH11:2": 2, "WCH11:3": 0, "WCH11:5": 1, "WCH11:6": 1, "WCH11:7": 0, "WCH11:8": 1, "WCH11:9": 1,
       "WPH11:0": 1, "WPH11:1": 2, "WPH11:2": 0, "WPH11:3": 1, "WPH11:4": 2, "WPH11:5": 1, "WPH11:6": 1, "WPH11:7": 1,
-      "WST01:0": 2, "WST01:1": 2, "WST01:2": 2, "WST01:3": 2, "WST01:4": 2, "WST01:5": 2, "WST01:6": 2
+      "WST01:0": 2, "WST01:1": 1, "WST01:2": 1, "WST01:3": 1, "WST01:4": 2, "WST01:5": 2, "WST01:6": 1
     }
   },
 
@@ -185,7 +187,7 @@ window.STUDY = {
     asOf: "2026-11-18",
     by: "2026-12-11",
     a: {
-      note: "From her five marked papers: Chemistry January 2024 and January 2025, Physics June 2021, June 2022 and October 2024. In order of marks lost; a question can count in more than one area.",
+      note: "From her six marked papers: Chemistry January 2024 and January 2025, Physics June 2021, June 2022 and October 2024, Maths S1 June 2022. In order of marks lost; a question can count in more than one area.",
       items: [
         { t: "Finish every question", f: { why: ["blank", "incomplete"] },
           d: "Parts left blank or stopped after a line or two, on every marked paper. This is the biggest single source of lost marks.",

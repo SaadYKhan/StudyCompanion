@@ -102,10 +102,10 @@ try:
                 pg.click('[data-act="qsubj"][data-v="Chemistry"]'); pg.wait_for_timeout(250); w_chem = why()
                 pg.click('[data-act="qsubj"][data-v="Maths"]'); pg.wait_for_timeout(250); w_maths = why()
                 pg.click('[data-act="qsubj"][data-v="all"]'); pg.wait_for_timeout(250)
-                if 'Multipliers and counting' in w_phys or 'Multipliers and counting' not in w_chem or w_phys == w_all or '72 marks' not in w_phys or 'no marks lost' not in w_maths.lower():
+                if 'Multipliers and counting' in w_phys or 'Multipliers and counting' not in w_chem or w_phys == w_all or '72 marks' not in w_phys or 'left blank' not in w_maths.lower() or 'Multipliers and counting' in w_maths:
                     fails.append('why-marks panel does not follow the subject switch')
-                if 'of 177 questions' not in pg.inner_text('#qCount'):
-                    fails.append('question log does not show all 177 of MK\'s questions: ' + pg.inner_text('#qCount'))
+                if 'of 207 questions' not in pg.inner_text('#qCount'):
+                    fails.append('question log does not show all 207 of MK\'s questions: ' + pg.inner_text('#qCount'))
                 pg.click('[data-act="qwho"][data-v="b"]'); pg.wait_for_timeout(300)
                 if 'of 39 questions' not in pg.inner_text('#qCount') or '37' not in pg.inner_text('#t-qlog'):
                     fails.append('ZK question log wrong: ' + pg.inner_text('#qCount'))
@@ -130,7 +130,7 @@ try:
                 pg.fill('form[data-form="myq"] [name="m"]', '1'); pg.fill('form[data-form="myq"] [name="x"]', '3')
                 pg.fill('form[data-form="myq"] [name="pr"]', 'Explain the trend in boiling points of the halogens.')
                 pg.click('form[data-form="myq"] button[type="submit"]'); pg.wait_for_timeout(300)
-                if 'of 178 questions' not in pg.inner_text('#qCount') or 'added by you' not in pg.inner_text('#qList').lower():
+                if 'of 208 questions' not in pg.inner_text('#qCount') or 'added by you' not in pg.inner_text('#qList').lower():
                     fails.append('added question did not appear')
                 if 'Fixed so far' not in pg.inner_text('#t-qlog') or n_open.startswith('41 of'):
                     pass
@@ -159,7 +159,7 @@ try:
                 if '1 / ' not in ov and '1420' not in ov:
                     fails.append('saved progress did not survive a reload')
                 # key focus areas: live scores, auto-ticks, manual ticks, and the link into the question log
-                for want in ['Key focus areas', 'Finish every question', '24 / 100', 'Multiple choice in both sciences', '30 / 70', 'Percentages one after another', '7 / 21']:
+                for want in ['Key focus areas', 'Finish every question', '25 / 119', 'Multiple choice in both sciences', '30 / 70', 'Percentages one after another', '7 / 21']:
                     if want.lower() not in ov.lower():
                         fails.append('focus areas missing: ' + want)
                 if 'logged' not in pg.inner_text('.sc-soon >> nth=1'):
