@@ -706,6 +706,7 @@ var NT_INT = [0, 1, 3, 7, 14, 30];   // days until a card comes back, by box (0 
 var NT_KINDS = [['all', 'All cards'], ['mine', 'From her papers'], ['know', 'Must know'], ['exam', 'Exam technique']];
 var NT_LBL = { 'new': ['New', 'gold'], learning: ['Learning', 'warn'], known: ['Known', 'ok'], mastered: ['Mastered', 'ok'] };
 var NS = null;                       // the self-test session in progress (kept in memory only)
+var NR = null;                       // a reset waiting for confirmation: 'all' or a unit code
 function ntState() { return sget('cards', {}); }
 function ntF() { var f = sget('nf', {}); return { u: f.u || 'all', k: f.k || 'all', t: f.t || 'all', quiz: !!f.quiz, mode: f.mode || 'test' }; }
 function setNF(o) { var f = ntF(); Object.keys(o).forEach(function (k) { f[k] = o[k]; }); sset('nf', f); }
@@ -755,12 +756,19 @@ R.notes = function () {
     kpi('Not-yet pile', String(all.notyet), 'cards', 'got wrong last time: these come back first') + '</div>';
   // progress by unit (shown below the cards)
   var prog = '<div class="pf-grid wide" style="margin-top:var(--cds-gap-md)"><div class="pf-card"><h2>Progress by unit</h2><p class="pf-note">Each card comes back after 1, 3, 7, 14 and then 30 days while she keeps getting it right, and straight away when she doesn\'t.</p>' +
-    '<div class="pf-scroll" style="max-height:none"><table class="pf-table"><thead><tr><th>Unit</th><th class="r">Cards</th><th class="r">New</th><th class="r">Learning</th><th class="r">Known</th><th style="width:26%">Progress</th><th class="r">Due</th></tr></thead><tbody>' +
+    '<div class="pf-scroll" style="max-height:none"><table class="pf-table"><thead><tr><th>Unit</th><th class="r">Cards</th><th class="r">New</th><th class="r">Learning</th><th class="r">Known</th><th style="width:26%">Progress</th><th class="r">Due</th><th class="nt-noprint"></th></tr></thead><tbody>' +
     CU.map(function (u) {
       var c = ntCounts(CD.filter(function (x) { return x.u === u.u; }), st), pc = c.total ? Math.round(100 * (c.known + c.mastered) / c.total) : 0, pl = c.total ? Math.round(100 * c.learning / c.total) : 0;
       return '<tr><td class="strong">' + esc(u.n) + '</td><td class="r">' + c.total + '</td><td class="r">' + c['new'] + '</td><td class="r">' + c.learning + '</td><td class="r">' + (c.known + c.mastered) + '</td>' +
-        '<td><div class="sc-track" title="Green: known · amber: learning" style="display:flex"><span style="width:' + pc + '%;background:var(--pf-ok)"></span><span style="width:' + pl + '%;background:var(--pf-warn);opacity:.75"></span></div></td><td class="r">' + (c.due ? '<b style="color:var(--pf-gold-hi)">' + c.due + '</b>' : '0') + '</td></tr>';
-    }).join('') + '</tbody></table></div></div>' +
+        '<td><div class="sc-track" title="Green: known · amber: learning" style="display:flex"><span style="width:' + pc + '%;background:var(--pf-ok)"></span><span style="width:' + pl + '%;background:var(--pf-warn);opacity:.75"></span></div></td><td class="r">' + (c.due ? '<b style="color:var(--pf-gold-hi)">' + c.due + '</b>' : '0') + '</td>' +
+        '<td class="r nt-noprint">' + (c['new'] < c.total ? '<button class="sc-qlink" data-act="ntreset" data-v="' + u.u + '">Reset</button>' : '') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    (NR ? (function () {
+      var n = NR === 'all' ? CD.length : CD.filter(function (x) { return x.u === NR; }).length;
+      return '<div class="nt-a" style="margin-top:10px;font-size:13px"><b>Reset ' + (NR === 'all' ? 'all ' + n + ' cards' : 'all ' + n + ' ' + esc(ntUnit(NR).n) + ' cards') + ' to new?</b> This clears their history on this device, including cards marked Knew it. ' +
+        '<span style="white-space:nowrap"><button class="nt-btn no" style="min-width:0;padding:5px 12px;font-size:12.5px" data-act="ntresetok">Yes, reset</button> <button class="sc-qlink" data-act="ntresetx">Cancel</button></span></div>';
+    })() : (all['new'] < all.total ? '<p class="pf-note" style="margin:10px 0 0"><button class="sc-qlink" style="margin:0" data-act="ntreset" data-v="all">Reset all cards</button> to start every unit from scratch.</p>' : '')) +
+    '</div>' +
     '<div class="pf-card"><h2>How to use it</h2><ul class="sc-list" style="margin-top:0">' +
     '<li>About 10 minutes most days: tap <b>Start 10 cards</b>. Cards due for review come first, then new ones.</li>' +
     '<li>Say the answer out loud (or write it) <i>before</i> showing it, then be honest: <b>Not yet</b> or <b>Knew it</b>.</li>' +
@@ -1487,6 +1495,9 @@ app.addEventListener('click', function (ev) {
   if (a === 'ntend') { if (NS && NS.yes + NS.no) NS.q = NS.q.slice(0, NS.i); else NS = null; return R.notes(); }
   if (a === 'ntagain') { ntStart(0, NS.missed); return R.notes(); }
   if (a === 'ntdone') { NS = null; return R.notes(); }
+  if (a === 'ntreset') { NR = v; return R.notes(); }
+  if (a === 'ntresetx') { NR = null; return R.notes(); }
+  if (a === 'ntresetok') { var rs = ntState(); CD.forEach(function (c) { if (NR === 'all' || c.u === NR) delete rs[c.id]; }); sset('cards', rs); NR = null; NS = null; return R.notes(); }
   if (a === 'ntprint') { try { window.print(); } catch (e) { /* sandboxed preview */ } return; }
   if (a === 'notesgo') { setNF({ u: 'all', k: 'all', t: 'all', mode: 'test' }); ntStart(10); setTab('notes', true); window.scrollTo(0, 0); return; }
   if (a === 'fdone') { var fd = sget('fdone', {}); if (fd[v]) delete fd[v]; else fd[v] = 1; sset('fdone', fd); return refresh(); }

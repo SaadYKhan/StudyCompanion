@@ -205,7 +205,11 @@ try:
                 pg.click('[data-act="ntmode"][data-v="browse"]'); pg.wait_for_timeout(150)
                 if pg.locator('.nt-list li').count() != 37:
                     fails.append('key notes: browse view should list 37 cards')
-                pg.click('[data-act="ntmode"][data-v="test"]')
+                pg.click('[data-act="ntmode"][data-v="test"]'); pg.wait_for_timeout(120)
+                pg.click('[data-act="ntreset"][data-v="WST01"]'); pg.wait_for_timeout(120)
+                pg.click('[data-act="ntresetok"]'); pg.wait_for_timeout(150)
+                if '37 new' not in pg.inner_text('#ntDeckLine'):
+                    fails.append('key notes: reset did not return the Maths S1 cards to new: ' + pg.inner_text('#ntDeckLine'))
                 if shots:
                     for t in TABS:
                         pg.click(f'[data-tab="{t}"]'); pg.wait_for_timeout(120)
