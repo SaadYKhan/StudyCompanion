@@ -31,7 +31,7 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 httpd = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Quiet, directory=site))
 port = httpd.server_address[1]
 threading.Thread(target=httpd.serve_forever, daemon=True).start()
-TABS = ['overview', 'dates', 'alevel', 'qlog', 'sat', 'maths', 'log', 'sources']
+TABS = ['overview', 'dates', 'alevel', 'qlog', 'notes', 'sat', 'maths', 'log', 'sources']
 BAD = ('undefined', 'NaN', '[object Object]', 'Invalid Date')
 fails = []
 
@@ -162,7 +162,7 @@ try:
                 for want in ['Key focus areas', 'Finish every question', '25 / 119', 'Multiple choice in both sciences', '30 / 70', 'Percentages one after another', '7 / 21']:
                     if want.lower() not in ov.lower():
                         fails.append('focus areas missing: ' + want)
-                if 'logged' not in pg.inner_text('.sc-soon >> nth=1'):
+                if 'logged' not in pg.locator('.sc-soon', has_text='By the end of term').nth(1).inner_text():
                     fails.append('ZK practice paper did not tick the focus checklist')
                 pg.click('[data-act="fdone"][data-v="a:p1"]'); pg.wait_for_timeout(200)
                 if pg.get_attribute('[data-act="fdone"][data-v="a:p1"]', 'aria-pressed') != 'true':
@@ -175,6 +175,37 @@ try:
                 pg.click('[data-act="qsoon"][data-v="a:0"]'); pg.wait_for_timeout(400)
                 if not pg.inner_text('#qCount').startswith('60 of'):
                     fails.append('Physics redo link did not open the 60 lost parts: ' + pg.inner_text('#qCount'))
+                # key notes: self-test flips, grades, re-queues a missed card, saves, and survives a reload
+                pg.click('[data-tab="notes"]'); pg.wait_for_timeout(300)
+                if '149' not in pg.inner_text('#t-notes'):
+                    fails.append('key notes: card total missing')
+                pg.click('[data-act="ntu"][data-v="WST01"]'); pg.wait_for_timeout(150)
+                if '37' not in pg.inner_text('#ntDeckLine'):
+                    fails.append('key notes: Maths S1 deck should have 37 cards: ' + pg.inner_text('#ntDeckLine'))
+                pg.click('[data-act="ntquiz"][data-v="0"]'); pg.click('[data-act="ntstart"][data-v="10"]'); pg.wait_for_timeout(150)
+                if pg.locator('#ntA').count():
+                    fails.append('key notes: answer visible before flipping')
+                pg.keyboard.press('Space'); pg.wait_for_timeout(120)
+                if not pg.locator('#ntA').count():
+                    fails.append('key notes: Space did not show the answer')
+                first = pg.inner_text('#ntQ')
+                pg.keyboard.press('1'); pg.wait_for_timeout(120)
+                seen_again = False
+                for _ in range(14):
+                    if not pg.locator('#ntQ').count(): break
+                    if pg.inner_text('#ntQ') == first: seen_again = True
+                    pg.keyboard.press('Space'); pg.keyboard.press('2'); pg.wait_for_timeout(60)
+                if not seen_again:
+                    fails.append('key notes: a not-yet card did not come back in the session')
+                if '1 not yet' not in pg.inner_text('.nt-stage'):
+                    fails.append('key notes: session summary wrong: ' + pg.inner_text('.nt-stage')[:120])
+                pg.reload(); pg.wait_for_timeout(600)
+                if '27 new' not in pg.inner_text('#ntDeckLine'):
+                    fails.append('key notes: progress did not survive a reload: ' + pg.inner_text('#ntDeckLine'))
+                pg.click('[data-act="ntmode"][data-v="browse"]'); pg.wait_for_timeout(150)
+                if pg.locator('.nt-list li').count() != 37:
+                    fails.append('key notes: browse view should list 37 cards')
+                pg.click('[data-act="ntmode"][data-v="test"]')
                 if shots:
                     for t in TABS:
                         pg.click(f'[data-tab="{t}"]'); pg.wait_for_timeout(120)

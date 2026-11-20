@@ -245,6 +245,40 @@ a:hover { color: var(--pf-ivory); }
 .sc-box { width: 1.1rem; height: 1.1rem; margin-top: 1px; border: 1px solid var(--pf-line-2); border-radius: var(--pf-radius-sm); background: none; color: var(--pf-ok); font-size: 12px; line-height: 1; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 button.sc-box { cursor: pointer; } button.sc-box:hover { border-color: var(--pf-gold); }
 .sc-box.on { border-color: var(--pf-ok); background: rgba(70,195,145,.1); }
+/* key notes: self-test cards */
+.nt-stage { max-width: 46rem; margin: 0 auto; }
+.nt-prog { height: 4px; background: var(--pf-line); border-radius: 2px; overflow: hidden; margin: 0 0 10px; }
+.nt-prog span { display: block; height: 100%; background: var(--pf-gold); }
+.nt-card { border: 1px solid var(--pf-line-2); border-top: 3px solid var(--pf-gold); border-radius: var(--pf-radius); background: var(--pf-card-2);
+  padding: var(--cds-pad-lg); min-height: 16rem; display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.nt-meta { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); flex-wrap: wrap; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--pf-steel); }
+.nt-q { font-family: var(--font-serif); font-size: 22px; line-height: 1.35; color: var(--pf-ivory); }
+.nt-a { border-top: 1px dashed var(--pf-line-2); padding-top: var(--cds-pad-md); font-size: 15px; line-height: 1.6; color: var(--pf-ivory); }
+.nt-a .lb { display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--pf-gold-hi); margin-bottom: 4px; }
+.nt-src { font-size: 11.5px; color: var(--pf-steel); }
+.nt-acts { display: flex; gap: var(--cds-gap-sm); justify-content: center; flex-wrap: wrap; margin-top: auto; padding-top: var(--cds-pad-sm); }
+.nt-btn { font-size: 14px; font-weight: 500; padding: 10px 18px; min-width: 9.5rem; border-radius: var(--pf-radius); cursor: pointer; border: 1px solid var(--pf-gold); background: var(--pf-gold); color: var(--pf-ink); }
+.nt-btn:hover { filter: brightness(1.08); }
+.nt-btn.no { background: none; color: var(--pf-bad); border-color: var(--pf-bad); }
+.nt-btn.yes { background: none; color: var(--pf-ok); border-color: var(--pf-ok); }
+.nt-btn.no:hover { background: rgba(232,110,110,.08); } .nt-btn.yes:hover { background: rgba(70,195,145,.08); }
+.nt-btn kbd { font-family: var(--font-sans); font-size: 10px; opacity: .7; margin-left: .45rem; border: 1px solid currentColor; border-radius: 3px; padding: 0 4px; }
+.nt-ctl { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+.nt-ctl .lb { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--pf-table-head); margin-right: 2px; }
+.nt-hint { font-size: 11.5px; color: var(--pf-steel); text-align: center; margin-top: 8px; }
+.nt-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--cds-gap-sm); }
+.nt-list li { border: 1px solid var(--pf-line); border-radius: var(--pf-radius); padding: 10px 12px; background: var(--pf-card-2); break-inside: avoid; }
+.nt-list .q { font-weight: 500; color: var(--pf-ivory); font-size: 13px; line-height: 1.45; }
+.nt-list .a { font-size: 12.5px; line-height: 1.55; color: var(--pf-ivory); opacity: .86; margin-top: 4px; }
+.nt-list .ft { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 11px; color: var(--pf-steel); }
+.nt-topic { font-family: var(--font-serif); font-size: 16px; color: var(--pf-gold-hi); margin: var(--cds-gap-md) 0 0; font-weight: 400; }
+@media (max-width: 46rem) { .nt-list { grid-template-columns: 1fr; } .nt-q { font-size: 19px; } .nt-btn { min-width: 8rem; } }
+@media print {
+  body, .pf-card, .nt-list li { background: #fff !important; box-shadow: none !important; }
+  .pf-head, .pf-foot, .nt-noprint, .pf-over { display: none !important; }
+  #t-notes, #t-notes * { color: #111 !important; border-color: #bbb !important; opacity: 1 !important; }
+  .nt-list { grid-template-columns: 1fr 1fr; }
+}
 .sc-cat { margin-top: var(--cds-gap-md); }
 .sc-cat .hd { display: grid; grid-template-columns: 1fr 9rem 5.2rem; gap: var(--cds-gap-sm); align-items: center; font-size: 12.5px; }
 .sc-cat .hd b { font-weight: 500; color: var(--pf-ivory); }
@@ -363,6 +397,7 @@ details.sc-add[open] summary::after { content: " −"; }
   <section class="pf-tab" id="t-dates" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-alevel" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-qlog" role="tabpanel" hidden></section>
+  <section class="pf-tab" id="t-notes" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-sat" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-maths" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-log" role="tabpanel" hidden></section>
@@ -376,6 +411,7 @@ details.sc-add[open] summary::after { content: " −"; }
 
 <script src="data/study.js"></script>
 <script src="data/questions.js"></script>
+<script src="data/cards.js"></script>
 <script>
 (function () {
 'use strict';
@@ -605,7 +641,7 @@ function rHead() {
 }
 
 /* ---------- tabs ---------- */
-var TABS = [['overview', 'Overview'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources']];
+var TABS = [['overview', 'Overview'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['notes', 'Key notes'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources']];
 var R = {};
 function setTab(id, push) {
   if (!R[id]) id = 'overview';
@@ -664,6 +700,135 @@ R.overview = function () {
   html += '</div>';
   el.innerHTML = html;
 };
+/* ---------- Key notes: self-test cards with spaced repetition ---------- */
+var CD = (window.CARDS && window.CARDS.cards) || [], CU = (window.CARDS && window.CARDS.units) || [];
+var NT_INT = [0, 1, 3, 7, 14, 30];   // days until a card comes back, by box (0 = not yet … 5 = mastered)
+var NT_KINDS = [['all', 'All cards'], ['mine', 'From her papers'], ['know', 'Must know'], ['exam', 'Exam technique']];
+var NT_LBL = { 'new': ['New', 'gold'], learning: ['Learning', 'warn'], known: ['Known', 'ok'], mastered: ['Mastered', 'ok'] };
+var NS = null;                       // the self-test session in progress (kept in memory only)
+function ntState() { return sget('cards', {}); }
+function ntF() { var f = sget('nf', {}); return { u: f.u || 'all', k: f.k || 'all', t: f.t || 'all', quiz: !!f.quiz, mode: f.mode || 'test' }; }
+function setNF(o) { var f = ntF(); Object.keys(o).forEach(function (k) { f[k] = o[k]; }); sset('nf', f); }
+function ntUnit(u) { for (var i = 0; i < CU.length; i++) if (CU[i].u === u) return CU[i]; return { u: u, n: u }; }
+function ntStatus(s) { if (!s || !s.n) return 'new'; if (s.b >= 4) return 'mastered'; if (s.b >= 2) return 'known'; return 'learning'; }
+function ntDue(s) { return !!(s && s.n && s.d <= TODAY); }
+function ntDeck(f) { return CD.filter(function (c) { return (f.u === 'all' || c.u === f.u) && (f.k === 'all' || c.k === f.k) && (f.t === 'all' || c.t === f.t); }); }
+function ntCounts(cards, st) {
+  var o = { total: cards.length, 'new': 0, learning: 0, known: 0, mastered: 0, due: 0, notyet: 0 };
+  cards.forEach(function (c) { var s = st[c.id]; o[ntStatus(s)]++; if (ntDue(s)) o.due++; if (s && s.n && s.b === 0) o.notyet++; });
+  return o;
+}
+function ntNextDue(cards, st) { var d = null; cards.forEach(function (c) { var s = st[c.id]; if (s && s.n && s.d > TODAY && (!d || s.d < d)) d = s.d; }); return d; }
+function ntStart(size, ids) {
+  var st = ntState(), deck = ntDeck(ntF()), q, box = function (c) { return (st[c.id] && st[c.id].b) || 0; }, dd = function (c) { return (st[c.id] && st[c.id].d) || ''; };
+  if (ids) q = ids.slice();
+  else {
+    var due = deck.filter(function (c) { return ntDue(st[c.id]); }).sort(function (a, b) { return (box(a) - box(b)) || (dd(a) < dd(b) ? -1 : dd(a) > dd(b) ? 1 : 0); });
+    var fresh = deck.filter(function (c) { return !(st[c.id] && st[c.id].n); });
+    q = due.concat(fresh);
+    if (!q.length) q = deck.slice().sort(function (a, b) { return (box(a) - box(b)) || (dd(a) < dd(b) ? -1 : dd(a) > dd(b) ? 1 : 0); });
+    q = q.map(function (c) { return c.id; });
+    if (size) q = q.slice(0, size);
+  }
+  NS = { q: q, i: 0, flip: false, yes: 0, no: 0, missed: [], rep: {} };
+}
+function ntGrade(knew) {
+  if (!NS || NS.i >= NS.q.length) return;
+  var id = NS.q[NS.i], st = ntState(), s = st[id] || { b: 0, n: 0, r: 0, w: 0 };
+  s.n++; s.l = TODAY;
+  if (knew) { s.r++; s.b = Math.min(s.b + 1, 5); s.d = addDays(TODAY, NT_INT[s.b]); NS.yes++; }
+  else {
+    s.w++; s.b = 0; s.d = TODAY; NS.no++;
+    if (NS.missed.indexOf(id) < 0) NS.missed.push(id);
+    var r = NS.rep[id] || 0; if (r < 2) { NS.rep[id] = r + 1; NS.q.splice(Math.min(NS.i + 4, NS.q.length), 0, id); }   // comes back a few cards later
+  }
+  st[id] = s; sset('cards', st); NS.i++; NS.flip = false; R.notes();
+}
+function ntById(id) { for (var i = 0; i < CD.length; i++) if (CD[i].id === id) return CD[i]; return null; }
+function ntKindName(k) { for (var i = 0; i < NT_KINDS.length; i++) if (NT_KINDS[i][0] === k) return NT_KINDS[i][1]; return k; }
+R.notes = function () {
+  var el = document.getElementById('t-notes'), f = ntF(), st = ntState(), deck = ntDeck(f), all = ntCounts(CD, st), dc = ntCounts(deck, st);
+  var h = '<div class="pf-over">Key notes · self-test</div><div class="pf-kpis">' +
+    kpi('Due today', String(all.due), all.due === 1 ? 'card' : 'cards', all.due ? 'cards she has seen that are due for review' : 'nothing due: start new cards') +
+    kpi('New', String(all['new']), 'cards', 'not yet tried') +
+    kpi('Known', String(all.known + all.mastered), '/ ' + all.total, all.mastered + ' mastered (right 4+ times in a row, spaced out)') +
+    kpi('Not-yet pile', String(all.notyet), 'cards', 'got wrong last time: these come back first') + '</div>';
+  // progress by unit (shown below the cards)
+  var prog = '<div class="pf-grid wide" style="margin-top:var(--cds-gap-md)"><div class="pf-card"><h2>Progress by unit</h2><p class="pf-note">Each card comes back after 1, 3, 7, 14 and then 30 days while she keeps getting it right, and straight away when she doesn\'t.</p>' +
+    '<div class="pf-scroll" style="max-height:none"><table class="pf-table"><thead><tr><th>Unit</th><th class="r">Cards</th><th class="r">New</th><th class="r">Learning</th><th class="r">Known</th><th style="width:26%">Progress</th><th class="r">Due</th></tr></thead><tbody>' +
+    CU.map(function (u) {
+      var c = ntCounts(CD.filter(function (x) { return x.u === u.u; }), st), pc = c.total ? Math.round(100 * (c.known + c.mastered) / c.total) : 0, pl = c.total ? Math.round(100 * c.learning / c.total) : 0;
+      return '<tr><td class="strong">' + esc(u.n) + '</td><td class="r">' + c.total + '</td><td class="r">' + c['new'] + '</td><td class="r">' + c.learning + '</td><td class="r">' + (c.known + c.mastered) + '</td>' +
+        '<td><div class="sc-track" title="Green: known · amber: learning" style="display:flex"><span style="width:' + pc + '%;background:var(--pf-ok)"></span><span style="width:' + pl + '%;background:var(--pf-warn);opacity:.75"></span></div></td><td class="r">' + (c.due ? '<b style="color:var(--pf-gold-hi)">' + c.due + '</b>' : '0') + '</td></tr>';
+    }).join('') + '</tbody></table></div></div>' +
+    '<div class="pf-card"><h2>How to use it</h2><ul class="sc-list" style="margin-top:0">' +
+    '<li>About 10 minutes most days: tap <b>Start 10 cards</b>. Cards due for review come first, then new ones.</li>' +
+    '<li>Say the answer out loud (or write it) <i>before</i> showing it, then be honest: <b>Not yet</b> or <b>Knew it</b>.</li>' +
+    '<li><b>Parent quizzing</b>: the answer shows straight away for the person asking; she answers aloud.</li>' +
+    '<li><b>From her papers</b> cards come from marks she lost; start there.</li>' +
+    '<li>Keys on a computer: <b>Space</b> shows the answer, <b>1</b> = Not yet, <b>2</b> = Knew it.</li></ul></div></div>';
+  // controls
+  var topics = []; CD.forEach(function (c) { if ((f.u === 'all' || c.u === f.u) && topics.indexOf(c.t) < 0) topics.push(c.t); });
+  h += '<div class="pf-card nt-noprint" style="margin-top:var(--cds-gap-md)"><div class="nt-ctl">' +
+    '<span class="pf-seg" role="group" aria-label="Unit">' + [['all', 'All units']].concat(CU.map(function (u) { return [u.u, u.n]; })).map(function (o) { return '<button data-act="ntu" data-v="' + o[0] + '" aria-pressed="' + (f.u === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('') + '</span>' +
+    '<span class="pf-seg" role="group" aria-label="Card type">' + NT_KINDS.map(function (o) { return '<button data-act="ntk" data-v="' + o[0] + '" aria-pressed="' + (f.k === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('') + '</span>' +
+    '<select class="pf-select" data-act="ntt" aria-label="Topic"><option value="all">All topics</option>' + topics.map(function (t) { return '<option' + (f.t === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+    '<span class="pf-seg" role="group" aria-label="Mode" style="margin-left:auto">' + [['test', 'Self-test'], ['browse', 'Browse & print']].map(function (o) { return '<button data-act="ntmode" data-v="' + o[0] + '" aria-pressed="' + (f.mode === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span>' +
+    '</div><p class="pf-note" style="margin:8px 0 0" id="ntDeckLine">This selection: <b>' + dc.total + '</b> cards · ' + dc.due + ' due today · ' + dc['new'] + ' new · ' + (dc.known + dc.mastered) + ' known</p></div>';
+
+  if (f.mode === 'browse') {
+    h += '<div class="pf-card" style="margin-top:var(--cds-gap-md)"><div class="pf-ch"><div><h2>' + esc(f.u === 'all' ? 'All units' : ntUnit(f.u).n) + (f.k !== 'all' ? ' · ' + esc(ntKindName(f.k)) : '') + (f.t !== 'all' ? ' · ' + esc(f.t) : '') + '</h2>' +
+      '<p class="pf-note">' + deck.length + ' cards, grouped by topic.</p></div><button class="pf-btn ghost nt-noprint" data-act="ntprint">Print these cards</button></div>';
+    var byT = {}, order = []; deck.forEach(function (c) { var key = (f.u === 'all' ? ntUnit(c.u).n + ' · ' : '') + c.t; if (!byT[key]) { byT[key] = []; order.push(key); } byT[key].push(c); });
+    order.forEach(function (key) {
+      h += '<h3 class="nt-topic">' + esc(key) + '</h3><ul class="nt-list">' + byT[key].map(function (c) {
+        var sname = ntStatus(st[c.id]), lb = NT_LBL[sname];
+        return '<li><div class="q">' + esc(c.q) + '</div><div class="a">' + esc(c.a) + '</div><div class="ft"><span>' + (c.src ? esc(c.src) : esc(ntKindName(c.k))) + '</span><span class="pf-badge ' + lb[1] + ' nt-noprint">' + lb[0] + '</span></div></li>';
+      }).join('') + '</ul>';
+    });
+    if (!deck.length) h += '<div class="pf-empty">No cards match this selection.</div>';
+    el.innerHTML = h + '</div><div class="nt-noprint">' + prog + '</div>'; return;
+  }
+
+  // self-test
+  h += '<div class="nt-stage" style="margin-top:var(--cds-gap-md)">';
+  if (!NS) {
+    var nd = ntNextDue(deck, st), ready = dc.due + dc['new'];
+    h += '<div class="nt-card"><div class="nt-meta"><span>' + esc(f.u === 'all' ? 'All units' : ntUnit(f.u).n) + (f.k !== 'all' ? ' · ' + esc(ntKindName(f.k)) : '') + (f.t !== 'all' ? ' · ' + esc(f.t) : '') + '</span><span>' + deck.length + ' cards</span></div>' +
+      '<div class="nt-q">' + (ready ? 'Ready: ' + dc.due + ' due for review and ' + dc['new'] + ' new.' : 'All caught up' + (nd ? ': the next card is due ' + esc(fmt(nd)) + '.' : '.')) + '</div>' +
+      '<div class="nt-ctl" style="justify-content:center"><span class="lb">Who\'s holding the device?</span><span class="pf-seg" role="group" aria-label="Quiz mode">' +
+      [[false, 'MK on her own'], [true, 'Parent quizzing']].map(function (o) { return '<button data-act="ntquiz" data-v="' + (o[0] ? 1 : 0) + '" aria-pressed="' + (f.quiz === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span></div>' +
+      '<div class="nt-acts">' + (ready ? '<button class="nt-btn" data-act="ntstart" data-v="10">Start 10 cards</button><button class="nt-btn yes" data-act="ntstart" data-v="20">Start 20</button>' +
+        (ready > 20 ? '<button class="nt-btn yes" data-act="ntstart" data-v="0">All ' + ready + '</button>' : '') :
+        (deck.length ? '<button class="nt-btn" data-act="ntstart" data-v="10">Practise 10 anyway</button>' : '')) + '</div></div>';
+  } else if (NS.i < NS.q.length) {
+    var c = ntById(NS.q[NS.i]), s0 = st[c.id], showA = NS.flip || f.quiz;
+    h += '<div class="nt-prog" aria-hidden="true"><span style="width:' + Math.round(100 * NS.i / NS.q.length) + '%"></span></div>' +
+      '<div class="nt-card" id="ntCard"><div class="nt-meta"><span>' + esc(ntUnit(c.u).n) + ' · ' + esc(c.t) + '</span><span>Card ' + (NS.i + 1) + ' of ' + NS.q.length + (s0 && s0.n ? ' · seen ' + s0.n + '×' : ' · new') + '</span></div>' +
+      '<div class="nt-q" id="ntQ">' + esc(c.q) + '</div>' +
+      (showA ? '<div class="nt-a" id="ntA"><span class="lb">' + (f.quiz && !NS.flip ? 'Answer (for the person asking)' : 'Answer') + '</span>' + esc(c.a) + (c.src ? '<div class="nt-src" style="margin-top:6px">From: ' + esc(c.src) + '</div>' : '') + '</div>' : '') +
+      '<div class="nt-acts">' + (showA ? '<button class="nt-btn no" data-act="ntno">Not yet<kbd>1</kbd></button><button class="nt-btn yes" data-act="ntyes">Knew it<kbd>2</kbd></button>'
+        : '<button class="nt-btn" data-act="ntflip">Show answer<kbd>Space</kbd></button>') + '</div></div>' +
+      '<p class="nt-hint">' + (showA ? 'Be honest: "Not yet" brings it back in a few cards and again tomorrow.' : 'Say the answer out loud first, then show it.') + ' <button class="sc-qlink" data-act="ntend">End session</button></p>';
+  } else {
+    h += '<div class="nt-card"><div class="nt-meta"><span>Session finished</span><span>' + NS.q.length + ' cards</span></div>' +
+      '<div class="nt-q">' + NS.yes + ' knew it · ' + NS.no + ' not yet</div>' +
+      (NS.missed.length ? '<div class="nt-a"><span class="lb">Go over these again</span><ul class="sc-list" style="margin:0">' + NS.missed.map(function (id) { var x = ntById(id); return '<li><b>' + esc(x.q) + '</b><br>' + esc(x.a) + '</li>'; }).join('') + '</ul></div>' : '<div class="nt-a">Every card right. They\'ll come back in a few days to make sure they stick.</div>') +
+      '<div class="nt-acts">' + (NS.missed.length ? '<button class="nt-btn no" data-act="ntagain">Again: the ' + NS.missed.length + ' not-yet card' + (NS.missed.length === 1 ? '' : 's') + '</button>' : '') +
+      '<button class="nt-btn" data-act="ntdone">Done</button></div></div>';
+  }
+  el.innerHTML = h + '</div>' + prog;
+};
+document.addEventListener('keydown', function (e) {
+  if (sget('tab', 'overview') !== 'notes' || !NS || NS.i >= NS.q.length || e.metaKey || e.ctrlKey || e.altKey) return;
+  var t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')) return;
+  var showA = NS.flip || ntF().quiz;
+  if ((e.key === ' ' || e.key === 'Enter') && !showA) { e.preventDefault(); NS.flip = true; R.notes(); }
+  else if ((e.key === '1' || e.key === 'ArrowLeft') && showA) { e.preventDefault(); ntGrade(false); }
+  else if ((e.key === '2' || e.key === 'ArrowRight') && showA) { e.preventDefault(); ntGrade(true); }
+  else if (e.key === 'Escape') { NS = null; R.notes(); }
+});
+
 /* ---------- Key focus areas ---------- */
 function focusOf(w) { return (D.focus && D.focus[w]) || null; }
 function focusItem(key) {
@@ -716,6 +881,11 @@ function focusHtml() {
           return '<li class="' + (x.done ? 'done' : '') + '">' + box + '<div><span class="tx">' + esc(s.t) + '</span><span class="w">' + esc(s.why) + '</span></div>' +
             '<span class="st">' + (x.link ? '<button class="sc-qlink" data-act="qsoon" data-v="' + w + ':' + i + '">' + esc(x.st) + '</button>' : esc(x.st || '')) + '</span></li>';
         }).join('') + '</ul></div>';
+    }
+    if (w === 'a' && CD.length) {
+      var nc = ntCounts(CD, ntState());
+      h += '<div class="sc-soon"><div class="sh">Key notes<span>' + nc.due + ' due today · ' + nc['new'] + ' new · ' + (nc.known + nc.mastered) + ' of ' + nc.total + ' known</span></div>' +
+        '<button class="pf-btn ghost" data-act="notesgo" style="margin-top:8px">Start a 10-card self-test</button></div>';
     }
     h += '</div>';
   });
@@ -1306,12 +1476,25 @@ app.addEventListener('click', function (ev) {
   if (a === 'qfocus') { sset('qwho', v.split(':')[0]); sset('qf', { subj: 'all', paper: 'all', res: 'fix', topic: 'all', why: 'all', chk: '', focus: v, sort: 'lost' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
   if (a === 'qfocusx') { setQF({ focus: '' }); return refresh(); }
   if (a === 'qsoon') { var sp = v.split(':'); sset('qwho', sp[0]); sset('qf', { subj: 'all', paper: 'all', res: 'fix', topic: 'all', why: 'all', chk: '', focus: sp[0] + ':s' + sp[1], sort: 'paper' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
+  if (a === 'ntu') { setNF({ u: v, t: 'all' }); NS = null; return R.notes(); }
+  if (a === 'ntk') { setNF({ k: v }); NS = null; return R.notes(); }
+  if (a === 'ntmode') { setNF({ mode: v }); return R.notes(); }
+  if (a === 'ntquiz') { setNF({ quiz: v === '1' }); return R.notes(); }
+  if (a === 'ntstart') { ntStart(Number(v)); R.notes(); var cd = document.getElementById('ntCard'); if (cd) cd.scrollIntoView({ block: 'center' }); return; }
+  if (a === 'ntflip') { if (NS) NS.flip = true; return R.notes(); }
+  if (a === 'ntyes') return ntGrade(true);
+  if (a === 'ntno') return ntGrade(false);
+  if (a === 'ntend') { if (NS && NS.yes + NS.no) NS.q = NS.q.slice(0, NS.i); else NS = null; return R.notes(); }
+  if (a === 'ntagain') { ntStart(0, NS.missed); return R.notes(); }
+  if (a === 'ntdone') { NS = null; return R.notes(); }
+  if (a === 'ntprint') { try { window.print(); } catch (e) { /* sandboxed preview */ } return; }
+  if (a === 'notesgo') { setNF({ u: 'all', k: 'all', t: 'all', mode: 'test' }); ntStart(10); setTab('notes', true); window.scrollTo(0, 0); return; }
   if (a === 'fdone') { var fd = sget('fdone', {}); if (fd[v]) delete fd[v]; else fd[v] = 1; sset('fdone', fd); return refresh(); }
   if (a === 'qdel') { sset('myq', myQs().filter(function (q) { return qid(q) !== b.getAttribute('data-id'); })); return refresh(); }
   if (a === 'ics') return makeIcs();
   if (a === 'backup') {
     var out = { app: 'study-companion', v: 1, saved: new Date().toISOString(), data: {} };
-    ['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone'].forEach(function (k) { var x = sget(k, null); if (x != null) out.data[k] = x; });
+    ['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone', 'cards', 'nf'].forEach(function (k) { var x = sget(k, null); if (x != null) out.data[k] = x; });
     return download('study-companion-backup-' + TODAY + '.json', JSON.stringify(out, null, 1), 'application/json');
   }
 });
@@ -1322,6 +1505,7 @@ app.addEventListener('change', function (ev) {
   if (a === 'qtopicsel') { setQF({ topic: t.value, chk: '' }); return refresh(); }
   if (a === 'qwhysel') { setQF({ why: t.value }); return refresh(); }
   if (a === 'qsort') { setQF({ sort: t.value }); return refresh(); }
+  if (a === 'ntt') { setNF({ t: t.value }); NS = null; return R.notes(); }
   if (a === 'dpast') { sset('dpast', t.checked); return refresh(); }
   if (a === 'road') { var r = sget('road', {}); if (t.checked) r[t.getAttribute('data-k')] = 1; else delete r[t.getAttribute('data-k')]; sset('road', r); return refresh(); }
   if (a === 'restore' && t.files && t.files[0]) {
@@ -1330,7 +1514,7 @@ app.addEventListener('change', function (ev) {
       var msg = document.getElementById('bkMsg');
       try {
         var o = JSON.parse(fr.result); if (!o || o.app !== 'study-companion' || typeof o.data !== 'object') throw new Error('not a backup');
-        Object.keys(o.data).forEach(function (k) { if (['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone'].indexOf(k) >= 0) sset(k, o.data[k]); });
+        Object.keys(o.data).forEach(function (k) { if (['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone', 'cards', 'nf'].indexOf(k) >= 0) sset(k, o.data[k]); });
         refresh(); document.getElementById('bkMsg').textContent = 'Restored the backup from ' + fmt(String(o.saved).slice(0, 10)) + '.';
       } catch (e) { if (msg) msg.textContent = 'That file is not a Study Companion backup.'; }
     };
