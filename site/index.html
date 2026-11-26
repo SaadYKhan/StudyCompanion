@@ -1905,7 +1905,7 @@ function tutorFamilyHtml(sid, name) {
     (cs.configured ? '' : '<p class="pf-note sc-fammsg bad">The tutor needs a Claude API key added in Cloudflare before it can answer. You can save settings now.</p>') +
     '<form class="sc-form" data-form="chatset"><input type="hidden" name="sid" value="' + esc(sid) + '">' +
     '<label>Tutor' + sel('enabled', [[1, 'On'], [0, 'Off']], st.enabled ? 1 : 0) + '</label>' +
-    '<label>Messages a day' + sel('daily_limit', [[10, '10'], [20, '20'], [30, '30'], [50, '50']].concat([10, 20, 30, 50].indexOf(st.daily_limit) < 0 ? [[st.daily_limit, String(st.daily_limit)]] : []), st.daily_limit) + '</label>' +
+    '<label>Messages a day' + sel('daily_limit', [[20, '20'], [50, '50'], [100, '100'], [150, '150'], [200, '200']].concat([20, 50, 100, 150, 200].indexOf(st.daily_limit) < 0 ? [[st.daily_limit, String(st.daily_limit)]] : []), st.daily_limit) + '</label>' +
     '<label>No chat from<input class="pf-input" type="time" name="quiet_from" value="' + esc(st.quiet_from) + '"></label>' +
     '<label>until<input class="pf-input" type="time" name="quiet_to" value="' + esc(st.quiet_to) + '"></label>' +
     '<label>Monthly limit' + sel('cap', [[200, '$2'], [500, '$5'], [1000, '$10'], [2000, '$20']].concat([200, 500, 1000, 2000].indexOf(st.monthly_cap_cents) < 0 ? [[st.monthly_cap_cents, money(st.monthly_cap_cents)]] : []), st.monthly_cap_cents) + '</label>' +

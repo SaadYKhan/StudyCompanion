@@ -122,7 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_family ON audit_log(family_id, at);
 CREATE TABLE IF NOT EXISTS chat_settings (
   student_id        TEXT PRIMARY KEY REFERENCES students(id) ON DELETE CASCADE,
   enabled           INTEGER NOT NULL DEFAULT 0,
-  daily_limit       INTEGER NOT NULL DEFAULT 30,      -- messages a day
+  daily_limit       INTEGER NOT NULL DEFAULT 100,     -- messages a day
   quiet_from        TEXT NOT NULL DEFAULT '22:00',    -- Dubai time; no chat between these
   quiet_to          TEXT NOT NULL DEFAULT '06:00',
   monthly_cap_cents INTEGER NOT NULL DEFAULT 500,     -- spend cap per calendar month

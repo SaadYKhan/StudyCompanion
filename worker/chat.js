@@ -13,7 +13,7 @@
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 
-const DEFAULTS = { enabled: 0, daily_limit: 30, quiet_from: "22:00", quiet_to: "06:00", monthly_cap_cents: 500 };
+const DEFAULTS = { enabled: 0, daily_limit: 100, quiet_from: "22:00", quiet_to: "06:00", monthly_cap_cents: 500 };
 const MAX_MESSAGE = 1200;
 const MAX_THREAD = 60;
 const RETAIN_DAYS = 90;
