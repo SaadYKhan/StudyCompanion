@@ -378,6 +378,23 @@ details.sc-add[open] summary::after { content: " −"; }
   .pf > .pf-tab:not([hidden]) > * { animation: pf-rise var(--cds-dur-slow) var(--cds-ease-out) both; }
   @keyframes pf-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 }
+/* account strip, child view, family page */
+.sc-acct { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 10px 0 0; font-size: 12.5px; color: var(--pf-steel); }
+.sc-acct .chip { border: 1px solid var(--pf-line-2); border-radius: var(--pf-radius-pill); padding: 2px 10px; }
+.sc-acct b { color: var(--pf-gold-hi); font-weight: 600; }
+.sc-acct .warn { color: var(--pf-warn); }
+.sc-acct .sc-view { display: flex; align-items: center; gap: 6px; }
+.sc-acct .pf-select { font-size: 12.5px; padding: 3px 8px; }
+.sc-acct .sc-qlink { margin-left: 0; font-size: 11.5px; padding: 1px 7px; }
+.sc-viewnote { flex-basis: 100%; border: 1px solid var(--pf-gold-lo); background: var(--pf-gold-tint); color: var(--pf-ivory); border-radius: var(--pf-radius); padding: 7px 12px; }
+.sc-boot { margin-top: 22px; }
+.sc-boot .pf-btn { margin-top: 10px; }
+.sc-logins { list-style: none; margin: 0 0 10px; padding: 0; }
+.sc-logins li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 7px 0; border-bottom: 1px solid var(--pf-line); }
+.sc-logins .em { color: var(--pf-ivory); }
+.sc-logins .ls { color: var(--pf-steel); font-size: 12px; flex: 1; }
+.sc-fammsg { border-left: 2px solid var(--pf-gold); padding-left: 10px; }
+.sc-fammsg.bad { border-color: var(--pf-bad); }
 </style>
 </head>
 <body>
@@ -390,8 +407,10 @@ details.sc-add[open] summary::after { content: " −"; }
     <h1>Study Companion</h1>
     <p class="pf-take" id="take"></p>
     <span class="pf-live" id="asof"></span>
+    <div class="sc-acct" id="acct" hidden></div>
     <nav class="pf-tabs" role="tablist" id="tabs"></nav>
   </header>
+  <div class="pf-empty sc-boot" id="bootMsg">Loading your account…</div>
 
   <section class="pf-tab" id="t-overview" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-dates" role="tabpanel" hidden></section>
@@ -402,6 +421,7 @@ details.sc-add[open] summary::after { content: " −"; }
   <section class="pf-tab" id="t-maths" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-log" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-sources" role="tabpanel" hidden></section>
+  <section class="pf-tab" id="t-family" role="tabpanel" hidden></section>
 
   <footer class="pf-foot">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M12 1.8 22.2 12 12 22.2 1.8 12Z"/><path d="M12 7 17 12 12 17 7 12Z"/></svg>
@@ -427,7 +447,11 @@ function sget(k, def) {
   if (v == null) return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : def;
   try { return JSON.parse(v); } catch (e) { return def; }
 }
-function sset(k, val) { mem[k] = val; try { window.localStorage.setItem(PFX + k, JSON.stringify(val)); } catch (e) { /* in-memory only */ } }
+function sset(k, val) { setLocal(k, val); if (SYNC_ON && SYNC_KINDS.indexOf(k) >= 0) queueSync(k); }
+function setLocal(k, val) {
+  if (val == null) { delete mem[k]; try { window.localStorage.removeItem(PFX + k); } catch (e) { /* in-memory only */ } return; }
+  mem[k] = val; try { window.localStorage.setItem(PFX + k, JSON.stringify(val)); } catch (e) { /* in-memory only */ }
+}
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
 var qs = new URLSearchParams(location.search);
@@ -627,9 +651,9 @@ function barChart(host, cfg) {
 
 /* ---------- masthead ---------- */
 function rHead() {
-  var na = upcoming('a', function (e) { return e.cat !== 'school' && !e.opt; })[0];
-  var nb = upcoming('b', function (e) { return e.cat !== 'school' && !e.opt; })[0];
-  var brk = upcoming('a', function (e) { return e.cat === 'school' && /break/i.test(e.t) && daysTo(first(e)) <= 35; })[0];
+  var na = canSee('a') ? upcoming('a', function (e) { return e.cat !== 'school' && !e.opt; })[0] : null;
+  var nb = canSee('b') ? upcoming('b', function (e) { return e.cat !== 'school' && !e.opt; })[0] : null;
+  var brk = upcoming(kids()[0] || 'a', function (e) { return e.cat === 'school' && /break/i.test(e.t) && daysTo(first(e)) <= 35; })[0];
   var s = [];
   if (brk) s.push((isNow(brk) ? '<b>' + esc(brk.t) + '</b> runs until ' + esc(fmt(brk.end)) + '.' : '<b>' + esc(brk.t) + '</b> starts ' + rel(brk) + '.'));
   if (na) s.push('MK next: <b>' + esc(na.t) + '</b>, ' + esc(fmtRange(na.d, na.end)) + ' (' + rel(na) + ').');
@@ -637,23 +661,23 @@ function rHead() {
   document.getElementById('take').innerHTML = s.join(' ');
   document.getElementById('asof').textContent = 'Today in Dubai: ' + dow(TODAY) + ' ' + fmt(TODAY) + ' · Dates checked ' + fmt(D.updated);
   document.getElementById('foot').innerHTML = 'Dates checked against Pearson, College Board, Princeton, Rutgers, KHDA, MAA and UKMT on ' + esc(fmt(D.updated)) +
-    '. Dates marked Expected follow the usual pattern and are confirmed when published; the school confirms exam entries and start times. Progress is saved in this browser on this device. For family use only.';
+    '. Dates marked Expected follow the usual pattern and are confirmed when published; the school confirms exam entries and start times. ' + (SYNC_ON ? 'Progress is saved to each child\'s account, so it follows them to any device.' : 'Progress is saved in this browser on this device.') + ' For family use only.';
 }
 
 /* ---------- tabs ---------- */
-var TABS = [['overview', 'Overview'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['notes', 'Key notes'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources']];
+var TABS = [['overview', 'Overview'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['notes', 'Key notes'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources'], ['family', 'Family']];
 var R = {};
 function setTab(id, push) {
-  if (!R[id]) id = 'overview';
+  if (!R[id] || !tabAllowed(id)) id = 'overview';
   sset('tab', id);
   TABS.forEach(function (t) {
-    var b = document.querySelector('[data-tab="' + t[0] + '"]'); b.setAttribute('aria-selected', t[0] === id ? 'true' : 'false');
+    var b = document.querySelector('[data-tab="' + t[0] + '"]'); if (b) b.setAttribute('aria-selected', t[0] === id ? 'true' : 'false');
     document.getElementById('t-' + t[0]).hidden = t[0] !== id;
   });
   R[id]();
   if (push) { try { history.replaceState(null, '', location.pathname + location.search + '#' + id); } catch (e) { /* sandboxed */ } }
 }
-function refresh() { rHead(); R[sget('tab', 'overview')](); }
+function refresh() { rHead(); var t = sget('tab', 'overview'); R[R[t] && tabAllowed(t) ? t : 'overview'](); }
 
 /* ---------- Overview ---------- */
 R.overview = function () {
@@ -661,24 +685,24 @@ R.overview = function () {
   var ps = papers(), tiles = D.countdown.map(function (c) {
     var e = c.id === 'asfirst' ? { d: ps[0].d, end: ps[ps.length - 1].d } : evById(c.id);
     return e ? { c: c, e: e } : null;
-  }).filter(function (x) { return x && !isPast(x.e); }).slice(0, 4);
+  }).filter(function (x) { return x && !isPast(x.e) && (x.c.id === 'asfirst' ? canSee('a') : (x.e.who || []).some(canSee)); }).slice(0, 4);
   var html = '<div class="pf-over">Countdown</div><div class="pf-kpis">' +
     tiles.map(function (x) { return countKpi(x.c.l, x.e.d, x.c.s, x.e.end); }).join('') + '</div>';
   html += focusHtml();
   html += '<div class="pf-over">Coming up</div><div class="pf-grid">';
-  ['a', 'b'].forEach(function (w) {
+  kids().forEach(function (w) {
     var st = D.students[w], list = upcoming(w).slice(0, 6);
     html += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(st.label) + ' · ' + esc(st.yr) + ' · ' + esc(st.school) + '</h2><p class="pf-note">' + esc(st.track) + '</p></div>' + whoBadges([w]) + '</div>' +
       '<ul class="sc-evs">' + list.map(function (e) { return evRow(e, { cat: true }); }).join('') + '</ul></div>';
   });
   html += '</div><div class="pf-over">Current plan phase</div><div class="pf-grid">';
-  ['a', 'b'].forEach(function (w) {
+  kids().forEach(function (w) {
     var p = phaseNow(w);
     html += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(p.title) + '</h2><p class="pf-note">' + esc(D.students[w].label) + ' · ' + esc(fmtRange(p.from, p.to)) + '</p></div>' + whoBadges([w]) + '</div>' +
       '<ul class="sc-list">' + p.focus.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' + hoursChips(w, p) + '</div>';
   });
   html += '</div><div class="pf-over">Progress</div><div class="pf-grid">';
-  // Year 12 progress
+  if (canSee('a')) { // Year 12 progress
   var us = asUnits(), sec = 0, n = 0; us.forEach(function (u) { var q = unitPct(u); sec += q.secure; n += q.n; });
   var sat = sget('sat', []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }), ls = sat[sat.length - 1];
   var pp = sget('papers', []), ws = weekStart(TODAY), wa = weekHours('a', ws), ta = targetTotal(phaseFor('a', TODAY) || phaseNow('a'));
@@ -689,7 +713,9 @@ R.overview = function () {
     stat('Hours this week', h1(wa.total), 'target ' + h1(ta) + 'h') +
     (D.assessment ? stat('Chemistry Unit 1', '47 / 80', 'marked paper · aim for about 60 in June') + stat('Physics Unit 1', physScore().m + ' / ' + physScore().x, D.assessment.physics.papers[0].s + ' paper (' + physSub() + ') · aim for about ' + physAim()) : '') +
     fixedStat('a') + '</div></div>';
-  var bp = sget('bprac', []), wb = weekHours('b', ws), tb = targetTotal(phaseFor('b', TODAY) || phaseNow('b'));
+  }
+  if (canSee('b')) {
+  var bp = sget('bprac', []), wb = weekHours('b', weekStart(TODAY)), tb = targetTotal(phaseFor('b', TODAY) || phaseNow('b'));
   var best = bp.reduce(function (m, r) { return Math.max(m, Math.round(100 * r.score / r.outof)); }, 0);
   var road = sget('road', {}), rdone = 0, rn = 0; D.roadmapB.forEach(function (y, yi) { y.items.forEach(function (_, ii) { rn++; if (road[yi + ':' + ii]) rdone++; }); });
   html += '<div class="pf-card"><div class="pf-ch"><h2>ZK · Year 7</h2>' + whoBadges(['b']) + '</div><div class="sc-stats">' +
@@ -697,6 +723,7 @@ R.overview = function () {
     stat('Roadmap steps done', rdone + ' / ' + rn, 'Year 7 to Year 13') +
     stat('Hours this week', h1(wb.total), 'target ' + h1(tb) + 'h') +
     stat('Study streak', String(streak('b')), streak('b') === 1 ? 'day in a row' : 'days in a row') + zkStat() + fixedStat('b') + '</div></div>';
+  }
   html += '</div>';
   el.innerHTML = html;
 };
@@ -867,7 +894,7 @@ function soonState(w, s) {
 function focusHtml() {
   if (!D.focus) return '';
   var h = '<div class="pf-over">Key focus areas</div><div class="pf-grid">';
-  ['a', 'b'].forEach(function (w) {
+  kids().forEach(function (w) {
     var F = focusOf(w); if (!F) return;
     h += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(D.students[w].label) + ': what moves the marks most</h2><p class="pf-note">' + esc(F.note) + '</p></div></div><ol class="sc-focus">';
     F.items.forEach(function (it, i) {
@@ -906,13 +933,13 @@ function stat(l, v, s) { return '<div class="sc-stat"><div class="lbl">' + esc(l
 /* ---------- Key dates ---------- */
 R.dates = function () {
   var el = document.getElementById('t-dates');
-  var who = sget('dwho', 'all'), cat = sget('dcat', 'all'), past = sget('dpast', false);
+  var who = VIEW || sget('dwho', 'all'), cat = sget('dcat', 'all'), past = sget('dpast', false);
   var ev = events().filter(function (e) { return (who === 'all' || e.who.indexOf(who) >= 0) && (cat === 'all' || e.cat === cat) && (past || !isPast(e)); });
-  var html = '<div class="pf-card"><div class="pf-ch"><div><h2>Key dates</h2><p class="pf-note">Every exam, test and deadline for both students. ' +
+  var html = '<div class="pf-card"><div class="pf-ch"><div><h2>Key dates</h2><p class="pf-note">Every exam, test and deadline for ' + (VIEW ? esc(D.students[VIEW].label) : 'both students') + '. ' +
     '<span class="pf-badge warn">Expected</span> marks dates that follow the usual pattern and are not yet published.</p></div>' +
     '<button class="pf-btn ghost" data-act="ics">Add to calendar (.ics)</button></div>' +
-    '<div class="sc-form" style="margin-top:0"><span class="pf-seg" role="group" aria-label="Student">' +
-    [['all', 'Both'], ['a', 'MK · Year 12'], ['b', 'ZK · Year 7']].map(function (o) { return '<button data-act="dwho" data-v="' + o[0] + '" aria-pressed="' + (who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span>' +
+    '<div class="sc-form" style="margin-top:0">' + (VIEW ? '' : '<span class="pf-seg" role="group" aria-label="Student">' +
+    [['all', 'Both'], ['a', 'MK · Year 12'], ['b', 'ZK · Year 7']].map(function (o) { return '<button data-act="dwho" data-v="' + o[0] + '" aria-pressed="' + (who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span>') +
     '<select class="pf-select" data-act="dcat" aria-label="Category"><option value="all">All categories</option>' +
     Object.keys(D.cats).map(function (k) { return '<option value="' + k + '"' + (cat === k ? ' selected' : '') + '>' + esc(D.cats[k]) + '</option>'; }).join('') + '</select>' +
     '<label class="pf-check" style="flex-direction:row;letter-spacing:0;text-transform:none;font-weight:400;font-size:12.5px"><input type="checkbox" data-act="dpast"' + (past ? ' checked' : '') + '> Show past dates</label>' +
@@ -933,7 +960,7 @@ R.dates = function () {
 function icsEsc(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
 function icsFold(l) { var out = []; while (l.length > 73) { out.push(l.slice(0, 73)); l = ' ' + l.slice(73); } out.push(l); return out.join('\r\n'); }
 function makeIcs() {
-  var who = sget('dwho', 'all'), cat = sget('dcat', 'all');
+  var who = VIEW || sget('dwho', 'all'), cat = sget('dcat', 'all');
   var ev = events().filter(function (e) { return e.d.length === 10 && !isPast(e) && (who === 'all' || e.who.indexOf(who) >= 0) && (cat === 'all' || e.cat === cat); });
   var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
   var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Study Companion//EN', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:Study Companion'];
@@ -1125,7 +1152,7 @@ function qStatus(q) {
 var QST = { correct: ['Correct', 'ok'], partial: ['Partial', 'warn'], wrong: ['Wrong', 'bad'], blank: ['Left blank', 'bad'], todo: ['Not tried yet', ''] };
 function qPaper(q) { return QL.papers[q.p] || { who: q.who || 'a', subj: q.subj || 'Other', label: (q.paperLabel || 'Added by you') }; }
 function qWho(q) { return qPaper(q).who || 'a'; }
-function qStu() { return sget('qwho', 'a'); }
+function qStu() { if (VIEW) return VIEW; var w = sget('qwho', 'a'); return canSee(w) ? w : (kids()[0] || 'a'); }
 function stuQs(w) { return allQs().filter(function (q) { return qWho(q) === w; }); }
 function qTopic(k) { return QL.topics[k] || { n: k || 'Other', subj: '' }; }
 function qHas(q, t) { return q.t === t || (q.also || []).indexOf(t) >= 0; }
@@ -1211,7 +1238,7 @@ R.qlog = function () {
   var tm = tried.reduce(function (a, q) { return a + q.m; }, 0), tx = tried.reduce(function (a, q) { return a + q.x; }, 0);
   var nPapers = Object.keys(QL.papers).filter(function (k) { return QL.papers[k].who === who; }).length;
 
-  var h = '<div class="pf-card" style="padding:10px 16px"><div class="pf-ch" style="align-items:center"><span class="pf-note" style="margin:0">Whose questions</span><span class="pf-seg" role="group" aria-label="Student">' +
+  var h = VIEW ? '' : '<div class="pf-card" style="padding:10px 16px"><div class="pf-ch" style="align-items:center"><span class="pf-note" style="margin:0">Whose questions</span><span class="pf-seg" role="group" aria-label="Student">' +
     [['a', 'MK · Year 12'], ['b', 'ZK · Year 7']].map(function (o) { return '<button data-act="qwho" data-v="' + o[0] + '" aria-pressed="' + (who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span></div></div>';
   h += '<div class="pf-kpis">' +
     (who === 'a'
@@ -1414,11 +1441,11 @@ R.maths = function () {
 
 /* ---------- Study log ---------- */
 R.log = function () {
-  var el = document.getElementById('t-log'), who = sget('logwho', 'a'), ws = weekStart(TODAY);
+  var el = document.getElementById('t-log'), who = logWho(), ws = weekStart(TODAY);
   var ph = phaseFor(who, TODAY) || phaseNow(who), wk = weekHours(who, ws), tgt = targetTotal(ph);
   var weeks = [], i; for (i = 7; i >= 0; i--) { var s = addDays(ws, -7 * i); weeks.push({ s: s, h: weekHours(who, s).total }); }
   var avg4 = weeks.slice(3, 7).reduce(function (a, w) { return a + w.h; }, 0) / 4;
-  var html = '<div class="pf-card" style="padding:10px 16px"><div class="pf-ch" style="align-items:center"><span class="pf-note" style="margin:0">Whose log</span><span class="pf-seg" role="group" aria-label="Student">' +
+  var html = VIEW ? '' : '<div class="pf-card" style="padding:10px 16px"><div class="pf-ch" style="align-items:center"><span class="pf-note" style="margin:0">Whose log</span><span class="pf-seg" role="group" aria-label="Student">' +
     [['a', 'MK · Year 12'], ['b', 'ZK · Year 7']].map(function (o) { return '<button data-act="logwho" data-v="' + o[0] + '" aria-pressed="' + (who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span></div></div>';
   html += '<div class="pf-kpis">' + kpi('Hours this week', h1(wk.total), 'h', 'week of ' + fmtS(ws) + ' · target ' + h1(tgt) + 'h') +
     kpi('Of weekly target', tgt ? String(Math.round(100 * wk.total / tgt)) : '—', tgt ? '%' : '', esc(ph.title)) +
@@ -1456,8 +1483,265 @@ R.sources = function () {
     '<dt>Confirmed</dt><dd>Published by the exam board, College Board, the university or KHDA.</dd>' +
     '<dt>Expected</dt><dd>Follows the usual yearly pattern or a school\'s published calendar. Check again nearer the time.</dd>' +
     '<dt>Exam times</dt><dd>Morning or afternoon sessions follow Pearson\'s timetable. The exams office confirms local start times and entries.</dd>' +
-    '<dt>Your progress</dt><dd>Saved in this browser only. Use the backup on the Study log tab to move it to another device.</dd>' +
+    '<dt>Your progress</dt><dd>' + (SYNC_ON ? 'Saved to each child\'s account online, so it is the same on every device they sign in on. The backup on the Study log tab still makes an extra copy.' : 'Saved in this browser only. Use the backup on the Study log tab to move it to another device.') + '</dd>' +
     '<dt>Time zone</dt><dd>Countdowns use the date in Dubai.</dd></dl></div></div>';
+};
+
+/* ---------- account, child view and saved progress ----------
+   The signed-in person comes from /api/me. Parents can switch between the family view and
+   each child's own view; a child only ever has their own view. Progress (cards, ratings,
+   logs, ticks) is saved per child in the database and kept in this browser as a copy. */
+var ACCT = null, IS_PARENT = false, VIEW = null, STU = {}, SYNC_ON = false, DATA_UPD = null, DATA_SIG = '';
+var SYNC_KINDS = ['route', 'papers', 'sat', 'cards', 'topics', 'bprac', 'road', 'log', 'myq', 'fdone', 'redo'];
+var OWNER = { route: 'a', papers: 'a', sat: 'a', cards: 'a', topics: 'a', bprac: 'b', road: 'b' };   // whole value belongs to one child
+var ARR = { papers: 1, sat: 1, bprac: 1, log: 1, myq: 1 };                                          // lists; log and myq carry .who
+var SERVER = {}, DIRTY = {}, FIRST = {}, SYNCST = { state: 'ok', at: null, err: '', checked: null, checkErr: false }, FLUSH_T = null;
+var FAM = null, UNLINK = null, FAMMSG = '', FAMBAD = false;
+var TAB_WHO = { alevel: 'a', notes: 'a', sat: 'a', maths: 'b' };
+
+function kids() { if (VIEW) return [VIEW]; return ['a', 'b'].filter(function (w) { return !ACCT || STU[w]; }); }
+function canSee(w) { return kids().indexOf(w) >= 0; }
+function tabAllowed(id) { if (id === 'family') return IS_PARENT && !VIEW; return !TAB_WHO[id] || canSee(TAB_WHO[id]); }
+function logWho() { if (VIEW) return VIEW; var w = sget('logwho', 'a'); return canSee(w) ? w : (kids()[0] || 'a'); }
+function renderTabs() {
+  document.getElementById('tabs').innerHTML = TABS.filter(function (t) { return tabAllowed(t[0]); }).map(function (t) {
+    return '<button role="tab" data-act="tab" data-tab="' + t[0] + '" aria-selected="false">' + t[1] + '</button>'; }).join('');
+}
+function api(method, path, body) {
+  var init = { method: method, credentials: 'same-origin', headers: { accept: 'application/json' } };
+  if (body !== undefined) { init.headers['content-type'] = 'application/json'; init.body = JSON.stringify(body); if (init.body.length < 60000) init.keepalive = true; }
+  return fetch(path, init).then(function (r) {
+    return r.text().then(function (t) {
+      var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) { j = null; }
+      if (!r.ok) { var err = new Error((j && j.error) || ('HTTP ' + r.status)); err.status = r.status; throw err; }
+      return j;
+    });
+  });
+}
+function ago(t) { var m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+
+/* which child owns each piece of progress */
+function rawLocal(k) { try { var v = window.localStorage.getItem(PFX + k); return v == null ? null : JSON.parse(v); } catch (e) { return null; } }
+function emptyOf(k) { return k === 'route' ? null : ARR[k] ? [] : {}; }
+function isEmpty(v) { return v == null || (Array.isArray(v) ? !v.length : typeof v === 'object' && !Object.keys(v).length); }
+function ownerOf(k, key, item) {
+  if (OWNER[k]) return OWNER[k];
+  if (ARR[k]) return (item && item.who) || 'a';
+  if (k === 'fdone') return String(key).split(':')[0];
+  if (k === 'redo') {
+    var p = String(key).split(':')[0];
+    if (p === 'mine') { var mq = (sget('myq', []) || []).filter(function (q) { return qid(q) === key; })[0]; return mq ? (mq.who || 'a') : 'a'; }
+    return QL.papers[p] ? QL.papers[p].who : 'a';
+  }
+  return 'a';
+}
+function sliceOf(k, val, w) {
+  if (OWNER[k]) return OWNER[k] === w ? (val == null ? emptyOf(k) : val) : undefined;
+  if (ARR[k]) return (val || []).filter(function (x) { return ownerOf(k, null, x) === w; });
+  var o = {}; Object.keys(val || {}).forEach(function (key) { if (ownerOf(k, key) === w) o[key] = val[key]; }); return o;
+}
+function current(sid, k) { var key = sid + '|' + k; return Object.prototype.hasOwnProperty.call(DIRTY, key) ? DIRTY[key] : SERVER[sid][k]; }
+function compose(k) {
+  if (OWNER[k]) { var s = STU[OWNER[k]], v = s ? current(s.id, k) : undefined; return v === undefined ? emptyOf(k) : v; }
+  if (ARR[k]) { var a = []; Object.keys(STU).forEach(function (w) { a = a.concat(current(STU[w].id, k) || []); }); return a; }
+  var o = {}; Object.keys(STU).forEach(function (w) { var x = current(STU[w].id, k) || {}; Object.keys(x).forEach(function (key) { o[key] = x[key]; }); }); return o;
+}
+function composeAll() { SYNC_KINDS.forEach(function (k) { setLocal(k, compose(k)); }); }
+// The first time a child's account is opened on a device, keep everything this browser saved before accounts existed.
+function mergeFirst(k, srv, loc) {
+  if (isEmpty(srv)) return loc;
+  if (isEmpty(loc) || k === 'route') return srv;
+  if (ARR[k]) { var seen = {}, out = []; srv.concat(loc).forEach(function (x) { var id = x.id || JSON.stringify(x); if (!seen[id]) { seen[id] = 1; out.push(x); } }); return out; }
+  var o = {}; Object.keys(loc).forEach(function (key) { o[key] = loc[key]; });
+  Object.keys(srv).forEach(function (key) {
+    if (k === 'cards' && o[key]) { var a = srv[key], b = o[key]; o[key] = ((b.n || 0) > (a.n || 0) || ((b.n || 0) === (a.n || 0) && (b.l || '') > (a.l || ''))) ? b : a; }
+    else o[key] = srv[key];
+  });
+  return o;
+}
+function writable(s) { return s.role === 'parent' || s.role === 'student'; }
+// Changes not yet confirmed by the database are kept in this browser too, so a reload or a closed tab never loses them.
+function saveDirty() { try { if (Object.keys(DIRTY).length) window.localStorage.setItem(PFX + 'dirty', JSON.stringify(DIRTY)); else window.localStorage.removeItem(PFX + 'dirty'); } catch (e) { /* ignore */ } }
+
+function initProgress(resp) {
+  var st = (resp && resp.students) || {};
+  Object.keys(STU).forEach(function (w) { var s = STU[w]; SERVER[s.id] = (st[s.id] && st[s.id].values) || {}; });
+  var pend = rawLocal('dirty') || {};
+  Object.keys(pend).forEach(function (key) { var sid = key.split('|')[0], k = key.slice(sid.length + 1); if (SERVER[sid] && SYNC_KINDS.indexOf(k) >= 0) DIRTY[key] = pend[key]; });
+  try {
+    if (!window.localStorage.getItem(PFX + 'backup')) {
+      var bk = {}; SYNC_KINDS.forEach(function (k) { var v = rawLocal(k); if (v != null) bk[k] = v; });
+      if (Object.keys(bk).length) window.localStorage.setItem(PFX + 'backup', JSON.stringify({ saved: new Date().toISOString(), data: bk }));
+    }
+  } catch (e) { /* storage unavailable */ }
+  Object.keys(STU).forEach(function (w) {
+    var s = STU[w], done = false; if (!writable(s)) return;
+    try { done = !!window.localStorage.getItem(PFX + 'synced:' + s.id); } catch (e) { done = true; }
+    if (done) return;
+    FIRST[s.id] = 1;
+    SYNC_KINDS.forEach(function (k) {
+      var loc = sliceOf(k, rawLocal(k), w); if (loc === undefined || isEmpty(loc)) return;
+      var srv = current(s.id, k), merged = mergeFirst(k, srv, loc);
+      if (JSON.stringify(merged) !== JSON.stringify(srv === undefined ? emptyOf(k) : srv)) DIRTY[s.id + '|' + k] = merged;
+    });
+  });
+  composeAll(); saveDirty();
+  if (Object.keys(DIRTY).length) scheduleFlush(50); else markFirstDone();
+}
+function markFirstDone() { Object.keys(FIRST).forEach(function (sid) { try { window.localStorage.setItem(PFX + 'synced:' + sid, new Date().toISOString()); } catch (e) { /* ignore */ } }); FIRST = {}; }
+function queueSync(k) {
+  var val = sget(k, emptyOf(k)), changed = false;
+  Object.keys(STU).forEach(function (w) {
+    var s = STU[w]; if (!writable(s)) return;
+    var slice = sliceOf(k, val, w); if (slice === undefined) return;
+    var last = current(s.id, k);
+    if (JSON.stringify(slice) !== JSON.stringify(last === undefined ? emptyOf(k) : last)) { DIRTY[s.id + '|' + k] = slice; changed = true; }
+  });
+  if (changed) { saveDirty(); scheduleFlush(400); }
+}
+function scheduleFlush(ms) { clearTimeout(FLUSH_T); FLUSH_T = setTimeout(flush, ms); setSync('saving'); }
+function flush() {
+  clearTimeout(FLUSH_T);
+  var keys = Object.keys(DIRTY); if (!keys.length) { markFirstDone(); return setSync('ok'); }
+  setSync('saving');
+  Promise.all(keys.map(function (key) {
+    var v = DIRTY[key], i = key.indexOf('|'), sid = key.slice(0, i), k = key.slice(i + 1);
+    return api('PUT', '/api/progress/' + encodeURIComponent(sid) + '/' + k, { value: v }).then(function () {
+      SERVER[sid][k] = v; if (DIRTY[key] === v) delete DIRTY[key]; saveDirty();
+    }, function (e) { if (e.status === 400 || e.status === 403 || e.status === 413) { delete DIRTY[key]; saveDirty(); } throw e; });
+  })).then(function () {
+    if (Object.keys(DIRTY).length) return scheduleFlush(300);
+    markFirstDone(); SYNCST.at = Date.now(); setSync('ok');
+  }, function (e) {
+    setSync('error', e.status === 413 ? 'too much to save at once' : e.status === 403 ? 'not allowed' : 'no connection');
+    if (Object.keys(DIRTY).length) { clearTimeout(FLUSH_T); FLUSH_T = setTimeout(flush, 15000); }
+  });
+}
+function setSync(state, err) { SYNCST.state = state; SYNCST.err = err || ''; renderSyncSt(); }
+function renderSyncSt() {
+  var el = document.getElementById('syncSt'); if (!el) return;
+  if (SYNCST.state === 'saving') el.innerHTML = 'Saving…';
+  else if (SYNCST.state === 'error') el.innerHTML = '<span class="warn">Not saved online yet (' + esc(SYNCST.err) + '); retrying</span> <button type="button" class="sc-qlink" data-act="syncnow">Retry now</button>';
+  else el.innerHTML = 'Saved online' + (SYNCST.at ? ' · ' + ago(SYNCST.at) : '') +
+    (DATA_UPD ? ' · papers updated ' + esc(fmt(DATA_UPD.slice(0, 10))) : '') +
+    (SYNCST.checkErr ? ' · <span class="warn">could not check for updates; showing what loaded at ' + esc(new Date(SYNCST.checked || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) + '</span>' : '');
+}
+function applyData(d) {
+  Object.keys(QL.papers).forEach(function (k) { delete QL.papers[k]; });
+  Object.keys(d.papers || {}).forEach(function (k) { QL.papers[k] = d.papers[k]; });
+  QL.q.length = 0; (d.q || []).forEach(function (q) { QL.q.push(q); });
+  DATA_UPD = d.updated || null; DATA_SIG = d.sig || '';
+}
+// When the page comes back into view, pick up anything saved on another device or added since.
+function pullFresh() {
+  if (!SYNC_ON || Object.keys(DIRTY).length || NS) return;
+  Promise.all([api('GET', '/api/progress'), api('GET', '/api/data?since=' + encodeURIComponent(DATA_SIG))]).then(function (r) {
+    var changed = false, st = (r[0] && r[0].students) || {};
+    if (Object.keys(DIRTY).length) return;
+    Object.keys(STU).forEach(function (w) { var s = STU[w], v = (st[s.id] && st[s.id].values) || {}; if (JSON.stringify(v) !== JSON.stringify(SERVER[s.id])) { SERVER[s.id] = v; changed = true; } });
+    if (r[1] && !r[1].unchanged) { applyData(r[1]); changed = true; }
+    SYNCST.checked = Date.now(); SYNCST.checkErr = false;
+    if (changed) { composeAll(); refresh(); }
+    renderSyncSt();
+  }, function () { SYNCST.checkErr = true; renderSyncSt(); });
+}
+
+function renderAcct() {
+  var box = document.getElementById('acct');
+  if (!ACCT || !ACCT.linked) { box.hidden = true; return; }
+  var codes = ['a', 'b'].filter(function (w) { return STU[w]; });
+  var mine = ACCT.students.filter(function (s) { return s.role !== 'parent'; }).map(function (s) { return s.name; });
+  var h = '<span class="chip">Signed in · <b>' + esc(IS_PARENT ? (ACCT.user.name || ACCT.user.email) : mine.join(', ')) + '</b>' + (IS_PARENT ? ' · Parent' : '') + '</span>';
+  if (IS_PARENT) {
+    h += '<label class="sc-view">Viewing <select class="pf-select" data-act="view" aria-label="Whose view">' +
+      '<option value=""' + (!VIEW ? ' selected' : '') + '>Family: ' + esc(codes.map(function (w) { return STU[w].name; }).join(' and ')) + '</option>' +
+      codes.map(function (w) { return '<option value="' + w + '"' + (VIEW === w ? ' selected' : '') + '>' + esc(STU[w].name) + ': exactly what ' + esc(STU[w].name) + ' sees</option>'; }).join('') +
+      '</select></label>';
+  }
+  h += '<span id="syncSt"></span>';
+  if (IS_PARENT && VIEW) h += '<div class="sc-viewnote">You are seeing the site exactly as <b>' + esc(STU[VIEW].name) + '</b> sees it when signed in. Anything you change here is saved to ' + esc(STU[VIEW].name) + '\'s account.</div>';
+  box.innerHTML = h; box.hidden = false; renderSyncSt();
+}
+function setView(v) {
+  VIEW = STU[v] ? v : null; setLocal('view', VIEW || null); NS = null; NR = null;
+  renderAcct(); renderTabs(); rHead(); setTab(sget('tab', 'overview'), true); window.scrollTo(0, 0);
+}
+function bootMsg(html) { var b = document.getElementById('bootMsg'); if (html == null) { b.hidden = true; b.innerHTML = ''; } else { b.hidden = false; b.innerHTML = html; } }
+function boot() {
+  bootMsg('Loading your account…');
+  document.getElementById('tabs').innerHTML = '';
+  TABS.forEach(function (t) { document.getElementById('t-' + t[0]).hidden = true; });
+  api('GET', '/api/me').then(function (me) {
+    ACCT = me;
+    if (!me || !me.linked) {
+      document.getElementById('acct').hidden = true;
+      return bootMsg('<b>Signed in as ' + esc(me && me.email) + '</b>, but this email is not linked to a family yet. Ask a parent to add it on the Family page.');
+    }
+    IS_PARENT = !!me.isParent; STU = {};
+    me.students.forEach(function (s) { if (s.code) STU[s.code] = s; });
+    return Promise.all([api('GET', '/api/data'), api('GET', '/api/progress')]).then(function (r) {
+      applyData(r[0]); initProgress(r[1]);
+      var own = me.students.filter(function (s) { return s.role !== 'parent' && s.code; });
+      if (!IS_PARENT) VIEW = own.length ? own[0].code : null;
+      else { var v = sget('view', ''); VIEW = STU[v] ? v : null; }
+      SYNC_ON = true; SYNCST.checked = Date.now();
+      bootMsg(null); renderAcct(); renderTabs(); rHead();
+      var start = (location.hash || '').replace('#', '');
+      setTab(R[start] ? start : sget('tab', 'overview'), false);
+    });
+  }).catch(function (e) {
+    bootMsg('<b>Could not load your account.</b> ' + (e && e.status === 401 ? 'Your sign-in has expired.' : 'The connection failed (' + esc(e && e.message || 'unknown') + ').') +
+      ' Nothing is shown rather than an out-of-date copy.<br><button class="pf-btn" data-act="retryboot">Try again</button> <button class="pf-btn ghost" onclick="location.reload()">Reload the page</button>');
+  });
+}
+
+/* ---------- Family (parents): who can sign in ---------- */
+var AUDIT_TXT = {
+  create: function () { return 'Family set up'; },
+  'import': function (d) { return 'Question log saved online (' + (d.questions || 0) + ' questions)'; },
+  migrate: function () { return 'Database updated'; },
+  link: function (d) { return 'Linked ' + (d.email || 'a sign-in') + ' to ' + (d.student || 'a child'); },
+  unlink: function (d) { return 'Removed ' + (d.email || 'a sign-in') + ' from ' + (d.student || 'a child'); }
+};
+function famCall(path, body, okMsg) {
+  return api('POST', path, body).then(function (f) { FAM = f; UNLINK = null; FAMMSG = okMsg; FAMBAD = false; R.family(); }, function (e) {
+    var m = { bad_email: 'That does not look like an email address.', email_in_other_family: 'That email already belongs to another family.', email_is_a_parent: 'That email is a parent\'s sign-in, so it cannot also be a child\'s.', parents_only: 'Only a parent can change sign-ins.', not_found: 'That sign-in was already removed.' }[e.message];
+    FAMMSG = m || ('That did not work (' + esc(e.message) + ').'); FAMBAD = true; R.family();
+  });
+}
+R.family = function () {
+  var el = document.getElementById('t-family');
+  if (!FAM) {
+    el.innerHTML = '<div class="pf-empty">Loading the family page…</div>';
+    api('GET', '/api/family').then(function (f) { FAM = f; if (sget('tab', '') === 'family') R.family(); },
+      function (e) { el.innerHTML = '<div class="pf-empty">Could not load the family page (' + esc(e.message) + ').</div>'; });
+    return;
+  }
+  var h = (FAMMSG ? '<p class="pf-note sc-fammsg' + (FAMBAD ? ' bad' : '') + '">' + FAMMSG + '</p>' : '') + '<div class="pf-over">Who can sign in</div><div class="pf-grid">';
+  FAM.students.forEach(function (s) {
+    h += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(s.name) + (s.year ? ' · ' + esc(s.year) : '') + '</h2><p class="pf-note">Signs in with their own email and sees only their own work.</p></div></div>';
+    h += s.logins.length ? '<ul class="sc-logins">' + s.logins.map(function (l) {
+      return '<li><span class="em">' + esc(l.email) + '</span><span class="ls">' + (l.lastSeen ? 'last signed in ' + esc(fmt(l.lastSeen.slice(0, 10))) : 'not signed in yet') + '</span>' +
+        (UNLINK === l.id ? '<span><button class="pf-btn ghost" data-act="unlinkok" data-id="' + esc(l.id) + '">Yes, remove</button> <button class="sc-qlink" data-act="unlinkx">Keep</button></span>'
+          : '<button class="sc-qlink" data-act="unlink" data-id="' + esc(l.id) + '">Remove</button>') + '</li>';
+    }).join('') + '</ul>' : '<p class="pf-empty" style="padding-top:0">No sign-in linked yet.</p>';
+    h += '<form class="sc-form" data-form="link" style="margin-top:6px"><input type="hidden" name="sid" value="' + esc(s.id) + '"><label class="grow">' + esc(s.name) + '\'s email' +
+      '<input class="pf-input" name="email" type="email" required maxlength="200" autocomplete="off" placeholder="name@example.com"></label><button class="pf-btn" type="submit">Link</button></form></div>';
+  });
+  h += '</div><div class="pf-grid"><div class="pf-card"><h2>Each new sign-in takes two steps</h2><ol class="sc-list">' +
+    '<li>Link the email above, so the site knows whose account it is.</li>' +
+    '<li>Add the same email in Cloudflare: <a href="https://one.dash.cloudflare.com/" target="_blank" rel="noopener">Zero Trust</a> → Access → Applications → studycompanion → Policies → Family. Until then the sign-in screen will not send it a code.</li></ol>' +
+    '<p class="pf-note">To see the site as a child sees it, use <b>Viewing</b> at the top of the page.</p></div>';
+  h += '<div class="pf-card"><h2>Parents</h2><ul class="sc-logins">' + FAM.parents.map(function (p) {
+    return '<li><span class="em">' + esc(p.name ? p.name + ' · ' + p.email : p.email) + '</span><span class="ls">' + (p.lastSeen ? 'last signed in ' + esc(fmt(p.lastSeen.slice(0, 10))) : '') + '</span></li>'; }).join('') + '</ul>' +
+    (ACCT && ACCT.legacy && ACCT.legacy.needed ? '<button class="pf-btn" data-act="import">Save the question log to your account (' + ACCT.legacy.questions + ' questions)</button>' : '') + '</div></div>';
+  h += '<div class="pf-card"><h2>Recent changes</h2>' + (FAM.recent.length ? '<div class="pf-tw"><table class="pf-table"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>' +
+    FAM.recent.map(function (r) {
+      var d = {}; try { d = JSON.parse(r.detail || '{}') || {}; } catch (e) { d = {}; }
+      var txt = AUDIT_TXT[r.action] ? AUDIT_TXT[r.action](d) : r.action + ' ' + (r.entity || '');
+      return '<tr><td class="nw">' + esc(fmt(String(r.at).slice(0, 10))) + ' ' + esc(String(r.at).slice(11, 16)) + ' UTC</td><td>' + esc(r.actor_kind === 'claude' ? 'Claude' + (r.actor ? ', for ' + r.actor : '') : (r.actor || 'System')) + '</td><td>' + esc(txt) + '</td></tr>';
+    }).join('') + '</tbody></table></div>' : '<p class="pf-empty">Nothing yet.</p>') + '</div>';
+  el.innerHTML = h;
 };
 
 /* ---------- events ---------- */
@@ -1466,6 +1750,12 @@ app.addEventListener('click', function (ev) {
   var b = ev.target.closest('[data-act]'); if (!b || b.tagName === 'SELECT' || b.tagName === 'INPUT') return;
   var a = b.getAttribute('data-act'), v = b.getAttribute('data-v');
   if (a === 'tab') return setTab(b.getAttribute('data-tab'), true);
+  if (a === 'retryboot') return boot();
+  if (a === 'syncnow') return flush();
+  if (a === 'unlink') { UNLINK = b.getAttribute('data-id'); return R.family(); }
+  if (a === 'unlinkx') { UNLINK = null; return R.family(); }
+  if (a === 'unlinkok') return famCall('/api/family/unlink', { membershipId: b.getAttribute('data-id') }, 'Removed. Also take that email out of the Family policy in Cloudflare so it can no longer sign in.');
+  if (a === 'import') { b.disabled = true; b.textContent = 'Saving…'; return api('POST', '/api/import-legacy').then(function () { location.reload(); }, function (e) { b.disabled = false; b.textContent = 'Saving failed (' + e.message + '), try again'; }); }
   if (a === 'topic') { var st = topicState(); st[b.getAttribute('data-k')] = Number(v); sset('topics', st); return refresh(); }
   if (a === 'route') { sset('route', v); return refresh(); }
   if (a === 'dwho') { sset('dwho', v); return refresh(); }
@@ -1511,6 +1801,7 @@ app.addEventListener('click', function (ev) {
 });
 app.addEventListener('change', function (ev) {
   var t = ev.target, a = t.getAttribute && t.getAttribute('data-act'); if (!a) return;
+  if (a === 'view') return setView(t.value);
   if (a === 'dcat') { sset('dcat', t.value); return refresh(); }
   if (a === 'qpaper') { setQF({ paper: t.value }); return refresh(); }
   if (a === 'qtopicsel') { setQF({ topic: t.value, chk: '' }); return refresh(); }
@@ -1535,6 +1826,7 @@ app.addEventListener('change', function (ev) {
 app.addEventListener('submit', function (ev) {
   var f = ev.target, kind = f.getAttribute('data-form'); if (!kind) return; ev.preventDefault();
   var fd = new FormData(f), g = function (k) { return String(fd.get(k) || '').trim(); };
+  if (kind === 'link') return famCall('/api/family/link', { studentId: g('sid'), email: g('email') }, 'Linked ' + esc(g('email').toLowerCase()) + '. Now add the same email to the Family policy in Cloudflare so it can sign in.');
   if (kind === 'paper') {
     var pct = Math.round(Number(g('pct'))); if (!(pct >= 0 && pct <= 100)) return;
     var p = sget('papers', []); p.push({ id: uid(), code: g('code'), paper: g('paper'), pct: pct, date: g('date') || TODAY }); sset('papers', p);
@@ -1555,7 +1847,7 @@ app.addEventListener('submit', function (ev) {
     sset('myq', mq);
   } else if (kind === 'log') {
     var mn = Math.round(Number(g('min'))); if (!(mn > 0 && mn <= 600)) return;
-    var l = sget('log', []); l.push({ id: uid(), who: sget('logwho', 'a'), date: g('date') || TODAY, subj: g('subj'), min: mn, note: g('note') }); sset('log', l);
+    var l = sget('log', []); l.push({ id: uid(), who: logWho(), date: g('date') || TODAY, subj: g('subj'), min: mn, note: g('note') }); sset('log', l);
   }
   refresh();
 });
@@ -1564,12 +1856,11 @@ app.addEventListener('toggle', function (ev) { if (ev.target.classList && ev.tar
 var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { var t = sget('tab', 'overview'); if (t === 'sat' || t === 'maths' || t === 'log') R[t](); }, 200); });
 
 /* ---------- boot ---------- */
-document.getElementById('tabs').innerHTML = TABS.map(function (t) { return '<button role="tab" data-act="tab" data-tab="' + t[0] + '" aria-selected="false">' + t[1] + '</button>'; }).join('');
-rHead();
-var start = (location.hash || '').replace('#', '');
-setTab(R[start] ? start : sget('tab', 'overview'), false);
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') pullFresh(); });
+window.addEventListener('online', function () { if (Object.keys(DIRTY).length) flush(); });
+window.addEventListener('pagehide', function () { if (Object.keys(DIRTY).length) flush(); });
+boot();
 })();
 </script>
-<script src="account.js"></script>
 </body>
 </html>

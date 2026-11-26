@@ -1,4 +1,4 @@
--- Study Companion database, schema v1.
+-- Study Companion database, schema v2 (v2 added the position columns).
 -- Built for many families from day one: every row hangs off a family,
 -- and a person sees a child's data only through a membership.
 -- Apply with: wrangler d1 execute studycompanion-db --remote --file=db/schema.sql
@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS papers (
   marks_scored REAL,
   marks_total  REAL,
   source       TEXT NOT NULL DEFAULT 'manual',  -- manual | legacy-import | claude
+  position     INTEGER NOT NULL DEFAULT 0,      -- display order of papers
   created_at   TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at   TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE (student_id, code)
@@ -86,6 +87,7 @@ CREATE TABLE IF NOT EXISTS question_results (
   mistake      TEXT,
   fix          TEXT,
   extra        TEXT,               -- JSON for any other fields
+  position     INTEGER NOT NULL DEFAULT 0,  -- display order across the question log
   created_at   TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -116,4 +118,4 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_family ON audit_log(family_id, at);
 
-INSERT INTO schema_version (version) SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM schema_version WHERE version = 1);
+INSERT INTO schema_version (version) SELECT 2 WHERE NOT EXISTS (SELECT 1 FROM schema_version WHERE version = 2);

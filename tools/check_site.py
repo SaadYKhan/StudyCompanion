@@ -9,7 +9,7 @@ fills in each form once, and fails (exit 1) when
   - a form entry does not show up where it should.
 Exit 3 means the browser could not be started, so nothing was tested.
 """
-import functools, http.server, os, socketserver, sys, threading
+import functools, http.server, json, os, re, socketserver, sys, threading
 
 args = sys.argv[1:]
 shots = None
@@ -31,9 +31,71 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 httpd = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Quiet, directory=site))
 port = httpd.server_address[1]
 threading.Thread(target=httpd.serve_forever, daemon=True).start()
-TABS = ['overview', 'dates', 'alevel', 'qlog', 'notes', 'sat', 'maths', 'log', 'sources']
+TABS = ['overview', 'dates', 'alevel', 'qlog', 'notes', 'sat', 'maths', 'log', 'sources', 'family']
 BAD = ('undefined', 'NaN', '[object Object]', 'Invalid Date')
 fails = []
+
+# ---- a stand-in for the Worker's /api, so the page can be tested without Cloudflare ----
+LEGACY = json.load(open(os.path.join(os.path.dirname(site), 'worker', 'legacy.json')))
+KIDS = {'s_mk': {'id': 's_mk', 'name': 'MK', 'year': 'Year 12', 'code': 'a'}, 's_zk': {'id': 's_zk', 'name': 'ZK', 'year': 'Year 7', 'code': 'b'}}
+
+
+def install_api(pg, role='parent', student='s_zk'):
+    """role 'parent' sees both children; role 'student' sees only `student`. Returns the shared state."""
+    st = {'progress': {'s_mk': {}, 's_zk': {}}, 'puts': [], 'forbidden': [], 'logins': {'s_mk': [], 's_zk': []}, 'n': 0}
+    visible = list(KIDS) if role == 'parent' else [student]
+
+    def me():
+        return {'signedIn': True, 'linked': True, 'isParent': role == 'parent', 'user': {'name': 'SYK' if role == 'parent' else None, 'email': 'x@test.local'},
+                'students': [dict(KIDS[k], role=role, papers=0, questions=0) for k in visible], 'legacy': {'questions': 246, 'needed': False}}
+
+    def data():
+        codes = {KIDS[k]['code'] for k in visible}
+        papers = {k: v for k, v in LEGACY['papers'].items() if v['who'] in codes}
+        return {'papers': papers, 'q': [q for q in LEGACY['q'] if q['p'] in papers], 'updated': '2026-11-26 11:32:32', 'sig': 'sig-' + ''.join(sorted(codes))}
+
+    def family():
+        return {'parents': [{'email': 'x@test.local', 'name': 'SYK', 'lastSeen': '2026-11-26 11:32:32'}],
+                'students': [dict(KIDS[k], logins=st['logins'][k]) for k in KIDS],
+                'recent': [{'at': '2026-11-26 11:21:03', 'actor_kind': 'claude', 'action': 'create', 'entity': 'family', 'detail': '{}', 'actor': 'SYK'}]}
+
+    def handle(route):
+        req = route.request
+        path = req.url.split('://', 1)[1].split('/', 1)[1].split('?')[0]
+        out, code = None, 200
+        if path == 'api/me': out = me()
+        elif path == 'api/data':
+            out = data()
+            if ('since=' + out['sig']) in req.url: out = {'unchanged': True, 'sig': out['sig']}
+        elif path == 'api/progress' and req.method == 'GET':
+            out = {'students': {k: {'values': st['progress'][k], 'updated': {}} for k in visible}}
+        elif re.match(r'api/progress/[\w-]+/[a-z]+$', path) and req.method == 'PUT':
+            sid, kind = path.split('/')[2:4]
+            if sid not in visible: st['forbidden'].append(path); out, code = {'error': 'not_your_child'}, 403
+            else: st['progress'][sid][kind] = json.loads(req.post_data)['value']; st['puts'].append(path); out = {'ok': True}
+        elif path == 'api/family' and role == 'parent': out = family()
+        elif path == 'api/family/link' and role == 'parent':
+            b = json.loads(req.post_data)
+            if '@' not in b['email']: out, code = {'error': 'bad_email'}, 400
+            else:
+                st['n'] += 1; st['logins'][b['studentId']].append({'id': 'm%d' % st['n'], 'role': 'student', 'email': b['email'].lower(), 'lastSeen': None}); out = family()
+        elif path == 'api/family/unlink' and role == 'parent':
+            mid = json.loads(req.post_data)['membershipId']
+            for k in st['logins']: st['logins'][k] = [l for l in st['logins'][k] if l['id'] != mid]
+            out = family()
+        else: out, code = {'error': 'not_found'}, 404
+        route.fulfill(status=code, content_type='application/json', body=json.dumps(out))
+
+    pg.route('**/api/**', handle)
+    return st
+
+
+def tabs_shown(pg):
+    return [b.get_attribute('data-tab') for b in pg.locator('#tabs [data-tab]').all()]
+
+
+def wait_saved(pg):
+    pg.wait_for_function("(function(){var e=document.getElementById('syncSt');return e && /Saved online/.test(e.textContent);})()", timeout=5000)
 
 try:
     with sync_playwright() as p:
@@ -47,6 +109,7 @@ try:
         for today, width in (('2026-11-16', 1360), ('2027-05-08', 390), ('2027-09-20', 1024)):
             ctx = br.new_context(viewport={'width': width, 'height': 900})
             pg = ctx.new_page()
+            store = install_api(pg, 'parent')
             errs = []
             pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
             # /api/* only exists behind the Worker; the static test server answers 404, which is expected.
@@ -54,6 +117,7 @@ try:
             pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' and not (api404 and 'status of 404' in m.text) else None)
             pg.on('response', lambda r: api404.append(r.url) if (r.status == 404 and '/api/' in r.url) else (errs.append(f'{r.status} {r.url}') if r.status >= 400 else None))
             pg.goto(f'http://127.0.0.1:{port}/?today={today}', wait_until='networkidle')
+            pg.wait_for_selector('#tabs [data-tab]')
             for t in TABS:
                 pg.click(f'[data-tab="{t}"]')
                 pg.wait_for_timeout(120)
@@ -155,7 +219,8 @@ try:
                 if 'AMC 8' not in pg.inner_text('#t-dates') or 'SAT: first sitting' in pg.inner_text('#t-dates'):
                     fails.append('date filter by student failed')
                 pg.click('[data-act="dwho"][data-v="all"]')
-                pg.reload(wait_until='networkidle')
+                wait_saved(pg)
+                pg.reload(wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
                 pg.click('[data-tab="overview"]')
                 ov = pg.inner_text('#t-overview')
                 if '1 / ' not in ov and '1420' not in ov:
@@ -201,7 +266,7 @@ try:
                     fails.append('key notes: a not-yet card did not come back in the session')
                 if '1 not yet' not in pg.inner_text('.nt-stage'):
                     fails.append('key notes: session summary wrong: ' + pg.inner_text('.nt-stage')[:120])
-                pg.reload(); pg.wait_for_timeout(600)
+                pg.reload(); pg.wait_for_selector('#ntDeckLine'); pg.wait_for_timeout(300)
                 if '27 new' not in pg.inner_text('#ntDeckLine'):
                     fails.append('key notes: progress did not survive a reload: ' + pg.inner_text('#ntDeckLine'))
                 pg.click('[data-act="ntmode"][data-v="browse"]'); pg.wait_for_timeout(150)
@@ -212,16 +277,105 @@ try:
                 pg.click('[data-act="ntresetok"]'); pg.wait_for_timeout(150)
                 if '37 new' not in pg.inner_text('#ntDeckLine'):
                     fails.append('key notes: reset did not return the Maths S1 cards to new: ' + pg.inner_text('#ntDeckLine'))
+                # everything above was saved to the right child's account
+                wait_saved(pg)
+                pm, pz = store['progress']['s_mk'], store['progress']['s_zk']
+                if not pm.get('sat') or not pm.get('topics') or 'cards' not in pm or not any('Projectiles' in (r.get('note') or '') for r in pm.get('log', [])):
+                    fails.append('online save: MK progress missing: ' + ', '.join(sorted(pm)))
+                if not pz.get('bprac') or not pz.get('road') or any(r.get('who') != 'b' for r in pz.get('log', [])) or 'cards' in pz or 'sat' in pz:
+                    fails.append('online save: ZK progress wrong: ' + ', '.join(sorted(pz)))
+                if any(r.get('who') != 'a' for r in pm.get('log', [])) or any(not k.startswith('a:') for k in pm.get('fdone', {})):
+                    fails.append('online save: MK got another child\'s entries')
+                # a parent can see exactly what each child sees
+                pg.select_option('[data-act="view"]', 'a'); pg.wait_for_timeout(300)
+                t = tabs_shown(pg)
+                if 'maths' in t or 'family' in t or 'alevel' not in t or 'notes' not in t:
+                    fails.append('MK view: wrong tabs ' + str(t))
+                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(200)
+                ov = pg.inner_text('#t-overview'); hd = pg.inner_text('.pf-head')
+                if 'ZK · Year 7' in ov or 'ZK next' in hd or 'MK · Year 12' not in ov or 'exactly as MK sees it' not in hd:
+                    fails.append('MK view: overview or header shows ZK, or the view note is missing')
+                pg.click('[data-tab="qlog"]'); pg.wait_for_timeout(300)
+                if 'Whose questions' in pg.inner_text('#t-qlog') or 'of 208 questions' not in pg.inner_text('#qCount'):
+                    fails.append('MK view: question log should show only MK (208 with the one added): ' + pg.inner_text('#qCount'))
+                pg.select_option('[data-act="view"]', 'b'); pg.wait_for_timeout(300)
+                t = tabs_shown(pg)
+                if any(x in t for x in ('alevel', 'notes', 'sat', 'family')) or 'maths' not in t:
+                    fails.append('ZK view: wrong tabs ' + str(t))
+                if 'of 39 questions' not in pg.inner_text('#qCount') or 'Whose questions' in pg.inner_text('#t-qlog'):
+                    fails.append('ZK view: question log should show only ZK: ' + pg.inner_text('#qCount'))
+                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(200)
+                if 'MK · Year 12' in pg.inner_text('#t-overview') or 'MK next' in pg.inner_text('.pf-head'):
+                    fails.append('ZK view: overview or header shows MK')
+                pg.click('[data-tab="log"]'); pg.wait_for_timeout(200)
+                pg.fill('form[data-form="log"] [name="note"]', 'Parent logged this as ZK')
+                pg.click('form[data-form="log"] button[type="submit"]'); wait_saved(pg)
+                if not any('Parent logged this as ZK' in (r.get('note') or '') and r.get('who') == 'b' for r in store['progress']['s_zk'].get('log', [])):
+                    fails.append('ZK view: a session logged by the parent was not saved to ZK')
+                pg.reload(wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
+                if 'maths' not in tabs_shown(pg) or 'alevel' in tabs_shown(pg):
+                    fails.append('the chosen view did not survive a reload')
+                pg.select_option('[data-act="view"]', ''); pg.wait_for_timeout(300)
+                if 'family' not in tabs_shown(pg) or 'maths' not in tabs_shown(pg) or 'alevel' not in tabs_shown(pg):
+                    fails.append('family view: tabs missing ' + str(tabs_shown(pg)))
+                # family page: link and remove a child's sign-in
+                pg.click('[data-tab="family"]'); pg.wait_for_selector('form[data-form="link"]')
+                pg.locator('form[data-form="link"]').nth(1).locator('[name="email"]').fill('ZK.Test@Example.com')
+                pg.locator('form[data-form="link"]').nth(1).locator('button[type="submit"]').click(); pg.wait_for_timeout(300)
+                fam = pg.inner_text('#t-family')
+                if 'zk.test@example.com' not in fam or 'Family policy in Cloudflare' not in fam or not store['logins']['s_zk']:
+                    fails.append('family page: linking an email did not work')
+                pg.click('[data-act="unlink"]'); pg.click('[data-act="unlinkok"]'); pg.wait_for_timeout(300)
+                if store['logins']['s_zk'] or 'zk.test@example.com' in pg.inner_text('#t-family') or 'Removed' not in pg.inner_text('#t-family'):
+                    fails.append('family page: removing a sign-in did not work')
+                if 'Family set up' not in pg.inner_text('#t-family'):
+                    fails.append('family page: recent changes missing')
                 if shots:
                     for t in TABS:
                         pg.click(f'[data-tab="{t}"]'); pg.wait_for_timeout(120)
                         pg.screenshot(path=os.path.join(shots, f'filled-{t}.png'), full_page=True)
             fails.extend(f'{today}: {e}' for e in errs)
             ctx.close()
+
+        # ---- a child signing in on their own device: sees only their own work, and old progress moves online ----
+        ctx = br.new_context(viewport={'width': 1024, 'height': 900})
+        ctx.add_init_script('''if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1');
+          localStorage.setItem('sc1:bprac', JSON.stringify([{ id: 'x1', date: '2026-11-01', kind: 'amc', label: 'Old AMC practice', score: 15, outof: 25 }]));
+          localStorage.setItem('sc1:log', JSON.stringify([{ id: 'l1', who: 'b', date: '2026-11-10', subj: 'maths', min: 30, note: 'ZK old session' }, { id: 'l2', who: 'a', date: '2026-11-10', subj: 'phys', min: 40, note: 'MK old session' }]));
+          localStorage.setItem('sc1:cards', JSON.stringify({ p01: { b: 2, d: '2026-11-20', n: 3, l: '2026-11-15', r: 2, w: 1 } })); }''')
+        pg = ctx.new_page(); errs = []
+        pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
+        pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
+        kid = install_api(pg, 'student', 's_zk')
+        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-16', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
+        t = tabs_shown(pg)
+        if t != ['overview', 'dates', 'qlog', 'maths', 'log', 'sources']:
+            fails.append('student ZK: wrong tabs ' + str(t))
+        if pg.locator('[data-act="view"]').count():
+            fails.append('student ZK: should not have the view switcher')
+        if 'MK · Year 12' in pg.inner_text('#t-overview') or 'MK next' in pg.inner_text('.pf-head') or 'Signed in · ZK' not in pg.inner_text('.pf-head'):
+            fails.append('student ZK: sees MK on the overview or header')
+        wait_saved(pg)
+        zk = kid['progress']['s_zk']
+        if [r['id'] for r in zk.get('bprac', [])] != ['x1'] or [r['id'] for r in zk.get('log', [])] != ['l1']:
+            fails.append('student ZK: old progress from this device did not move to the account correctly: ' + json.dumps(zk)[:200])
+        if kid['forbidden'] or kid['progress']['s_mk']:
+            fails.append('student ZK: tried to save to MK: ' + str(kid['forbidden']))
+        pg.click('[data-tab="maths"]'); pg.wait_for_timeout(200)
+        if 'Old AMC practice' not in pg.inner_text('#t-maths'):
+            fails.append('student ZK: own practice paper missing')
+        pg.click('[data-tab="log"]'); pg.wait_for_timeout(200)
+        if 'ZK old session' not in pg.inner_text('#t-log') or 'MK old session' in pg.inner_text('#t-log'):
+            fails.append('student ZK: study log shows the wrong child')
+        pg.click('[data-tab="qlog"]'); pg.wait_for_timeout(200)
+        if 'of 39 questions' not in pg.inner_text('#qCount'):
+            fails.append('student ZK: question log wrong: ' + pg.inner_text('#qCount'))
+        fails.extend('student ZK: ' + e for e in errs)
+        ctx.close()
         br.close()
 finally:
     httpd.shutdown()
 
 if fails:
     print('PAGE TEST FAILED'); [print(' -', f) for f in fails]; sys.exit(1)
-print('page test passed: every tab on three dates, all forms, reload persistence')
+print('page test passed: every tab on three dates, all forms, online saving per child, parent views, family page, a child\'s own sign-in')
