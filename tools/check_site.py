@@ -49,8 +49,10 @@ try:
             pg = ctx.new_page()
             errs = []
             pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
-            pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
-            pg.on('response', lambda r: errs.append(f'{r.status} {r.url}') if r.status >= 400 else None)
+            # /api/* only exists behind the Worker; the static test server answers 404, which is expected.
+            api404 = []
+            pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' and not (api404 and 'status of 404' in m.text) else None)
+            pg.on('response', lambda r: api404.append(r.url) if (r.status == 404 and '/api/' in r.url) else (errs.append(f'{r.status} {r.url}') if r.status >= 400 else None))
             pg.goto(f'http://127.0.0.1:{port}/?today={today}', wait_until='networkidle')
             for t in TABS:
                 pg.click(f'[data-tab="{t}"]')

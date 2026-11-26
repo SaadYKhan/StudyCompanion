@@ -1,9 +1,22 @@
 {
-  // Static site served by Cloudflare Workers (assets only, no code).
+  // Study Companion: static site in ./site plus a small API Worker for /api/*.
+  // Cloudflare Access protects the whole Worker; the API re-checks the Access token.
   "name": "studycompanion",
+  "main": "worker/index.js",
   "compatibility_date": "2025-06-01",
   "assets": {
     "directory": "./site",
-    "not_found_handling": "404-page"
-  }
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "studycompanion-db", "database_id": "8e6e4d00-d7cd-476f-800c-a839dea89566" }
+  ],
+  "vars": {
+    // Not secrets: the Access application's audience tag and the team sign-in domain.
+    "ACCESS_AUD": "cff13761920802e28e77690a050dedd7664f94bc7d267cd10f3fd27642d55a9a",
+    "ACCESS_TEAM": "royalgroupofcompanies.cloudflareaccess.com"
+  },
+  "observability": { "enabled": true }
 }
