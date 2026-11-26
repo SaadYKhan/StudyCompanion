@@ -31,18 +31,25 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 httpd = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Quiet, directory=site))
 port = httpd.server_address[1]
 threading.Thread(target=httpd.serve_forever, daemon=True).start()
-TABS = ['overview', 'dates', 'alevel', 'qlog', 'notes', 'sat', 'maths', 'log', 'sources', 'family']
+TABS = ['overview', 'profile', 'roadmap', 'dates', 'alevel', 'qlog', 'notes', 'sat', 'maths', 'log', 'sources', 'family']
 BAD = ('undefined', 'NaN', '[object Object]', 'Invalid Date')
 fails = []
 
 # ---- a stand-in for the Worker's /api, so the page can be tested without Cloudflare ----
 LEGACY = json.load(open(os.path.join(os.path.dirname(site), 'worker', 'legacy.json')))
+PROFILES = {
+    'a': {'track': 'ial', 'year': 12, 'sy': 2026, 'school': 'Arcadia British School', 'place': 'Dubai, UAE', 'subjects': 'Mathematics, Physics, Chemistry', 'interests': ['astro'], 'other': '',
+          'dest': ['us'], 'citizen': 'us', 'unis': [{'id': 'princeton', 'round': 'ea', 'tier': 'reach'}, {'id': 'rutgers', 'round': 'ea', 'tier': 'target'}], 'notes': '', 'updated': '2026-11-26'},
+    'b': {'track': 'brit', 'year': 7, 'sy': 2026, 'school': 'Sunmarke School', 'place': 'Dubai, UAE', 'subjects': '', 'interests': ['maths'], 'other': '',
+          'dest': ['us'], 'citizen': '', 'unis': [], 'notes': '', 'updated': '2026-11-26'}}
 KIDS = {'s_mk': {'id': 's_mk', 'name': 'MK', 'year': 'Year 12', 'code': 'a'}, 's_zk': {'id': 's_zk', 'name': 'ZK', 'year': 'Year 7', 'code': 'b'}}
 
 
 def install_api(pg, role='parent', student='s_zk'):
     """role 'parent' sees both children; role 'student' sees only `student`. Returns the shared state."""
-    st = {'progress': {'s_mk': {'goals': {'a:Physics': {'kind': 'grade', 'target': 'A'}, 'a:Chemistry': {'kind': 'grade', 'target': 'A'}, 'a:Maths': {'kind': 'grade', 'target': 'A'}}}, 's_zk': {}}, 'puts': [], 'forbidden': [], 'logins': {'s_mk': [], 's_zk': []}, 'n': 0,
+    st = {'progress': {'s_mk': {'goals': {'a:Physics': {'kind': 'grade', 'target': 'A'}, 'a:Chemistry': {'kind': 'grade', 'target': 'A'}, 'a:Maths': {'kind': 'grade', 'target': 'A'}},
+                                'profile': {'a': json.loads(json.dumps(PROFILES['a']))}},
+                       's_zk': {'profile': {'b': json.loads(json.dumps(PROFILES['b']))}}}, 'puts': [], 'forbidden': [], 'logins': {'s_mk': [], 's_zk': []}, 'n': 0,
           'chat': {'s_mk': {'enabled': False, 'daily_limit': 30, 'quiet_from': '22:00', 'quiet_to': '06:00', 'monthly_cap_cents': 500},
                    's_zk': {'enabled': True, 'daily_limit': 30, 'quiet_from': '22:00', 'quiet_to': '06:00', 'monthly_cap_cents': 500}},
           'threads': {}, 'sent': 0}
@@ -163,6 +170,13 @@ try:
                 if shots:
                     os.makedirs(shots, exist_ok=True)
                     pg.screenshot(path=os.path.join(shots, f'{today}-{width}-{t}.png'), full_page=True)
+            if today == '2027-09-20':
+                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(150); o = pg.inner_text('#t-overview')
+                if 'mk · year 13' not in o.lower() or 'next application deadline' not in o.lower() or 'Princeton and Rutgers–NB' not in o:
+                    fails.append('2027-09-20: MK should be in Year 13 with the next application deadline counting down: ' + o[:300])
+                pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(150)
+                if pg.locator('#t-roadmap .rm-stage').count() != 1 + 6:
+                    fails.append('2027-09-20: roadmap should have Year 13 for MK and Years 8-13 for ZK: %d' % pg.locator('#t-roadmap .rm-stage').count())
             if today == '2026-11-16':
                 # forms and toggles
                 pg.click('[data-tab="sat"]'); pg.wait_for_timeout(400)
@@ -238,9 +252,10 @@ try:
                     fails.append('ZK marked-work section missing')
                 pg.fill('form[data-form="bprac"] [name="label"]', 'AMC 8 2024'); pg.fill('form[data-form="bprac"] [name="score"]', '17')
                 pg.click('form[data-form="bprac"] button[type="submit"]')
-                pg.check('[data-act="road"][data-k="0:0"]')
                 if '17 / 25' not in pg.inner_text('#t-maths'):
                     fails.append('practice paper did not appear')
+                pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(200)
+                pg.locator('#t-roadmap input[data-act="ptick"][data-k^="b:"]').first.check(); pg.wait_for_timeout(150)
                 pg.click('[data-tab="log"]'); pg.wait_for_timeout(400)
                 pg.fill('form[data-form="log"] [name="note"]', 'Projectiles, 12 questions')
                 pg.click('form[data-form="log"] button[type="submit"]')
@@ -315,7 +330,7 @@ try:
                 pm, pz = store['progress']['s_mk'], store['progress']['s_zk']
                 if not pm.get('sat') or not pm.get('topics') or 'cards' not in pm or not any('Projectiles' in (r.get('note') or '') for r in pm.get('log', [])):
                     fails.append('online save: MK progress missing: ' + ', '.join(sorted(pm)))
-                if not pz.get('bprac') or not pz.get('road') or any(r.get('who') != 'b' for r in pz.get('log', [])) or 'cards' in pz or 'sat' in pz:
+                if not pz.get('bprac') or not pz.get('pathdone') or any(not k.startswith('b:') for k in pz.get('pathdone', {})) or any(r.get('who') != 'b' for r in pz.get('log', [])) or 'cards' in pz or 'sat' in pz:
                     fails.append('online save: ZK progress wrong: ' + ', '.join(sorted(pz)))
                 if any(r.get('who') != 'a' for r in pm.get('log', [])) or any(not k.startswith('a:') for k in pm.get('fdone', {})):
                     fails.append('online save: MK got another child\'s entries')
@@ -449,6 +464,70 @@ try:
         fails.extend('goals: ' + e for e in errs)
         ctx.close()
 
+        # ---- profile and roadmap: built from each child's profile; its dates flow into Key dates ----
+        ctx = br.new_context(viewport={'width': 1280, 'height': 900}); pg = ctx.new_page(); errs = []
+        pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
+        pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
+        pst = install_api(pg, 'parent')
+        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-26', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
+        pg.select_option('[data-act="view"]', 'a'); pg.click('[data-tab="profile"]'); pg.wait_for_timeout(250)
+        t = pg.inner_text('#t-profile').lower()
+        for want in ('Your profile', 'Pearson Edexcel International', 'US grade 11 (junior year)', 'Princeton University', 'Rutgers University–New Brunswick', 'university from fall 2028', 'Mathematics, Physics, Chemistry', 'Rules checked 26 Nov 2026'):
+            if want.lower() not in t:
+                fails.append('profile: MK missing ' + want)
+        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        r = pg.inner_text('#t-roadmap')
+        if pg.locator('#t-roadmap .rm-stage').count() != 2 or 'Path to Princeton and Rutgers–NB' not in r:
+            fails.append('roadmap: MK should have two school years and both universities: %d' % pg.locator('#t-roadmap .rm-stage').count())
+        for want in ('Princeton: single-choice early action deadline', '1 Nov 2027', 'Check New Jersey in-state tuition eligibility for Rutgers', 'PSAT/NMSQT', '6 Mar 2027', 'Department of Astrophysical Sciences', '✓ Physics'):
+            if want.lower() not in r.lower():
+                fails.append('roadmap: MK missing ' + want)
+        if pg.locator('#t-roadmap .rm-list li.warn').count():
+            fails.append('roadmap: MK has her subjects yet shows a warning')
+        pg.locator('#t-roadmap .rm-list li', has_text='Ask two teachers for recommendation letters').locator('input').check(); pg.wait_for_timeout(200); wait_saved(pg)
+        pd = pst['progress']['s_mk'].get('pathdone', {})
+        if list(pd) != ['a:2026:us:recs'] or pst['progress']['s_zk'].get('pathdone') or '1 / ' not in pg.locator('#t-roadmap .rm-stage').first.inner_text():
+            fails.append('roadmap: tick not saved to MK: ' + json.dumps(pd))
+        pg.click('[data-tab="dates"]'); pg.wait_for_timeout(250); d = pg.inner_text('#t-dates')
+        if 'Princeton: single-choice early action deadline' not in d or 'Rutgers–NB: early action deadline' not in d or 'roadmap' not in d.lower():
+            fails.append('key dates: dates from the roadmap missing')
+        if d.count('SAT: first sitting') != 1 or 'First SAT (or ACT) sitting' in d:
+            fails.append('key dates: the first SAT appears twice')
+        pg.click('[data-tab="overview"]'); pg.wait_for_timeout(250)
+        if 'this year on the roadmap' not in pg.inner_text('#t-overview').lower() or 'roadmap steps done' not in pg.inner_text('#t-overview').lower():
+            fails.append('overview: roadmap section or stat missing')
+        # dropping Physics shows the gap and how to cover it; universities survive the save
+        pg.click('[data-tab="profile"]'); pg.click('#t-profile [data-act="profedit"]'); pg.wait_for_timeout(200)
+        f = '#t-profile form[data-form="profile"] '
+        pg.fill(f + '[name="subjects"]', 'Mathematics, Chemistry, History'); pg.click(f + 'button[type="submit"]'); pg.wait_for_timeout(300); wait_saved(pg)
+        sp = pst['progress']['s_mk'].get('profile', {}).get('a', {})
+        if sp.get('subjects') != 'Mathematics, Chemistry, History' or [u.get('id') for u in sp.get('unis', [])] != ['princeton', 'rutgers'] or sp.get('track') != 'ial' or sp.get('interests') != ['astro']:
+            fails.append('profile: MK save wrong: ' + json.dumps(sp)[:300])
+        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        if pg.locator('#t-roadmap .rm-list li.warn', has_text='Physics is not in the current subjects').count() != 1 or 'AP Physics' not in pg.inner_text('#t-roadmap') or 'missing: physics' not in pg.inner_text('#t-roadmap').lower():
+            fails.append('roadmap: dropping Physics should flag it')
+        # ZK: seven school years; another university added by hand gets its own deadline
+        pg.select_option('[data-act="view"]', 'b'); pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        z = pg.inner_text('#t-roadmap')
+        if pg.locator('#t-roadmap .rm-stage').count() != 7 or pg.locator('#t-roadmap .rm-stage[open]').count() != 2 or 'Jan 2028' not in z or 'Keep Mathematics for mathematics' in z:
+            fails.append('roadmap: ZK should have seven years, two open, AMC 8 in Jan 2028: %d' % pg.locator('#t-roadmap .rm-stage').count())
+        pg.click('[data-tab="profile"]'); pg.click('#t-profile [data-act="profedit"]'); pg.wait_for_timeout(200)
+        pg.select_option(f + '[name="u0_id"]', 'other'); pg.fill(f + '[name="u0_name"]', 'MIT'); pg.select_option(f + '[name="u0_round"]', 'ed')
+        pg.fill(f + '[name="u0_due"]', '2032-11-01'); pg.select_option(f + '[name="u0_tier"]', 'reach'); pg.select_option(f + '[name="citizen"]', 'us')
+        pg.click(f + 'button[type="submit"]'); pg.wait_for_timeout(300); wait_saved(pg)
+        zp = pst['progress']['s_zk'].get('profile', {}).get('b', {})
+        if zp.get('unis') != [{'name': 'MIT', 'c': 'us', 'round': 'ed', 'due': '2032-11-01', 'tier': 'reach'}] or zp.get('citizen') != 'us' or 'b' in pst['progress']['s_mk'].get('profile', {}):
+            fails.append('profile: ZK university not saved to ZK only: ' + json.dumps(zp)[:300])
+        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        pg.locator('#t-roadmap .rm-stage').nth(6).locator('summary').click(); pg.wait_for_timeout(150)
+        z = pg.inner_text('#t-roadmap')
+        if 'Path to MIT' not in z or 'MIT: early decision deadline' not in z or '1 Nov 2032' not in z or 'date from the profile' not in z:
+            fails.append('roadmap: ZK\'s MIT deadline missing')
+        if 'Binding' not in z:
+            fails.append('roadmap: early decision should say it is binding')
+        fails.extend('profile/roadmap: ' + e for e in errs)
+        ctx.close()
+
         # ---- a child signing in on their own device: sees only their own work, and old progress moves online ----
         ctx = br.new_context(viewport={'width': 1024, 'height': 900})
         ctx.add_init_script('''if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1');
@@ -461,7 +540,7 @@ try:
         kid = install_api(pg, 'student', 's_zk')
         pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-16', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
         t = tabs_shown(pg)
-        if t != ['overview', 'goals', 'dates', 'qlog', 'maths', 'log', 'sources']:
+        if t != ['overview', 'profile', 'roadmap', 'goals', 'dates', 'qlog', 'maths', 'log', 'sources']:
             fails.append('student ZK: wrong tabs ' + str(t))
         if pg.locator('[data-act="view"]').count():
             fails.append('student ZK: should not have the view switcher')
@@ -471,7 +550,10 @@ try:
         zk = kid['progress']['s_zk']
         if [r['id'] for r in zk.get('bprac', [])] != ['x1'] or [r['id'] for r in zk.get('log', [])] != ['l1']:
             fails.append('student ZK: old progress from this device did not move to the account correctly: ' + json.dumps(zk)[:200])
-        if kid['forbidden'] or set(kid['progress']['s_mk']) - {'goals'}:
+        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(200)
+        if 'Princeton' in pg.inner_text('#t-roadmap') or pg.locator('#t-roadmap .rm-stage').count() != 7 or 'Your profile' not in (pg.click('[data-tab="profile"]') or pg.inner_text('#t-profile')):
+            fails.append('student ZK: profile or roadmap shows the wrong child')
+        if kid['forbidden'] or set(kid['progress']['s_mk']) - {'goals', 'profile'}:
             fails.append('student ZK: tried to save to MK: ' + str(kid['forbidden']))
         pg.click('[data-tab="maths"]'); pg.wait_for_timeout(200)
         if 'Old AMC practice' not in pg.inner_text('#t-maths'):

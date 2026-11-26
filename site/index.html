@@ -453,6 +453,50 @@ details.sc-add[open] summary::after { content: " −"; }
 .gm-prev { position: absolute; top: 25px; width: 8px; height: 8px; margin: 0 0 0 -4px; border-radius: 50%; background: var(--pf-card); box-shadow: 0 0 0 2px var(--pf-steel); }
 .gm-sub { margin-top: 6px; font-size: 12px; color: var(--pf-steel); }
 .gm-edit { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--pf-line); }
+/* profile and roadmap */
+.rm-head .pf-ch { align-items: flex-start; }
+.rm-prog { font-size: 12.5px; color: var(--pf-steel); white-space: nowrap; }
+.rm-prog b { font-family: var(--font-serif); font-weight: 400; font-size: 26px; color: var(--pf-gold-hi); }
+.rm-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 4px; }
+.rm-stage > summary { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--cds-gap-sm); cursor: pointer; list-style: none; }
+.rm-stage > summary::-webkit-details-marker { display: none; }
+.rm-stage > summary h2::before { content: '▸'; display: inline-block; width: 1.1em; color: var(--pf-gold); transition: transform .15s; }
+.rm-stage[open] > summary h2::before { transform: rotate(90deg); }
+.rm-stage > summary .pf-note { margin: 2px 0 0 1.1em; }
+.rm-stage.now { border-color: var(--pf-gold-lo); }
+.rm-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 4px var(--cds-gap-md); margin-top: 6px; }
+.rm-group h3 { color: var(--pf-gold); margin-top: 8px; }
+.rm-list { list-style: none; margin: 0; padding: 0; }
+.rm-list li { padding: 7px 0; border-top: 1px solid var(--pf-line); font-size: 12.5px; }
+.rm-list li:first-child { border-top: 0; }
+.rm-list label { display: flex; gap: .6rem; align-items: flex-start; cursor: pointer; }
+.rm-list input { accent-color: var(--pf-gold); margin-top: 3px; flex: none; }
+.rm-list .t { color: var(--pf-ivory); }
+.rm-list .w { display: block; color: var(--pf-gold-hi); font-size: 11.5px; margin-top: 2px; }
+.rm-list .n { display: block; color: var(--pf-steel); margin-top: 2px; line-height: 1.5; }
+.rm-list li.past .w { color: var(--pf-steel); }
+.rm-list li.warn .t { color: var(--pf-warn); font-weight: 500; }
+.rm-list input:checked + span .t { color: var(--pf-steel); text-decoration: line-through; text-decoration-color: var(--pf-gold-lo); }
+.rm-checks { list-style: none; margin: 0; padding: 0; }
+.rm-checks li { padding: 6px 0; border-top: 1px solid var(--pf-line); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rm-checks li:first-child { border-top: 0; }
+.rm-checks b { color: var(--pf-ivory); font-weight: 500; margin-right: 4px; }
+.rm-checks .s, .pr-unis .s { flex-basis: 100%; color: var(--pf-steel); }
+.rm-end { text-align: center; }
+.pr-unis { list-style: none; margin: 0; padding: 0; }
+.pr-unis li { display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; padding: 2px 0 6px; }
+.pr-form fieldset { flex: 1 1 100%; border: 1px solid var(--pf-line); border-radius: var(--pf-radius); padding: 8px 10px 10px; margin: 0; min-width: 0; }
+.pr-form legend { font-size: 10.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--pf-gold); padding: 0 4px; }
+.pr-ints { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.pr-form .pf-check { flex-direction: row; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 12.5px; color: var(--pf-steel-2); }
+.pr-other { margin-top: 8px; }
+.pr-wide { flex: 1 1 100%; }
+.pr-open { display: grid; gap: var(--cds-gap-md); }
+.pr-urows { display: grid; gap: 8px; }
+.pr-uni { display: grid; grid-template-columns: 1.4fr 1.3fr .9fr 1.6fr 1fr .8fr; gap: 6px; }
+.pr-uni label { min-width: 0; }
+@media (max-width: 1000px) { .pr-uni { grid-template-columns: 1.3fr 1.2fr 1fr; } }
+@media (max-width: 760px) { .pr-uni { grid-template-columns: 1fr 1fr; padding-bottom: 8px; border-bottom: 1px solid var(--pf-line); } }
 .gp-grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .gp-svg { display: block; width: 100%; height: auto; margin: 4px 0; overflow: visible; }
 .gp-ax { fill: var(--pf-steel); font-size: 12px; }
@@ -504,6 +548,8 @@ details.sc-add[open] summary::after { content: " −"; }
   <section class="pf-tab" id="t-sources" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-family" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-goals" role="tabpanel" hidden></section>
+  <section class="pf-tab" id="t-profile" role="tabpanel" hidden></section>
+  <section class="pf-tab" id="t-roadmap" role="tabpanel" hidden></section>
 
   <aside class="sc-chat" id="chat" role="dialog" aria-label="AI tutor" hidden></aside>
 
@@ -514,6 +560,7 @@ details.sc-add[open] summary::after { content: " −"; }
 </div>
 
 <script src="data/study.js"></script>
+<script src="data/pathways.js"></script>
 <script src="data/questions.js"></script>
 <script src="data/cards.js"></script>
 <script>
@@ -600,9 +647,12 @@ function events() {
   papers().forEach(function (p) {
     ev.push({ d: p.d, who: ['a'], cat: 'exam', paper: true, t: p.subj + ' ' + p.unit + ': ' + p.title, note: p.code + ' · ' + (p.s === 'AM' ? 'Morning' : 'Afternoon') + ' · ' + p.dur, st: 'confirmed', src: 'pearson' });
   });
+  ['a', 'b'].forEach(function (w) { var P = pathFor(w); if (P) ev = ev.concat(P.events); });   // dates the roadmap adds from each profile
   return ev.sort(function (x, y) { var a = first(x), b = first(y); return a < b ? -1 : a > b ? 1 : 0; });
 }
 function evById(id) { for (var i = 0; i < D.events.length; i++) if (D.events[i].id === id) return D.events[i]; return null; }
+// the next date with this key that a visible child has, and any others on the same day
+function evByKey(k) { var ev = events().filter(function (e) { return e.key === k && !isPast(e) && e.who.some(canSee); }); return ev.length ? { e: ev[0], same: ev.filter(function (x) { return x.d === ev[0].d; }) } : null; }
 function upcoming(who, filt) { return events().filter(function (e) { return !isPast(e) && e.who.indexOf(who) >= 0 && (!filt || filt(e)); }); }
 function phaseNow(who) {
   var ps = D.plans[who], i;
@@ -638,12 +688,12 @@ function subjColor(who, k) { var s = D.subjects[who].filter(function (x) { retur
 function evRow(e, opts) {
   opts = opts || {};
   var p = parts(e.d), chip = p.d ? '<b>' + p.d + '</b><i>' + MON[p.m - 1] + '</i>' : '<b>' + MON[p.m - 1] + '</b><i>' + p.y + '</i>';
-  var src = e.src && D.sources[e.src] ? ' · <a href="' + esc(D.sources[e.src].url) + '" target="_blank" rel="noopener">source</a>' : '';
+  var S = pwSrc(e.src), src = S ? ' · <a href="' + esc(S.url) + '" target="_blank" rel="noopener">source</a>' : '';
   return '<li class="sc-ev' + (isNow(e) ? ' now' : '') + (isPast(e) ? ' past' : '') + '">' +
     '<span class="sc-chip">' + chip + '</span><div><div class="t">' + esc(e.t) + '</div>' +
     '<div class="d"><span>' + (p.d ? dow(e.d) + ' ' : '') + esc(fmtRange(e.d, e.end)) + '</span><span class="rel">' + rel(e) + '</span>' +
     (opts.who ? whoBadges(e.who) : '') + (opts.cat ? '<span class="pf-badge">' + esc(D.cats[e.cat] || e.cat) + '</span>' : '') +
-    (e.st === 'expected' ? stBadge(e.st) : '') + (opts.src ? src : '') + '</div>' +
+    (e.st === 'expected' ? stBadge(e.st) : '') + (e.gen && opts.cat ? '<span class="pf-badge">Roadmap</span>' : '') + (opts.src ? src : '') + '</div>' +
     (e.note ? '<div class="n">' + esc(e.note) + '</div>' : '') + '</div></li>';
 }
 function kpi(label, val, unit, sub) {
@@ -743,13 +793,13 @@ function rHead() {
   if (na) s.push('MK next: <b>' + esc(na.t) + '</b>, ' + esc(fmtRange(na.d, na.end)) + ' (' + rel(na) + ').');
   if (nb) s.push('ZK next: <b>' + esc(nb.t) + '</b>, ' + esc(fmtRange(nb.d, nb.end)) + ' (' + rel(nb) + ').');
   document.getElementById('take').innerHTML = s.join(' ');
-  document.getElementById('asof').textContent = 'Today in Dubai: ' + dow(TODAY) + ' ' + fmt(TODAY) + ' · Dates checked ' + fmt(D.updated);
+  document.getElementById('asof').textContent = 'Today in Dubai: ' + dow(TODAY) + ' ' + fmt(TODAY) + ' · Dates checked ' + fmt(D.updated) + (PW.checked ? ' · Roadmap rules ' + (pwStale() ? 'due for a re-check (last checked ' + fmt(PW.checked) + ')' : 'checked ' + fmt(PW.checked)) : '');
   document.getElementById('foot').innerHTML = 'Dates checked against Pearson, College Board, Princeton, Rutgers, KHDA, MAA and UKMT on ' + esc(fmt(D.updated)) +
     '. Dates marked Expected follow the usual pattern and are confirmed when published; the school confirms exam entries and start times. ' + (SYNC_ON ? 'Progress is saved to each child\'s account, so it follows them to any device.' : 'Progress is saved in this browser on this device.') + ' For family use only.';
 }
 
 /* ---------- tabs ---------- */
-var TABS = [['overview', 'Overview'], ['goals', 'Goals'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['notes', 'Key notes'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources'], ['family', 'Family']];
+var TABS = [['overview', 'Overview'], ['profile', 'Profile'], ['roadmap', 'Roadmap'], ['goals', 'Goals'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['notes', 'Key notes'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources'], ['family', 'Family']];
 var R = {};
 function setTab(id, push) {
   if (!R[id] || !tabAllowed(id)) id = 'overview';
@@ -767,18 +817,23 @@ function refresh() { rHead(); var t = sget('tab', 'overview'); R[R[t] && tabAllo
 R.overview = function () {
   var el = document.getElementById('t-overview');
   var ps = papers(), tiles = D.countdown.map(function (c) {
+    if (c.key) {
+      var hit = evByKey(c.key); if (!hit) return null;
+      var names = hit.same.map(function (x) { return x.t.split(':')[0]; });
+      return { c: c, e: hit.e, s: c.s || (listAnd(names.filter(function (n, i) { return names.indexOf(n) === i; })) + (hit.e.st === 'expected' ? ' · expected' : '')) };
+    }
     var e = c.id === 'asfirst' ? { d: ps[0].d, end: ps[ps.length - 1].d } : evById(c.id);
-    return e ? { c: c, e: e } : null;
+    return e ? { c: c, e: e, s: c.s } : null;
   }).filter(function (x) { return x && !isPast(x.e) && (x.c.id === 'asfirst' ? canSee('a') : (x.e.who || []).some(canSee)); }).slice(0, 4);
   var html = '<div class="pf-over">Countdown</div><div class="pf-kpis">' +
-    tiles.map(function (x) { return countKpi(x.c.l, x.e.d, x.c.s, x.e.end); }).join('') + '</div>';
+    tiles.map(function (x) { return countKpi(x.c.l, x.e.d, x.s, x.e.end); }).join('') + '</div>';
   var gs = kids().map(goalsSummaryHtml).join('');
   if (gs) html += '<div class="pf-over">Goals</div>' + gs;
   html += focusHtml();
   html += '<div class="pf-over">Coming up</div><div class="pf-grid">';
   kids().forEach(function (w) {
-    var st = D.students[w], list = upcoming(w).slice(0, 6);
-    html += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(st.label) + ' · ' + esc(st.yr) + ' · ' + esc(st.school) + '</h2><p class="pf-note">' + esc(st.track) + '</p></div>' + whoBadges([w]) + '</div>' +
+    var st = D.students[w], si = stuInfo(w), list = upcoming(w).slice(0, 6);
+    html += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(st.label) + ' · ' + esc(si.yr) + ' · ' + esc(si.school) + '</h2><p class="pf-note">' + esc(si.track) + '</p></div>' + whoBadges([w]) + '</div>' +
       '<ul class="sc-evs">' + list.map(function (e) { return evRow(e, { cat: true }); }).join('') + '</ul></div>';
   });
   html += '</div><div class="pf-over">Current plan phase</div><div class="pf-grid">';
@@ -787,6 +842,8 @@ R.overview = function () {
     html += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(p.title) + '</h2><p class="pf-note">' + esc(D.students[w].label) + ' · ' + esc(fmtRange(p.from, p.to)) + '</p></div>' + whoBadges([w]) + '</div>' +
       '<ul class="sc-list">' + p.focus.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' + hoursChips(w, p) + '</div>';
   });
+  var rn = kids().map(roadmapNowHtml).join('');
+  if (rn) html += '</div><div class="pf-over">This year on the roadmap</div><div class="pf-grid">' + rn;
   html += '</div><div class="pf-over">Progress</div><div class="pf-grid">';
   if (canSee('a')) { // Year 12 progress
   var us = asUnits(), sec = 0, n = 0; us.forEach(function (u) { var q = unitPct(u); sec += q.secure; n += q.n; });
@@ -798,15 +855,14 @@ R.overview = function () {
     stat('Past papers logged', String(pp.length), pp.length ? 'average ' + Math.round(pp.reduce(function (s, r) { return s + r.pct; }, 0) / pp.length) + '%' : 'Log one on the A Level tab') +
     stat('Hours this week', h1(wa.total), 'target ' + h1(ta) + 'h') +
     (D.assessment ? stat('Chemistry Unit 1', '47 / 80', 'marked paper · aim for about 60 in June') + stat('Physics Unit 1', physScore().m + ' / ' + physScore().x, D.assessment.physics.papers[0].s + ' paper (' + physSub() + ') · aim for about ' + physAim()) : '') +
-    fixedStat('a') + '</div></div>';
+    roadStat('a') + fixedStat('a') + '</div></div>';
   }
   if (canSee('b')) {
   var bp = sget('bprac', []), wb = weekHours('b', weekStart(TODAY)), tb = targetTotal(phaseFor('b', TODAY) || phaseNow('b'));
   var best = bp.reduce(function (m, r) { return Math.max(m, Math.round(100 * r.score / r.outof)); }, 0);
-  var road = sget('road', {}), rdone = 0, rn = 0; D.roadmapB.forEach(function (y, yi) { y.items.forEach(function (_, ii) { rn++; if (road[yi + ':' + ii]) rdone++; }); });
   html += '<div class="pf-card"><div class="pf-ch"><h2>ZK · Year 7</h2>' + whoBadges(['b']) + '</div><div class="sc-stats">' +
     stat('Practice papers', String(bp.length), bp.length ? 'best ' + best + '%' : 'Log one on the ZK maths tab') +
-    stat('Roadmap steps done', rdone + ' / ' + rn, 'Year 7 to Year 13') +
+    roadStat('b') +
     stat('Hours this week', h1(wb.total), 'target ' + h1(tb) + 'h') +
     stat('Study streak', String(streak('b')), streak('b') === 1 ? 'day in a row' : 'days in a row') + zkStat() + fixedStat('b') + '</div></div>';
   }
@@ -1012,6 +1068,7 @@ function focusHtml() {
   });
   return h + '</div>';
 }
+function roadStat(w) { var s = pathStats(w), P = pathFor(w); return s ? stat('Roadmap steps done', s.done + ' / ' + s.n, P.stages.length ? yearName(P.p, P.stages[0].y) + ' to applications in ' + P.finalSY : '') : ''; }
 function fixedStat(w) { var rd = redoState(), tf = stuQs(w).filter(function (q) { return qStatus(q) !== 'correct'; }); return stat('Questions fixed', tf.filter(function (q) { return rd[qid(q)] === 2; }).length + ' / ' + tf.length, 'marked "Got it" in the question log'); }
 function zkStat() { var Z = D.assessment && D.assessment.zk; if (!Z) return ''; var qs = QL.q.filter(function (q) { return q.p === Z.paper; }); var m = qs.reduce(function (a, q) { return a + q.m; }, 0), x = qs.reduce(function (a, q) { return a + q.x; }, 0); return stat('Challenge worksheet', m + ' / ' + x, 'marked ' + fmt(Z.asOf)); }
 function stat(l, v, s) { return '<div class="sc-stat"><div class="lbl">' + esc(l) + '</div><div class="v">' + esc(v) + '</div><div class="s">' + s + '</div></div>'; }
@@ -1025,7 +1082,7 @@ R.dates = function () {
     '<span class="pf-badge warn">Expected</span> marks dates that follow the usual pattern and are not yet published.</p></div>' +
     '<button class="pf-btn ghost" data-act="ics">Add to calendar (.ics)</button></div>' +
     '<div class="sc-form" style="margin-top:0">' + (VIEW ? '' : '<span class="pf-seg" role="group" aria-label="Student">' +
-    [['all', 'Both'], ['a', 'MK · Year 12'], ['b', 'ZK · Year 7']].map(function (o) { return '<button data-act="dwho" data-v="' + o[0] + '" aria-pressed="' + (who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span>') +
+    [['all', 'Both'], ['a', D.students.a.label + ' · ' + stuInfo('a').yr], ['b', D.students.b.label + ' · ' + stuInfo('b').yr]].map(function (o) { return '<button data-act="dwho" data-v="' + o[0] + '" aria-pressed="' + (who === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</span>') +
     '<select class="pf-select" data-act="dcat" aria-label="Category"><option value="all">All categories</option>' +
     Object.keys(D.cats).map(function (k) { return '<option value="' + k + '"' + (cat === k ? ' selected' : '') + '>' + esc(D.cats[k]) + '</option>'; }).join('') + '</select>' +
     '<label class="pf-check" style="flex-direction:row;letter-spacing:0;text-transform:none;font-weight:400;font-size:12.5px"><input type="checkbox" data-act="dpast"' + (past ? ' checked' : '') + '> Show past dates</label>' +
@@ -1415,28 +1472,15 @@ R.sat = function () {
       sat.slice().reverse().map(function (s) { return '<tr><td class="nw">' + fmt(s.date) + '</td><td>' + (s.kind === 'official' ? '<span class="pf-badge gold">Official</span>' : 'Practice') + '</td><td class="r">' + s.rw + '</td><td class="r">' + s.m + '</td><td class="r strong">' + (s.rw + s.m) + '</td><td class="r"><button class="pf-x" data-act="del" data-k="sat" data-id="' + s.id + '" aria-label="Delete">✕</button></td></tr>'; }).join('') +
       '</tbody></table></div>' : '<div class="pf-empty">Start with one full Bluebook practice test and log it here as the baseline.</div>') + '</div></div>';
 
-  html += '<div class="pf-over">Universities</div><div class="pf-grid">' +
-    '<div class="pf-card"><div class="pf-ch"><h2>Princeton University</h2><span class="pf-badge gold">Reach</span></div><dl class="sc-kv">' +
-    '<dt>Programme</dt><dd>Department of Astrophysical Sciences</dd>' +
-    '<dt>Testing</dt><dd><b>SAT or ACT required</b> for fall 2028 entry (the 2027–28 cycle). No minimum score.</dd>' +
-    '<dt>Scores</dt><dd>Middle 50% of enrolled students who sent scores: <b>1490–1560</b>, median 1530 (fall 2025)</dd>' +
-    '<dt>Early plan</dt><dd>Single-choice early action, <b>1 November</b>; non-binding, and early applications to public universities such as Rutgers are allowed</dd>' +
-    '<dt>Regular</dt><dd><b>1 January</b>; decisions late March</dd>' +
-    '<dt>Testing deadline</dt><dd>October SAT for early action, December for regular decision</dd></dl>' +
-    '<p class="pf-note" style="margin-bottom:0">Deadlines shown are this cycle\'s; the 2027–28 dates are expected to match. <a href="https://admission.princeton.edu/apply/standardized-testing" target="_blank" rel="noopener">Testing policy</a></p></div>' +
-    '<div class="pf-card"><div class="pf-ch"><h2>Rutgers University–New Brunswick</h2><span class="pf-badge ok">Target</span></div><dl class="sc-kv">' +
-    '<dt>Programme</dt><dd>Astrophysics major, Department of Physics and Astronomy (School of Arts and Sciences)</dd>' +
-    '<dt>Testing</dt><dd>Test-optional for fall 2027 entry; the policy for fall 2028 is not yet announced. Plan to send a strong score.</dd>' +
-    '<dt>Scores</dt><dd>Section medians of students who sent scores: about <b>690</b> Reading and Writing and <b>720</b> Math</dd>' +
-    '<dt>Early action</dt><dd><b>1 November</b>, non-binding; decisions by 31 January</dd>' +
-    '<dt>Regular</dt><dd><b>1 December</b>, one of the earliest regular deadlines</dd>' +
-    '<dt>Application</dt><dd>Common App or the Rutgers application</dd></dl>' +
-    '<p class="pf-note" style="margin-bottom:0"><a href="https://admissions.rutgers.edu/apply/dates-deadlines/new-brunswick" target="_blank" rel="noopener">Dates and deadlines</a> · <a href="https://physics.rutgers.edu/academics/undergraduate-program/majors/major-in-astrophysics" target="_blank" rel="noopener">Astrophysics major</a></p></div></div>';
+  var PA = pathFor('a');
+  html += '<div class="pf-over">Universities</div>' + (PA && PA.unis.length ? '<div class="pf-grid">' + PA.unis.map(function (u) { return uniCard(PA, u); }).join('') + '</div>' :
+    '<div class="pf-card"><h2>No target universities yet</h2><p class="pf-note">Add them to the profile to see their testing policy and deadlines here.</p><button class="pf-btn" data-act="tab" data-tab="profile">Open the profile</button></div>');
 
   var apps = events().filter(function (e) { return e.who.indexOf('a') >= 0 && e.cat === 'apply'; });
-  html += '<div class="pf-over">Application timeline</div><div class="pf-grid wide"><div class="pf-card"><h2>From now to a decision</h2><p class="pf-note">US applications go in during Year 13, before A2 exams. AS results (12 August 2027), predicted grades, the SAT and teacher letters carry the application.</p><ul class="sc-evs">' +
-    apps.map(function (e) { return evRow(e, { src: true }); }).join('') + '</ul></div>' +
-    '<div class="pf-card"><h2>Building an astrophysics profile</h2><p class="pf-note">Admissions readers look for sustained, genuine interest. Two or three of these done well beat a long list.</p>' + linkList(D.profileA) + '</div></div>';
+  var ideas = (PA ? PA.ints : []).filter(function (I) { return I.ideas; });
+  html += '<div class="pf-over">Application timeline</div><div class="pf-grid wide"><div class="pf-card"><h2>From now to a decision</h2><p class="pf-note">US applications go in during Year 13, before A2 exams. AS results, predicted grades, the SAT and teacher letters carry the application. These dates follow the profile; the full year-by-year list is on the Roadmap tab.</p>' +
+    (apps.length ? '<ul class="sc-evs">' + apps.map(function (e) { return evRow(e, { src: true }); }).join('') + '</ul>' : '<div class="pf-empty">Application dates appear here once the profile has target universities.</div>') + '</div>' +
+    ideas.map(function (I) { return '<div class="pf-card"><h2>Building a profile in ' + esc(I.n.toLowerCase()) + '</h2><p class="pf-note">Admissions readers look for sustained, genuine interest. Two or three of these done well beat a long list.</p>' + linkList(I.ideas) + '</div>'; }).join('') + '</div>';
   el.innerHTML = html;
 
   var pr = sat.filter(function (s) { return s.kind !== 'official'; }).map(function (s) { return { x: s.date, y: s.rw + s.m, s: s }; });
@@ -1504,13 +1548,10 @@ R.maths = function () {
       bp.map(function (r) { return '<tr><td class="nw">' + fmt(r.date) + '</td><td>' + esc(r.kind) + '</td><td>' + esc(r.label) + '</td><td class="r nw">' + r.score + ' / ' + r.outof + ' ' + scoreTag(Math.round(100 * r.score / r.outof)) + '</td><td class="r"><button class="pf-x" data-act="del" data-k="bprac" data-id="' + r.id + '" aria-label="Delete">✕</button></td></tr>'; }).join('') +
       '</tbody></table></div>' : '') + '</div></div>';
 
-  var road = sget('road', {});
-  html += '<div class="pf-over">Roadmap to a US university</div><p class="pf-note" style="margin:0">Applications go in during autumn 2032 for fall 2033 entry. Depth beats speed: strong problem solving now matters more than racing ahead in the syllabus.</p><div class="pf-grid">' +
-    D.roadmapB.map(function (y, yi) {
-      var done = y.items.filter(function (_, ii) { return road[yi + ':' + ii]; }).length;
-      return '<div class="pf-card"><div class="pf-ch"><h2>' + esc(y.yr) + '</h2><span class="pf-badge' + (done === y.items.length ? ' ok' : '') + '">' + done + ' / ' + y.items.length + '</span></div><ul class="sc-checks">' +
-        y.items.map(function (it, ii) { return '<li><label><input type="checkbox" data-act="road" data-k="' + yi + ':' + ii + '"' + (road[yi + ':' + ii] ? ' checked' : '') + '><span>' + esc(it) + '</span></label></li>'; }).join('') + '</ul></div>';
-    }).join('') + '</div>';
+  var PB = pathFor('b'), sb = pathStats('b');
+  html += '<div class="pf-over">Roadmap to university</div><div class="pf-card"><div class="pf-ch"><div><h2>Year by year, from the profile</h2><p class="pf-note" style="margin-bottom:0">' +
+    (PB ? esc(yearName(PB.p, PB.year)) + ' now · applications in autumn ' + PB.finalSY + ' for fall ' + PB.entry + ' entry · ' + sb.done + ' of ' + sb.n + ' steps done. Depth beats speed: strong problem solving now matters more than racing ahead in the syllabus.' : 'Fill in the profile to build the roadmap.') +
+    '</p></div><button class="pf-btn ghost" data-act="tab" data-tab="' + (PB ? 'roadmap' : 'profile') + '">' + (PB ? 'Open the roadmap' : 'Open the profile') + '</button></div></div>';
   var long = events().filter(function (e) { return e.who.indexOf('b') >= 0 && e.d >= '2027-07'; });
   html += '<div class="pf-grid wide"><div class="pf-card"><h2>Long-range dates</h2><ul class="sc-evs">' + long.map(function (e) { return evRow(e, { cat: true }); }).join('') + '</ul></div>' +
     '<div class="pf-card"><h2>Resources</h2>' + linkList(D.resourcesB) + '</div></div>';
@@ -1566,6 +1607,8 @@ R.sources = function () {
     '<div class="pf-scroll"><table class="pf-table"><thead><tr><th>Source</th><th class="r">Dates</th></tr></thead><tbody>' +
     Object.keys(D.sources).map(function (k) { var s = D.sources[k]; return '<tr><td><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a></td><td class="r">' + (used[k] || '—') + '</td></tr>'; }).join('') +
     '</tbody></table></div></div>' +
+    '<div class="pf-card"><div class="pf-ch"><h2>Where the roadmap rules come from</h2>' + pwFresh() + '</div><p class="pf-note">The roadmap turns each child\'s profile into steps and dates using these. Future years use the usual pattern and are marked Expected.</p>' +
+    '<div class="pf-scroll"><table class="pf-table"><tbody>' + Object.keys(PW.sources).map(function (k) { var x = PW.sources[k]; return '<tr><td><a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.name) + '</a></td></tr>'; }).join('') + '</tbody></table></div></div>' +
     '<div class="pf-card"><h2>How to read this site</h2><dl class="sc-kv">' +
     '<dt>Confirmed</dt><dd>Published by the exam board, College Board, the university or KHDA.</dd>' +
     '<dt>Expected</dt><dd>Follows the usual yearly pattern or a school\'s published calendar. Check again nearer the time.</dd>' +
@@ -1579,7 +1622,7 @@ R.sources = function () {
    each child's own view; a child only ever has their own view. Progress (cards, ratings,
    logs, ticks) is saved per child in the database and kept in this browser as a copy. */
 var ACCT = null, IS_PARENT = false, VIEW = null, STU = {}, SYNC_ON = false, DATA_UPD = null, DATA_SIG = '';
-var SYNC_KINDS = ['route', 'papers', 'sat', 'cards', 'topics', 'bprac', 'road', 'log', 'myq', 'fdone', 'redo', 'goals'];
+var SYNC_KINDS = ['route', 'papers', 'sat', 'cards', 'topics', 'bprac', 'road', 'log', 'myq', 'fdone', 'redo', 'goals', 'profile', 'pathdone'];
 var OWNER = { route: 'a', papers: 'a', sat: 'a', cards: 'a', topics: 'a', bprac: 'b', road: 'b' };   // whole value belongs to one child
 var ARR = { papers: 1, sat: 1, bprac: 1, log: 1, myq: 1 };                                          // lists; log and myq carry .who
 var SERVER = {}, DIRTY = {}, FIRST = {}, SYNCST = { state: 'ok', at: null, err: '', checked: null, checkErr: false }, FLUSH_T = null;
@@ -1614,7 +1657,7 @@ function isEmpty(v) { return v == null || (Array.isArray(v) ? !v.length : typeof
 function ownerOf(k, key, item) {
   if (OWNER[k]) return OWNER[k];
   if (ARR[k]) return (item && item.who) || 'a';
-  if (k === 'fdone' || k === 'goals') return String(key).split(':')[0];
+  if (k === 'fdone' || k === 'goals' || k === 'profile' || k === 'pathdone') return String(key).split(':')[0];
   if (k === 'redo') {
     var p = String(key).split(':')[0];
     if (p === 'mine') { var mq = (sget('myq', []) || []).filter(function (q) { return qid(q) === key; })[0]; return mq ? (mq.who || 'a') : 'a'; }
@@ -2173,6 +2216,371 @@ R.goals = function () {
   document.addEventListener('focusout', function (e) { if (pt(e.target)) hide('focus'); });
 })();
 
+/* ---------- profile and roadmap ----------
+   Each child's profile (school system, year, subjects, interests, target universities) is saved in
+   their account as progress kind 'profile', keyed by child. With the rules in data/pathways.js it
+   makes the year-by-year roadmap, adds the roadmap's dates to Key dates, and fills the university
+   cards. A date in study.js with the same key, child and school year is used instead of the rule's
+   usual date. Ticks are saved as 'pathdone'. */
+var PW = window.PATHWAYS || { checked: null, reviewDays: 180, sources: {}, tracks: [], stageName: {}, school: [], dest: {}, rounds: [], unis: {}, interests: [] };
+var PROFOPEN = {}, PROFMSG = {}, PATHVIS = {};
+var GROUPS = [['school', 'School and exams'], ['tests', 'Tests'], ['apply', 'Applications'], ['grow', 'Interests and activities']];
+var TIERS = [['reach', 'Reach'], ['target', 'Target'], ['likely', 'Likely']];
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+function schoolYear(d) { var p = parts(d || TODAY); return p.m >= 8 ? p.y : p.y - 1; }
+function syLabel(sy) { return sy + '–' + String(sy + 1).slice(2); }
+function byK(list, k) { for (var i = 0; i < list.length; i++) if (list[i].k === k) return list[i]; return null; }
+function trackOf(k) { return byK(PW.tracks, k); }
+function interestOf(k) { return byK(PW.interests, k); }
+function roundOf(k) { return byK(PW.rounds, k); }
+function pwSrc(k) { return k ? (PW.sources[k] || D.sources[k] || null) : null; }
+function listAnd(a) { return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+function hashT(s) { var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function profOf(w) { var p = (sget('profile', {}) || {})[w]; return p && trackOf(p.track) ? p : null; }
+// The profile stores the year group in the school year it was saved, so it moves up each August by itself.
+function yearNow(p) { var sy = schoolYear(); return (Number(p.year) || 7) + (sy - (Number(p.sy) || sy)); }
+function yearName(p, y) { var t = trackOf(p.track); return t && t.sys === 'american' ? 'Grade ' + (y - 1) : 'Year ' + y; }
+function usName(y) { var g = y - 1, n = { 9: 'freshman', 10: 'sophomore', 11: 'junior', 12: 'senior' }[g]; return 'US grade ' + g + (n ? ' (' + n + ' year)' : ''); }
+function inR(v, r) { return Array.isArray(r) ? v >= r[0] && v <= r[1] : v === r; }
+function txt(n, ctx) {
+  if (!n || typeof n === 'string') return n || '';
+  if (n[ctx.sys]) return n[ctx.sys];
+  if (n.us || n.intl) return ctx.citizen === 'us' ? n.us : ctx.citizen === 'intl' ? n.intl : [n.us, n.intl].filter(Boolean).join(' ');
+  return '';
+}
+function condOk(c, ctx) {
+  if (!c) return true;
+  if (c.track && c.track.indexOf(ctx.track) < 0) return false;
+  if (c.sys && c.sys.indexOf(ctx.sys) < 0) return false;
+  if (c.citizen && c.citizen !== ctx.citizen) return false;
+  if (c.dest && ctx.dests.indexOf(c.dest) < 0) return false;
+  return true;
+}
+function hits(r, st, ctx) {
+  if (r.at != null && !inR(st.toFinal, r.at)) return false;
+  if (r.yr && !inR(st.y, r.yr)) return false;
+  if (r.usg && !inR(st.y - 1, r.usg)) return false;
+  if (typeof r.sys === 'string' && r.sys !== ctx.sys) return false;
+  return condOk(r.if, ctx);
+}
+// A rule's date in a given school year: the published one if known, otherwise the usual month (Expected).
+function pwDate(r, sy) {
+  var pub = r.dates && r.dates[String(sy)];
+  if (pub) return Array.isArray(pub) ? { d: pub[0], end: pub[1], st: 'confirmed' } : { d: pub, st: 'confirmed' };
+  if (!r.m) return null;
+  var yOf = function (m) { return r.after ? sy + 1 : (m >= 8 ? sy : sy + 1); };
+  var d = yOf(r.m) + '-' + pad2(r.m) + (r.d ? '-' + pad2(r.d) : ''), end = null;
+  if (r.end && (r.end.m !== r.m || r.d)) end = yOf(r.end.m) + '-' + pad2(r.end.m) + (r.d && r.end.d ? '-' + pad2(r.end.d) : '');
+  return { d: d, end: end, st: 'expected' };
+}
+function staticFor(w, k, sy) {
+  var a = sy + '-08-01', b = (sy + 1) + '-08-31';
+  return D.events.filter(function (e) { return e.key === k && e.who.indexOf(w) >= 0 && first(e) >= a && first(e) <= b; });
+}
+function destsOf(p) {
+  var o = (p.dest || []).filter(function (d) { return d === 'us' || d === 'uk'; });
+  (p.unis || []).forEach(function (u) { var c = u.id && PW.unis[u.id] ? PW.unis[u.id].c : u.c; if ((c === 'us' || c === 'uk') && o.indexOf(c) < 0) o.push(c); });
+  return o;
+}
+function unisOf(p) {
+  return (p.unis || []).map(function (u, i) {
+    var c = u.id && PW.unis[u.id];
+    if (c) {
+      var rk = u.round === 'rd' ? 'rd' : 'early', r = c.rounds[rk] || c.rounds.early || c.rounds.rd;
+      return { i: i, id: u.id, key: 'u-' + u.id, cat: c, n: c.n, short: c.short, c: c.c, tier: u.tier || '', rk: rk, round: r, src: c.src, checked: c.checked };
+    }
+    var rr = roundOf(u.round) || roundOf(u.c === 'uk' ? 'uk-jan' : u.c === 'us' ? 'rd' : 'other');
+    return { i: i, id: null, key: 'u-' + hashT(u.name || String(i)), n: u.name || 'University', short: u.name || 'University', c: u.c || rr.c, tier: u.tier || '', rk: rr.k, round: rr,
+      due: /^\d{4}-\d{2}-\d{2}$/.test(u.due || '') ? u.due : '', src: rr.src || null };
+  });
+}
+function uniDeadline(P, u) { if (u.due) return { d: u.due, st: 'user' }; return u.round && u.round.m ? pwDate(u.round, P.finalSY) : null; }
+
+var PATHC = { key: '', val: {} };
+function pathFor(w) {
+  var key = JSON.stringify(sget('profile', {}) || {}) + '|' + TODAY;
+  if (PATHC.key !== key) PATHC = { key: key, val: {} };
+  if (!Object.prototype.hasOwnProperty.call(PATHC.val, w)) PATHC.val[w] = buildPath(w);
+  return PATHC.val[w];
+}
+function buildPath(w) {
+  var p = profOf(w); if (!p) return null;
+  var t = trackOf(p.track), SY = schoolYear(), y0 = yearNow(p);
+  var ctx = { w: w, track: t.k, sys: t.sys, citizen: p.citizen || '', dests: destsOf(p) };
+  var out = { w: w, p: p, t: t, ctx: ctx, year: y0, finished: y0 > 13, finalSY: SY + (13 - y0), stages: [], items: [], events: [], checks: [],
+    unis: unisOf(p), ints: (p.interests || []).map(interestOf).filter(Boolean) };
+  out.entry = out.finalSY + 1;
+  if (out.finished) return out;
+  var used = {}, y1 = Math.max(7, y0);
+  for (var y = y1; y <= 13; y++) out.stages.push({ y: y, sy: SY + (y - y1), toFinal: 13 - y, now: y === y1, items: [] });
+  function stageAt(tf) { for (var i = 0; i < out.stages.length; i++) if (out.stages[i].toFinal === tf) return out.stages[i]; return null; }
+  function add(st, r, src, o) {
+    o = o || {};
+    var title = o.t || r.t, it = { id: st.sy + ':' + src + ':' + (r.k || hashT(title)), k: r.k || null, g: r.g || 'school', t: title, n: o.n != null ? o.n : txt(r.n, ctx),
+      cat: r.cat || 'mile', src: o.src || r.src || null, warn: !!o.warn, sy: st.sy };
+    var dt = o.date || pwDate(r, st.sy);
+    if (dt) { it.d = dt.d; it.end = dt.end || null; it.st = dt.st; }
+    if (it.k && it.d) { var lk = staticFor(w, it.k, st.sy); if (lk.length) { it.linked = lk; it.d = lk[0].d; it.end = lk[0].end || null; it.st = lk[0].st; } }
+    st.items.push(it); out.items.push(it);
+    if (it.d && !it.linked) out.events.push({ d: it.d, end: it.end || undefined, who: [w], cat: it.cat, t: it.t, note: it.n, st: it.st, src: it.src, key: it.k, gen: true });
+  }
+  function rules(list, src) {
+    (list || []).forEach(function (r, ri) {
+      out.stages.forEach(function (st) {
+        if (!hits(r, st, ctx) || (r.once && used[src + ri])) return;
+        used[src + ri] = 1; add(st, r, src);
+      });
+    });
+  }
+  rules(PW.school, 'sch');
+  ctx.dests.forEach(function (dk) { rules(PW.dest[dk], dk); });
+  out.ints.forEach(function (I) { rules(I.items, 'i-' + I.k); });
+
+  // universities: testing and requirements a year ahead, then each one's deadline and decision
+  var junior = stageAt(1), senior = stageAt(0), ucas = {};
+  out.unis.forEach(function (u) {
+    if (u.cat) {
+      if (junior) add(junior, { g: 'tests', t: u.short + ': check the testing policy' }, u.key, { n: u.cat.testing, src: u.cat.testSrc });
+      rules(u.cat.extra, u.key + 'x');
+      if (senior) {
+        add(senior, { g: 'apply', k: 'deadline', cat: 'apply', m: u.round.m, d: u.round.d, dates: u.round.dates }, u.key, { t: u.short + ': ' + u.round.n.toLowerCase() + ' deadline', n: u.round.note || '', src: u.src });
+        if (u.round.dec) add(senior, { g: 'apply', k: 'decision', cat: 'apply', m: u.round.decM, d: u.round.decD }, u.key, { t: u.short + ': ' + u.round.dec.charAt(0).toLowerCase() + u.round.dec.slice(1), n: '', src: u.src });
+      }
+    } else if (u.c === 'uk') {
+      (ucas[u.rk] = ucas[u.rk] || []).push(u.short);
+      if (junior) add(junior, { g: 'apply', t: u.short + ': check entry requirements and any admissions test' }, u.key);
+    } else {
+      if (junior) add(junior, { g: 'apply', t: u.short + ': note the deadlines, testing policy and requirements' }, u.key);
+      if (!senior) return;
+      var r = u.round;
+      if (u.due || r.m) add(senior, { g: 'apply', k: 'deadline', cat: 'apply', m: r.m, d: r.d }, u.key, {
+        t: u.short + ': ' + (r.k === 'other' ? 'application' : r.n.replace(/ \(binding\)/, '').toLowerCase()) + ' deadline',
+        n: (r.note ? r.note + ' ' : '') + (u.due ? 'Date from the profile.' : 'The usual date: add the exact one in the profile.'), date: u.due ? { d: u.due, st: 'user' } : null });
+      else add(senior, { g: 'apply', t: 'Find ' + u.short + '\'s application deadline' }, u.key);
+    }
+  });
+  if (senior) Object.keys(ucas).forEach(function (rk) {
+    var r = roundOf(rk); if (r && r.m) add(senior, { g: 'apply', k: 'deadline', cat: 'apply', m: r.m, d: r.d, dates: r.dates }, 'ucas-' + rk, { t: 'UCAS deadline: ' + ucas[rk].join(', '), n: r.n, src: r.src });
+  });
+
+  // the subjects each interest needs: kept in mind at options time, checked once sixth form starts
+  var seen = {}, choose = t.sys === 'british' ? [9, 11] : t.sys === 'ib' ? [11] : [9];
+  out.ints.forEach(function (I) {
+    var need = (I.needs && I.needs[t.sys]) || [], rec = (I.rec && I.rec[t.sys]) || '';
+    need.forEach(function (nd) { out.checks.push({ I: I, n: nd[1], has: new RegExp(nd[0], 'i').test(p.subjects || '') }); });
+    if (!need.length) return;
+    out.stages.forEach(function (st) {
+      if (choose.indexOf(st.y) >= 0) add(st, { g: 'school', t: 'Keep ' + listAnd(need.map(function (x) { return x[1]; })) + ' for ' + I.n.toLowerCase() }, 'i-' + I.k + 'need', { n: rec ? rec + '.' : '' });
+    });
+    if (y1 >= 12) out.checks.forEach(function (c) {
+      if (c.I !== I || c.has || seen[c.n]) return;
+      seen[c.n] = 1; add(out.stages[0], { g: 'school', t: c.n + ' is not in the current subjects' }, 'gap-' + hashT(c.n), { n: I.gap || '', warn: true });
+    });
+  });
+  out.stages.forEach(function (st) {
+    st.items.sort(function (a, b) {
+      if (a.warn !== b.warn) return a.warn ? -1 : 1;
+      if (!a.d !== !b.d) return a.d ? -1 : 1;
+      if (a.d && b.d) { var x = first(a), z = first(b); if (x !== z) return x < z ? -1 : 1; }
+      return 0;
+    });
+  });
+  return out;
+}
+function pathDone() { return sget('pathdone', {}) || {}; }
+function pathStats(w, nowOnly) {
+  var P = pathFor(w); if (!P) return null;
+  var dn = pathDone(), its = nowOnly ? (P.stages[0] ? P.stages[0].items : []) : P.items;
+  return { n: its.length, done: its.filter(function (i) { return dn[w + ':' + i.id]; }).length };
+}
+function pwStale() { return !!PW.checked && daysTo(PW.checked) < -(PW.reviewDays || 180); }
+function pwFresh() {
+  if (!PW.checked) return '';
+  return pwStale() ? '<span class="pf-badge bad">Roadmap rules due for a re-check · last checked ' + esc(fmt(PW.checked)) + '</span>' : '<span class="pf-badge">Rules checked ' + esc(fmt(PW.checked)) + '</span>';
+}
+function stuInfo(w) {
+  var s = D.students[w] || {}, p = profOf(w);
+  if (!p) return { yr: s.yr || '', school: s.school || '', track: s.track || '' };
+  var y = yearNow(p), t = trackOf(p.track);
+  return { yr: y > 13 ? 'Finished school' : yearName(p, y), school: p.school || s.school || '', track: t.short + ' · ' + (p.subjects || (PW.stageName[t.sys] || {})[Math.min(13, y)] || '') };
+}
+function tierBadge(t) { return t ? '<span class="pf-badge' + (t === 'reach' ? ' gold' : t === 'target' ? ' ok' : '') + '">' + esc(t.charAt(0).toUpperCase() + t.slice(1)) + '</span>' : ''; }
+function fmtMD(r) { return r.m ? (r.d ? r.d + ' ' : '') + MONTHS[r.m - 1] : ''; }
+
+/* the roadmap: one card per school year, items grouped and tickable */
+function rmItem(w, it, dn) {
+  var k = w + ':' + it.id, when = '', S = pwSrc(it.src);
+  if (it.d) when = '<span class="w">' + esc(fmtRange(it.d, it.end)) + ' · ' + esc(rel(it)) + (isPast(it) ? '' : it.st === 'expected' ? ' · expected' : it.st === 'user' ? ' · date from the profile' : '') + '</span>';
+  return '<li class="' + (it.warn ? 'warn' : '') + (it.d && isPast(it) ? ' past' : '') + '"><label><input type="checkbox" data-act="ptick" data-k="' + esc(k) + '"' + (dn[k] ? ' checked' : '') + '>' +
+    '<span><span class="t">' + esc(it.t) + '</span>' + when + (it.n || S ? '<span class="n">' + esc(it.n || '') + (S ? (it.n ? ' ' : '') + '<a href="' + esc(S.url) + '" target="_blank" rel="noopener">Source</a>' : '') + '</span>' : '') + '</span></label></li>';
+}
+function stageCard(w, P, st, i) {
+  var dn = pathDone(), done = st.items.filter(function (it) { return dn[w + ':' + it.id]; }).length, key = w + ':' + st.sy;
+  var open = Object.prototype.hasOwnProperty.call(PATHVIS, key) ? PATHVIS[key] : i < 2;
+  var sub = [syLabel(st.sy), (PW.stageName[P.t.sys] || {})[st.y]]; if (P.t.sys !== 'american') sub.push(usName(st.y));
+  var body = GROUPS.map(function (gr) {
+    var its = st.items.filter(function (it) { return it.g === gr[0]; });
+    return its.length ? '<div class="rm-group"><h3>' + gr[1] + '</h3><ul class="rm-list">' + its.map(function (it) { return rmItem(w, it, dn); }).join('') + '</ul></div>' : '';
+  }).join('');
+  return '<details class="pf-card rm-stage' + (st.now ? ' now' : '') + '" data-k="' + esc(key) + '"' + (open ? ' open' : '') + '><summary><div><h2>' + esc(yearName(P.p, st.y)) + (st.now ? ' <span class="pf-badge gold">Now</span>' : '') + '</h2>' +
+    '<p class="pf-note">' + esc(sub.filter(Boolean).join(' · ')) + '</p></div><span class="pf-badge' + (done && done === st.items.length ? ' ok' : '') + '">' + done + ' / ' + st.items.length + ' done</span></summary>' +
+    '<div class="rm-groups">' + (body || '<p class="pf-note">Nothing set for this year yet.</p>') + '</div></details>';
+}
+function subjCheck(P) {
+  if (!P.ints.length) return '<div class="pf-card"><h2>Subject check</h2><p class="pf-note" style="margin-bottom:0">Choose an interest in the profile to see which subjects it needs.</p></div>';
+  if (!P.checks.length) return '';
+  var chosen = P.year >= 12, rows = {}, order = [];
+  P.checks.forEach(function (c) { if (!rows[c.I.k]) { rows[c.I.k] = { I: c.I, list: [] }; order.push(c.I.k); } rows[c.I.k].list.push(c); });
+  return '<div class="pf-card"><h2>Subject check</h2><p class="pf-note">' + (chosen ? 'What each interest needs, against the subjects in the profile.' : 'What each interest needs: keep these when choosing options.') + '</p><ul class="rm-checks">' +
+    order.map(function (k) {
+      var r = rows[k], rec = r.I.rec && r.I.rec[P.t.sys];
+      return '<li><b>' + esc(r.I.n) + '</b> ' + r.list.map(function (c) {
+        return !chosen ? '<span class="pf-badge">' + esc(c.n) + '</span>' : c.has ? '<span class="pf-badge ok">✓ ' + esc(c.n) + '</span>' : '<span class="pf-badge bad">Missing: ' + esc(c.n) + '</span>';
+      }).join(' ') + (rec ? '<span class="s">' + esc(rec) + '</span>' : '') + '</li>';
+    }).join('') + '</ul></div>';
+}
+function uniCard(P, u) {
+  var dl = uniDeadline(P, u), c = u.cat, rows = [], S = pwSrc(u.src);
+  var prog = c && c.prog ? P.ints.map(function (I) { return c.prog[I.k]; }).filter(Boolean)[0] : null;
+  if (prog) rows.push(['Programme', '<a href="' + esc(prog[1]) + '" target="_blank" rel="noopener">' + esc(prog[0]) + '</a>']);
+  if (c) rows.push(['Testing', esc(c.testing)]);
+  if (c && c.scores) rows.push(['Scores', esc(c.scores)]);
+  rows.push(['Applying', esc(u.round ? u.round.n : '') + (dl ? ', <b>' + esc(fmt(dl.d)) + '</b>' + (dl.st === 'expected' ? ' (expected)' : dl.st === 'user' ? ' (from the profile)' : '') : '')]);
+  if (u.round && u.round.note) rows.push(['Note', esc(u.round.note)]);
+  if (u.round && u.round.dec) rows.push(['Decision', esc(u.round.dec)]);
+  if (c && c.rounds.early && c.rounds.rd) { var o = u.rk === 'rd' ? c.rounds.early : c.rounds.rd; rows.push([u.rk === 'rd' ? 'Early option' : 'Regular option', esc(o.n) + ', ' + esc(fmtMD(o))]); }
+  if (c && c.rows) c.rows.forEach(function (r) { rows.push([esc(r[0]), esc(r[1])]); });
+  var stale = c && c.checked && daysTo(c.checked) < -(PW.reviewDays || 180);
+  return '<div class="pf-card"><div class="pf-ch"><h2>' + esc(u.n) + '</h2>' + tierBadge(u.tier) + '</div><dl class="sc-kv">' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>' +
+    '<p class="pf-note" style="margin-bottom:0">' + (c ? (stale ? '<span class="pf-badge bad">Due for a re-check</span> ' : '') + 'Checked ' + esc(fmt(c.checked)) + '. Dates for the ' + syLabel(P.finalSY) + ' cycle are expected to match this cycle. ' : 'Added in the profile; check its rules on the university\'s own site. ') +
+    (S ? '<a href="' + esc(S.url) + '" target="_blank" rel="noopener">' + (c ? 'Admissions site' : 'Source') + '</a>' : '') + '</p></div>';
+}
+function roadmapNowHtml(w) {
+  var P = pathFor(w); if (!P || !P.stages.length) return '';
+  var st = P.stages[0], dn = pathDone(), todo = st.items.filter(function (it) { return !dn[w + ':' + it.id]; });
+  var list = todo.filter(function (it) { return it.warn; }).concat(todo.filter(function (it) { return !it.warn && it.d && !isPast(it); }), todo.filter(function (it) { return !it.warn && !it.d; })).slice(0, 4);
+  var done = st.items.length - todo.length;
+  return '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(kidName(w)) + ' · ' + esc(yearName(P.p, st.y)) + ' on the roadmap</h2><p class="pf-note">' + done + ' of ' + st.items.length + ' steps done this school year.</p></div>' +
+    '<button class="pf-btn ghost" data-act="tab" data-tab="roadmap">Open the roadmap</button></div>' +
+    (list.length ? '<ul class="rm-list">' + list.map(function (it) { return rmItem(w, it, dn); }).join('') + '</ul>' : '<div class="pf-empty">Everything for this year is ticked off.</div>') + '</div>';
+}
+R.roadmap = function () {
+  var el = document.getElementById('t-roadmap'), h = '';
+  kids().forEach(function (w) {
+    var name = kidName(w), P = pathFor(w);
+    h += '<div class="pf-over">' + (kids().length > 1 ? esc(name) + ' · ' : '') + 'Roadmap</div>';
+    if (!P) { h += '<div class="pf-card"><h2>No profile yet</h2><p class="pf-note">The roadmap is built from the profile: school system, year, interests and target universities.</p><button class="pf-btn" data-act="tab" data-tab="profile">Fill in the profile</button></div>'; return; }
+    if (P.finished) { h += '<div class="pf-card"><h2>School finished</h2><p class="pf-note" style="margin-bottom:0">The profile says ' + esc(name) + ' has finished Year 13. Update the profile to change this.</p></div>'; return; }
+    var s = pathStats(w), tg = P.unis.map(function (u) { return u.short; });
+    h += '<div class="pf-card rm-head"><div class="pf-ch"><div><h2>' + esc(tg.length ? 'Path to ' + listAnd(tg) : 'Path to university') + '</h2>' +
+      '<p class="pf-note">' + esc(yearName(P.p, P.year)) + ' now · ' + esc(P.t.short) + ' · applications in autumn ' + P.finalSY + ' · university from fall ' + P.entry + '. Tick each step when it is done; dated steps are also on Key dates.</p></div>' +
+      '<div class="rm-prog"><b>' + s.done + '</b> / ' + s.n + ' steps done</div></div><div class="rm-meta">' + pwFresh() + '<button class="sc-qlink" data-act="tab" data-tab="profile">Change the profile</button></div></div>';
+    h += subjCheck(P);
+    if (P.unis.length) h += '<div class="pf-grid">' + P.unis.map(function (u) { return uniCard(P, u); }).join('') + '</div>';
+    P.stages.forEach(function (st, i) { h += stageCard(w, P, st, i); });
+    h += '<div class="pf-card rm-end"><h2>University from fall ' + P.entry + '</h2><p class="pf-note" style="margin-bottom:0">' + (tg.length ? esc(listAnd(tg)) + (P.ints.length ? ' · ' + esc(listAnd(P.ints.map(function (I) { return I.n.toLowerCase(); }))) : '') : 'Add target universities to the profile to see their deadlines here.') + '</p></div>';
+  });
+  el.innerHTML = h;
+};
+
+/* the profile: what each child is studying and aiming for */
+function profDl(p, P) {
+  var y = P.year, t = P.t, rows = [
+    ['School', esc(p.school || '—') + (p.place ? ' · ' + esc(p.place) : '')],
+    ['School system', esc(t.n)],
+    ['Year now', P.finished ? 'Finished school' : '<b>' + esc(yearName(p, y)) + '</b> · ' + esc(syLabel(schoolYear())) + ' · ' + esc((PW.stageName[t.sys] || {})[y] || '') + (t.sys !== 'american' ? ' · ' + esc(usName(y)) : '')],
+    ['Subjects', p.subjects ? esc(p.subjects) : 'Not added yet'],
+    ['Interests', P.ints.map(function (I) { return esc(I.n); }).concat(p.other ? [esc(p.other)] : []).join(', ') || 'Not chosen yet'],
+    ['Applying to', P.ctx.dests.map(function (d) { return d === 'us' ? 'United States' : 'United Kingdom'; }).join(' and ') || 'Not chosen yet'],
+    ['Applying as', p.citizen === 'us' ? 'US citizen or permanent resident' : p.citizen === 'intl' ? 'International student' : 'Not set'],
+    ['Universities', P.unis.length ? '<ul class="pr-unis">' + P.unis.map(function (u) {
+      var dl = uniDeadline(P, u);
+      return '<li><b>' + esc(u.n) + '</b> ' + tierBadge(u.tier) + '<span class="s">' + esc(u.round ? u.round.n : '') + (dl ? ' · ' + esc(fmt(dl.d)) + (dl.st === 'expected' ? ' (expected)' : '') : '') + '</span></li>';
+    }).join('') + '</ul>' : 'None yet'],
+    ['Timeline', P.finished ? '—' : 'Applications in autumn <b>' + P.finalSY + '</b> · school finishes in summer ' + (P.finalSY + 1) + ' · university from fall <b>' + P.entry + '</b>']
+  ];
+  if (p.notes) rows.push(['Notes', esc(p.notes)]);
+  return '<dl class="sc-kv">' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>';
+}
+function profSetup(w, P) {
+  var s = pathStats(w), gaps = P.checks.filter(function (c) { return !c.has; }).length, chosen = P.year >= 12;
+  return '<div class="pf-card"><div class="pf-ch"><h2>What the profile sets up</h2>' + pwFresh() + '</div><div class="sc-stats">' +
+    stat('Roadmap steps', s.done + ' / ' + s.n, P.stages.length + ' school ' + (P.stages.length === 1 ? 'year' : 'years') + ', ticked as they are done') +
+    stat('Dates added', String(P.events.length), 'on Key dates and in the calendar file') +
+    stat('Universities', String(P.unis.length), P.unis.length ? 'with deadlines on the roadmap' : 'add them below') +
+    stat('Subject check', !P.checks.length ? '—' : chosen ? (gaps ? gaps + ' missing' : 'All in place') : 'To plan', !P.checks.length ? 'choose an interest' : chosen ? 'against the subjects now' : 'for options at Year ' + (P.t.sys === 'ib' ? 11 : 9) + (P.t.sys === 'british' ? ' and 11' : '')) + '</div>' +
+    '<div class="sc-form" style="margin-bottom:0"><button class="pf-btn" data-act="tab" data-tab="roadmap">Open the roadmap</button><button class="pf-btn ghost" data-act="tab" data-tab="dates">See the key dates</button></div></div>';
+}
+function profForm(w, p) {
+  p = p || {};
+  var s = D.students[w] || {}, y = p.track ? Math.min(13, yearNow(p)) : (parseInt(String(s.yr || '').replace(/\D/g, ''), 10) || 7);
+  var opt = function (v, l, cur) { return '<option value="' + esc(v) + '"' + (String(cur) === String(v) ? ' selected' : '') + '>' + esc(l) + '</option>'; };
+  var us = (p.unis || []).slice(0, 10), n = Math.min(10, us.length + 2), rows = '';
+  for (var i = 0; i < n; i++) {
+    var u = us[i] || {}, sel = u.id || (u.name ? 'other' : '');
+    rows += '<div class="pr-uni">' +
+      '<label>University<select class="pf-select" name="u' + i + '_id">' + opt('', '—', sel) + Object.keys(PW.unis).map(function (k) { return opt(k, PW.unis[k].n, sel); }).join('') + opt('other', 'Another university…', sel) + '</select></label>' +
+      '<label>Name, if another<input class="pf-input" name="u' + i + '_name" maxlength="80" value="' + esc(u.name || '') + '"></label>' +
+      '<label>Country<select class="pf-select" name="u' + i + '_c">' + [['us', 'United States'], ['uk', 'United Kingdom'], ['other', 'Other']].map(function (c) { return opt(c[0], c[1], u.c || 'us'); }).join('') + '</select></label>' +
+      '<label>Round<select class="pf-select" name="u' + i + '_round">' + PW.rounds.map(function (r) { return opt(r.k, r.n, u.round || 'ea'); }).join('') + '</select></label>' +
+      '<label>Deadline, if known<input class="pf-input" type="date" name="u' + i + '_due" value="' + esc(u.due || '') + '"></label>' +
+      '<label>Type<select class="pf-select" name="u' + i + '_tier">' + opt('', '—', u.tier || '') + TIERS.map(function (t) { return opt(t[0], t[1], u.tier || ''); }).join('') + '</select></label></div>';
+  }
+  return '<form class="sc-form pr-form" data-form="profile"><input type="hidden" name="w" value="' + w + '">' +
+    '<label class="grow">School<input class="pf-input" name="school" maxlength="80" value="' + esc(p.school || s.school || '') + '"></label>' +
+    '<label>Town and country<input class="pf-input" name="place" maxlength="60" value="' + esc(p.place || '') + '" placeholder="e.g. Dubai, UAE"></label>' +
+    '<label class="grow">School system<select class="pf-select" name="track">' + PW.tracks.map(function (t) { return opt(t.k, t.n, p.track || 'brit'); }).join('') + '</select></label>' +
+    '<label>Year now<select class="pf-select" name="year">' + [7, 8, 9, 10, 11, 12, 13].map(function (k) { return opt(k, 'Year ' + k + ' · Grade ' + (k - 1), y); }).join('') + '</select></label>' +
+    '<label class="grow">Subjects now<input class="pf-input" name="subjects" maxlength="200" value="' + esc(p.subjects || '') + '" placeholder="e.g. Mathematics, Physics, Chemistry"></label>' +
+    '<label>Applying as<select class="pf-select" name="citizen">' + opt('', 'Not set', p.citizen || '') + opt('us', 'US citizen or permanent resident', p.citizen || '') + opt('intl', 'International student', p.citizen || '') + '</select></label>' +
+    '<fieldset class="pr-set"><legend>Interests</legend><div class="pr-ints">' + PW.interests.map(function (I) {
+      return '<label class="pf-check"><input type="checkbox" name="int" value="' + esc(I.k) + '"' + ((p.interests || []).indexOf(I.k) >= 0 ? ' checked' : '') + '> ' + esc(I.n) + '</label>'; }).join('') + '</div>' +
+    '<label class="grow pr-other">Another interest<input class="pf-input" name="other" maxlength="80" value="' + esc(p.other || '') + '"></label></fieldset>' +
+    '<fieldset class="pr-set"><legend>Applying to</legend><div class="pr-ints">' + [['us', 'United States'], ['uk', 'United Kingdom']].map(function (d) {
+      return '<label class="pf-check"><input type="checkbox" name="dest" value="' + d[0] + '"' + ((p.dest || []).indexOf(d[0]) >= 0 ? ' checked' : '') + '> ' + d[1] + '</label>'; }).join('') +
+    '</div><p class="pf-note" style="margin:4px 0 0">A university added below also adds its country.</p></fieldset>' +
+    '<fieldset class="pr-set"><legend>Target universities</legend><div class="pr-urows">' + rows + '</div><p class="pf-note" style="margin:4px 0 0">Princeton and Rutgers–New Brunswick have their rules checked. For any other university, choose its round and add the deadline. Save to get more empty rows.</p></fieldset>' +
+    '<label class="grow pr-wide">Notes<textarea class="pf-input" name="notes" maxlength="500">' + esc(p.notes || '') + '</textarea></label>' +
+    '<button class="pf-btn" type="submit">Save profile</button>' + (p.track ? '<button class="pf-btn ghost" type="button" data-act="profedit" data-w="' + w + '">Cancel</button>' : '') +
+    '</form><div class="sc-msg" id="prMsg-' + w + '">' + esc(PROFMSG[w] || '') + '</div>';
+}
+R.profile = function () {
+  var el = document.getElementById('t-profile'), h = '';
+  kids().forEach(function (w) {
+    var name = kidName(w), p = profOf(w), P = pathFor(w), open = PROFOPEN[w] || !p, own = !!VIEW || !IS_PARENT;
+    h += '<div class="pf-over">' + (kids().length > 1 ? esc(name) + ' · ' : '') + 'Profile</div><div class="' + (open ? 'pr-open' : 'pf-grid wide') + '"><div class="pf-card"><div class="pf-ch"><div><h2>' +
+      (p ? (own ? 'Your profile' : esc(name) + '\'s profile') : 'No profile yet') + '</h2><p class="pf-note">' +
+      (p ? 'The roadmap, its dates on Key dates and the university cards are built from this.' + (p.updated ? ' Updated ' + esc(fmt(p.updated)) + '.' : '') : 'Fill this in to build the roadmap, its key dates and the university cards.') + '</p></div>' +
+      (p ? '<button class="sc-qlink" data-act="profedit" data-w="' + w + '">' + (open ? 'Close' : 'Edit profile') + '</button>' : '') + '</div>' +
+      (p ? profDl(p, P) : '') + (open ? '<div class="gm-edit">' + profForm(w, p) + '</div>' : '') + '</div>' +
+      (p && P && !P.finished ? profSetup(w, P) : '') + '</div>';
+  });
+  el.innerHTML = h;
+};
+function saveProfile(f, fd, g) {
+  var w = g('w'), msg = function (m) { PROFMSG[w] = m; var e = document.getElementById('prMsg-' + w); if (e) e.textContent = m; };
+  if (!canSee(w) || !trackOf(g('track'))) return;
+  var unis = [];
+  for (var i = 0; i < 10; i++) {
+    var id = g('u' + i + '_id'); if (!id) continue;
+    var tier = g('u' + i + '_tier'), round = g('u' + i + '_round'), due = g('u' + i + '_due');
+    if (!TIERS.some(function (x) { return x[0] === tier; })) tier = '';
+    if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) due = '';
+    if (PW.unis[id]) { unis.push({ id: id, round: round === 'rd' ? 'rd' : 'ea', tier: tier }); continue; }
+    var nm = g('u' + i + '_name').slice(0, 80), c = g('u' + i + '_c');
+    if (!nm) return msg('Add the name of the university in row ' + (i + 1) + '.');
+    if (['us', 'uk', 'other'].indexOf(c) < 0) c = 'us';
+    var rr = roundOf(round); if (!rr || rr.c !== c) round = c === 'uk' ? 'uk-jan' : c === 'us' ? 'rd' : 'other';
+    unis.push({ name: nm, c: c, round: round, due: due, tier: tier });
+  }
+  var all = {}, cur = sget('profile', {}) || {}; Object.keys(cur).forEach(function (k) { all[k] = cur[k]; });
+  all[w] = { track: g('track'), year: Math.max(7, Math.min(13, parseInt(g('year'), 10) || 7)), sy: schoolYear(), school: g('school').slice(0, 80), place: g('place').slice(0, 60),
+    subjects: g('subjects').slice(0, 200), interests: fd.getAll('int').filter(interestOf), other: g('other').slice(0, 80),
+    dest: fd.getAll('dest').filter(function (d) { return d === 'us' || d === 'uk'; }), citizen: ['us', 'intl'].indexOf(g('citizen')) >= 0 ? g('citizen') : '',
+    unis: unis, notes: g('notes').slice(0, 500), updated: TODAY };
+  sset('profile', all); PROFOPEN[w] = false; PROFMSG[w] = ''; refresh();
+}
+
 /* ---------- events ---------- */
 function del(k, id) { sset(k, sget(k, []).filter(function (r) { return r.id !== id; })); refresh(); }
 app.addEventListener('click', function (ev) {
@@ -2180,6 +2588,7 @@ app.addEventListener('click', function (ev) {
   var a = b.getAttribute('data-act'), v = b.getAttribute('data-v');
   if (a === 'tab') return setTab(b.getAttribute('data-tab'), true);
   if (a === 'retryboot') return boot();
+  if (a === 'profedit') { var pw = b.getAttribute('data-w'); PROFOPEN[pw] = !PROFOPEN[pw]; PROFMSG[pw] = ''; return R.profile(); }
   if (a === 'goaledit') { var gw = b.getAttribute('data-w'); GOALOPEN[gw] = !GOALOPEN[gw]; return R.goals(); }
   if (a === 'goaltopic') { sset('qwho', b.getAttribute('data-w')); sset('qf', { subj: 'all', paper: 'all', res: 'all', topic: b.getAttribute('data-k'), why: 'all', chk: '', sort: 'paper' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
   if (a === 'chat') return openChat(b.getAttribute('data-k'));
@@ -2236,7 +2645,7 @@ app.addEventListener('click', function (ev) {
   if (a === 'ics') return makeIcs();
   if (a === 'backup') {
     var out = { app: 'study-companion', v: 1, saved: new Date().toISOString(), data: {} };
-    ['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone', 'cards', 'nf'].forEach(function (k) { var x = sget(k, null); if (x != null) out.data[k] = x; });
+    ['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone', 'cards', 'nf', 'goals', 'profile', 'pathdone'].forEach(function (k) { var x = sget(k, null); if (x != null) out.data[k] = x; });
     return download('study-companion-backup-' + TODAY + '.json', JSON.stringify(out, null, 1), 'application/json');
   }
 });
@@ -2250,6 +2659,7 @@ app.addEventListener('change', function (ev) {
   if (a === 'qsort') { setQF({ sort: t.value }); return refresh(); }
   if (a === 'ntt') { setNF({ t: t.value }); NS = null; return R.notes(); }
   if (a === 'dpast') { sset('dpast', t.checked); return refresh(); }
+  if (a === 'ptick') { var pd = {}, pc = pathDone(), pk = t.getAttribute('data-k'); Object.keys(pc).forEach(function (k) { pd[k] = pc[k]; }); if (t.checked) pd[pk] = 1; else delete pd[pk]; sset('pathdone', pd); return refresh(); }
   if (a === 'road') { var r = sget('road', {}); if (t.checked) r[t.getAttribute('data-k')] = 1; else delete r[t.getAttribute('data-k')]; sset('road', r); return refresh(); }
   if (a === 'restore' && t.files && t.files[0]) {
     var fr = new FileReader();
@@ -2257,17 +2667,19 @@ app.addEventListener('change', function (ev) {
       var msg = document.getElementById('bkMsg');
       try {
         var o = JSON.parse(fr.result); if (!o || o.app !== 'study-companion' || typeof o.data !== 'object') throw new Error('not a backup');
-        Object.keys(o.data).forEach(function (k) { if (['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone', 'cards', 'nf'].indexOf(k) >= 0) sset(k, o.data[k]); });
+        Object.keys(o.data).forEach(function (k) { if (['topics', 'route', 'papers', 'sat', 'bprac', 'road', 'log', 'redo', 'myq', 'fdone', 'cards', 'nf', 'goals', 'profile', 'pathdone'].indexOf(k) >= 0) sset(k, o.data[k]); });
         refresh(); document.getElementById('bkMsg').textContent = 'Restored the backup from ' + fmt(String(o.saved).slice(0, 10)) + '.';
       } catch (e) { if (msg) msg.textContent = 'That file is not a Study Companion backup.'; }
     };
     fr.readAsText(t.files[0]);
   }
 });
+app.addEventListener('toggle', function (ev) { var d = ev.target; if (d && d.classList && d.classList.contains('rm-stage')) PATHVIS[d.getAttribute('data-k')] = d.open; }, true);
 app.addEventListener('submit', function (ev) {
   var f = ev.target, kind = f.getAttribute('data-form'); if (!kind) return; ev.preventDefault();
   var fd = new FormData(f), g = function (k) { return String(fd.get(k) || '').trim(); };
   if (kind === 'chat') return sendChat(g('m'));
+  if (kind === 'profile') return saveProfile(f, fd, g);
   if (kind === 'goals') {
     var gw2 = g('w'), all = {}, cur = sget('goals', {});
     Object.keys(cur).forEach(function (k) { if (k.indexOf(gw2 + ':') !== 0) all[k] = cur[k]; });

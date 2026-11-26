@@ -134,6 +134,10 @@ try {
   check("parent saves MK's cards", (await put("/api/progress/s1/cards", parent, { p01: { b: 1, n: 1 } })).status === 200);
   check("student saves own practice paper", (await put("/api/progress/s2/bprac", kid, [{ id: "x", score: 1, outof: 2 }])).status === 200);
   check("student cannot save to a sibling", (await put("/api/progress/s1/cards", kid, {})).status === 403);
+  check("parent saves a child's profile and roadmap ticks", (await put("/api/progress/s1/profile", parent, { a: { track: "ial", year: 12, sy: 2026, unis: [{ id: "princeton", round: "ea" }] } })).status === 200
+    && (await put("/api/progress/s1/pathdone", parent, { "a:2026:us:recs": 1 })).status === 200);
+  check("student saves own profile but not a sibling's", (await put("/api/progress/s2/profile", kid, { b: { track: "brit", year: 7, sy: 2026 } })).status === 200
+    && (await put("/api/progress/s1/profile", kid, {})).status === 403);
   check("parent cannot save to another family's child", (await put("/api/progress/s9/cards", parent, {})).status === 403);
   check("unknown progress kind refused", (await put("/api/progress/s1/whatever", parent, {})).status === 400);
   check("oversized progress refused", (await put("/api/progress/s1/cards", parent, null, { raw: JSON.stringify({ value: "x".repeat(310000) }) })).status === 413);

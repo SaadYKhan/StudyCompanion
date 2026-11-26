@@ -1,4 +1,5 @@
-/* Study Companion: all dates, plans and syllabus content live here.
+/* Study Companion: exam dates, term plans and syllabus content live here. Application dates and the
+   year-by-year roadmap come from each child's profile and data/pathways.js.
    To update the site, edit this file and push. Dates are YYYY-MM-DD, or YYYY-MM when only the month is known.
    st: "confirmed" = published by the exam board / organiser; "expected" = usual pattern or a school's calendar. */
 window.STUDY = {
@@ -41,60 +42,39 @@ window.STUDY = {
     { d: "2027-01-08", end: "2027-01-25", who: ["a"], cat: "exam", opt: true, t: "Edexcel IAL January series", st: "confirmed", src: "pearson", note: "Only if the school entered units for January (entries closed 16 Oct 2026)." },
     { d: "2027-03-04", who: ["a"], cat: "exam", opt: true, t: "January series results", st: "confirmed", src: "pearsonkd", note: "Only relevant if January units were sat." },
     { d: "2027-03-21", who: ["a"], cat: "exam", t: "Pearson entry deadline for May/June 2027", st: "confirmed", src: "pearsonkd", note: "The school's own deadline is earlier: confirm every AS unit is entered." },
-    { d: "2027-05-04", end: "2027-06-10", who: ["a"], cat: "exam", t: "Edexcel IAL May/June series", st: "confirmed", src: "pearson" },
-    { id: "asresults", d: "2027-08-12", who: ["a"], cat: "exam", t: "AS results day", st: "confirmed", src: "pearsonkd" },
+    { d: "2027-05-04", end: "2027-06-10", key: "as-exams", who: ["a"], cat: "exam", t: "Edexcel IAL May/June series", st: "confirmed", src: "pearson" },
+    { id: "asresults", key: "as-results", d: "2027-08-12", who: ["a"], cat: "exam", t: "AS results day", st: "confirmed", src: "pearsonkd" },
     { d: "2027-10", who: ["a"], cat: "exam", t: "October 2027 series (optional resits)", st: "expected", src: "pearson", note: "Pearson publishes these dates later." },
     { d: "2028-01", who: ["a"], cat: "exam", t: "January 2028 series: A2 units or resits", st: "expected", src: "pearson" },
-    { id: "a2", d: "2028-05", who: ["a"], cat: "exam", t: "May/June 2028: final A Level (A2) exams", st: "expected", src: "pearson" },
-    { d: "2028-08", who: ["a"], cat: "exam", t: "A Level results", st: "expected", src: "pearson" },
+    { id: "a2", key: "a2-exams", d: "2028-05", who: ["a"], cat: "exam", t: "May/June 2028: final A Level (A2) exams", st: "expected", src: "pearson" },
+    { d: "2028-08", key: "al-results", who: ["a"], cat: "exam", t: "A Level results", st: "expected", src: "pearson" },
 
     // Year 12: SAT
     { d: "2027-02-19", who: ["a"], cat: "sat", t: "SAT registration deadline for 6 March", st: "confirmed", src: "cb", note: "Late registration until 23 Feb. Dubai seats go early: register in January." },
-    { id: "sat1", d: "2027-03-06", who: ["a"], cat: "sat", t: "SAT: first sitting", st: "confirmed", src: "cb" },
+    { id: "sat1", key: "sat1", d: "2027-03-06", who: ["a"], cat: "sat", t: "SAT: first sitting", st: "confirmed", src: "cb" },
     { d: "2027-05-21", who: ["a"], cat: "sat", t: "SAT registration deadline for 5 June", st: "confirmed", src: "cb", note: "Late registration until 25 May." },
-    { id: "sat2", d: "2027-06-05", who: ["a"], cat: "sat", t: "SAT: second sitting", st: "confirmed", src: "cb" },
+    { id: "sat2", key: "sat2", d: "2027-06-05", who: ["a"], cat: "sat", t: "SAT: second sitting", st: "confirmed", src: "cb" },
     { d: "2027-08-28", who: ["a"], cat: "sat", t: "SAT: optional third sitting", st: "expected", src: "cb", note: "College Board's anticipated date." },
-    { d: "2027-10-02", who: ["a"], cat: "sat", t: "SAT: last sitting before 1 November deadlines", st: "expected", src: "cb", note: "College Board's anticipated date. Only if a higher score is still needed." },
-
-    // Year 12: applications
-    { d: "2027-02", who: ["a"], cat: "apply", t: "Summer Science Program (astrophysics) applications usually close", st: "expected", src: null, note: "Check summerscience.org for this year's deadline and eligibility." },
-    { d: "2027-06", who: ["a"], cat: "apply", t: "Ask Maths and Physics teachers for US recommendation letters", st: "expected", src: null, note: "Before the summer holiday, so letters are ready for September." },
-    { d: "2027-08-01", who: ["a"], cat: "apply", t: "Common App opens for fall 2028 entry", st: "expected", src: "commonapp" },
-    { d: "2027-10-01", who: ["a"], cat: "apply", t: "Financial aid forms open (CSS Profile, FAFSA)", st: "expected", src: null },
-    { id: "ea", d: "2027-11-01", who: ["a"], cat: "apply", t: "Princeton single-choice early action and Rutgers early action deadline", st: "expected", src: "princetonD", note: "Same date as this cycle. Princeton's early plan still allows early applications to public universities such as Rutgers." },
-    { d: "2027-12-01", who: ["a"], cat: "apply", t: "Rutgers regular decision deadline", st: "expected", src: "rutgers" },
-    { d: "2027-12", who: ["a"], cat: "apply", t: "Princeton early action decisions (mid-December)", st: "expected", src: "princetonD" },
-    { d: "2028-01-01", who: ["a"], cat: "apply", t: "Princeton regular decision deadline", st: "expected", src: "princetonD" },
-    { d: "2028-01-31", who: ["a"], cat: "apply", t: "Rutgers early action decisions", st: "expected", src: "rutgers" },
-    { d: "2028-05-01", who: ["a"], cat: "apply", t: "Reply deadline: choose a university", st: "expected", src: null },
+    { d: "2027-10-02", key: "satlast", who: ["a"], cat: "sat", t: "SAT: last sitting before 1 November deadlines", st: "expected", src: "cb", note: "College Board's anticipated date. Only if a higher score is still needed." },
 
     // Year 7: competitions and long-term milestones
     { id: "amcreg", d: "2027-01-05", who: ["b"], cat: "comp", t: "AMC 8: centre registration deadline", st: "confirmed", src: "maa", note: "Families enter through an approved AMC centre (a school or test centre in Dubai). Ask well before this date." },
-    { id: "amc8", d: "2027-01-21", end: "2027-01-27", who: ["b"], cat: "comp", t: "AMC 8 competition window", st: "confirmed", src: "maa", note: "Each centre picks its day inside the window." },
-    { id: "imc", d: "2027-01-27", who: ["b"], cat: "comp", t: "UKMT Intermediate Mathematical Challenge (stretch)", st: "expected", src: "ukmt", note: "Optional for a strong Year 7. Ask whether Sunmarke enters UKMT challenges." },
-    { id: "jmc", d: "2027-04-27", who: ["b"], cat: "comp", t: "UKMT Junior Mathematical Challenge", st: "expected", src: "ukmt", note: "Main competition for Year 7. Entered through the school." },
-    { d: "2027-06", who: ["b"], cat: "comp", t: "Junior Kangaroo / Junior Mathematical Olympiad (by invitation)", st: "expected", src: "ukmt", note: "Invitations go to top JMC scorers." },
-    { id: "amc8y8", d: "2028-01", who: ["b"], cat: "comp", t: "AMC 8 (Year 8)", st: "expected", src: "maa" },
-    { d: "2028-10", who: ["b"], cat: "sat", t: "PSAT 8/9 (Year 9)", st: "expected", src: "cbschool", note: "Ask the school or a Dubai test centre." },
-    { d: "2029-01", who: ["b"], cat: "comp", t: "AMC 8: last eligible year (Year 9)", st: "expected", src: "maa" },
-    { d: "2029-11", who: ["b"], cat: "comp", t: "AMC 10 (Year 10)", st: "expected", src: "maa" },
-    { d: "2031-05", who: ["b"], cat: "exam", t: "IGCSE exams (Year 11)", st: "expected", src: null },
-    { d: "2031-10", who: ["b"], cat: "sat", t: "PSAT/NMSQT: the National Merit year (Year 12)", st: "expected", src: "cbschool", note: "Check eligibility rules for students studying abroad." },
-    { d: "2032-03", who: ["b"], cat: "sat", t: "First SAT sitting (Year 12)", st: "expected", src: "cb" },
-    { d: "2032-11", who: ["b"], cat: "apply", t: "US early application deadlines (Year 13)", st: "expected", src: null },
-    { d: "2033-08", who: ["b"], cat: "mile", t: "University starts", st: "expected", src: null }
+    { id: "amc8", key: "amc8", d: "2027-01-21", end: "2027-01-27", who: ["b"], cat: "comp", t: "AMC 8 competition window", st: "confirmed", src: "maa", note: "Each centre picks its day inside the window." },
+    { id: "imc", key: "imc", d: "2027-01-27", who: ["b"], cat: "comp", t: "UKMT Intermediate Mathematical Challenge (stretch)", st: "expected", src: "ukmt", note: "Optional for a strong Year 7. Ask whether Sunmarke enters UKMT challenges." },
+    { id: "jmc", key: "jmc", d: "2027-04-27", who: ["b"], cat: "comp", t: "UKMT Junior Mathematical Challenge", st: "expected", src: "ukmt", note: "Main competition for Year 7. Entered through the school." },
+    { d: "2027-06", who: ["b"], cat: "comp", t: "Junior Kangaroo / Junior Mathematical Olympiad (by invitation)", st: "expected", src: "ukmt", note: "Invitations go to top JMC scorers." }
   ],
 
-  // Overview countdown: the first four that have not finished are shown. "asfirst" is the first AS paper.
+  // Overview countdown: the first four that have not finished are shown. "asfirst" is the first AS paper;
+  // a "key" picks the next date with that key, including dates the roadmap adds from each child's profile.
   countdown: [
     { id: "asfirst", l: "AS exams begin", s: "MK" },
     { id: "sat1", l: "First SAT", s: "register by 19 Feb" },
-    { id: "amc8", l: "AMC 8 window", s: "ZK" },
-    { id: "jmc", l: "UKMT Junior Challenge", s: "expected · ZK" },
+    { key: "amc8", l: "AMC 8 window", s: "ZK" },
+    { key: "jmc", l: "UKMT Junior Challenge", s: "ZK" },
     { id: "sat2", l: "Second SAT", s: "register by 21 May" },
     { id: "asresults", l: "AS results", s: "MK" },
-    { id: "ea", l: "Early applications due", s: "Princeton and Rutgers · expected" },
-    { id: "amc8y8", l: "AMC 8 (Year 8)", s: "expected · ZK" },
+    { key: "deadline", l: "Next application deadline" },
     { id: "a2", l: "A2 exams", s: "expected · MK" }
   ],
 
@@ -434,23 +414,6 @@ window.STUDY = {
     [ "UKMT Junior Mathematical Challenge", "25 questions · 60 minutes · Year 8 and below", "Expected 27 Apr 2027", "Through the school" ],
     [ "UKMT Intermediate Mathematical Challenge", "25 questions · 60 minutes · Year 11 and below (a stretch in Year 7)", "Expected 27 Jan 2027", "Through the school" ],
     [ "Junior Kangaroo / Junior Mathematical Olympiad", "Follow-on rounds for top Junior Challenge scorers", "Expected June 2027", "By invitation" ]
-  ],
-
-  roadmapB: [
-    { yr: "Year 7 · 2026–27", items: [ "Sit the AMC 8 (January) and UKMT Junior Challenge (April)", "Work through AoPS Prealgebra or Introduction to Algebra", "A weekly routine of 3–4 hours of maths beyond school", "Start Python" ] },
-    { yr: "Year 8 · 2027–28", items: [ "AMC 8 again: aim for the top 5% (Honor Roll)", "AoPS Introduction to Counting & Probability and Number Theory", "UKMT Junior Challenge: aim for an Olympiad invitation", "A summer maths programme (e.g. MathPath, ages 11–14)" ] },
-    { yr: "Year 9 · 2028–29", items: [ "Last AMC 8; first AMC 10 attempt is possible", "PSAT 8/9 in October", "AoPS Introduction to Geometry", "Choose IGCSE options: Maths plus Additional/Further Maths if offered, sciences, Computer Science" ] },
-    { yr: "Years 10–11 · 2029–31", items: [ "Top IGCSE grades, especially Maths", "AMC 10 each November", "A sustained project in maths or coding", "Selective summer programmes (e.g. Mathcamp, PROMYS; check age rules)" ] },
-    { yr: "Years 12–13 · 2031–33", items: [ "IB Maths: Analysis and Approaches HL (or A Level Maths and Further Maths)", "PSAT/NMSQT in October 2031", "SAT in spring 2032", "US applications in autumn 2032 for fall 2033" ] }
-  ],
-
-  profileA: [
-    [ "Citizen science", "Classify galaxies or find planets on Zooniverse (Galaxy Zoo, Planet Hunters TESS); keep a log of contributions.", "https://www.zooniverse.org" ],
-    [ "A research-style project", "Learn Python, then use the Lightkurve package on public TESS data to find a transit; write a two-page report.", null ],
-    [ "Summer Science Program", "A residential astrophysics research programme for rising seniors; applications usually close in February.", "https://summerscience.org" ],
-    [ "Olympiads", "Ask whether Arcadia enters the British Physics Olympiad or astronomy rounds.", null ],
-    [ "Local astronomy", "Stargazing events and talks with the Dubai Astronomy Group.", null ],
-    [ "Reading", "One popular-science astrophysics book a term, with notes to use in essays and interviews.", null ]
   ],
 
   resourcesA: [
