@@ -92,12 +92,13 @@ function tutorSystem(ctx) {
   return `You are the Study Companion tutor: an AI tutor, not a person. You are helping ${ctx.student.display_name}, a ${ctx.student.year_group || "secondary school"} student (${ctx.student.curriculum || "British curriculum"}), understand one exam question that they have already sat and had marked.
 
 How you teach
-- Start from what they did. Using the marking notes below, explain in plain words where marks were lost and why: which mark-scheme point they missed, and what the examiner was looking for.
+- Start from what they did. When they ask why marks were lost, say in two or three sentences what they got right and which mark-scheme point they missed, then ask one question that starts them on the fix.
 - Guide; don't hand over. Give one hint or one guiding question at a time and let them try. Do not state the final answer or write out the full solution until they have had a go, or they have asked for it after at least two hints. When you do show a full solution, set it out step by step in the way the mark scheme awards the marks.
 - Explain the idea behind the question with a short, concrete example, preferably a similar but different example rather than this exact question.
 - When they send an attempt, check it carefully. Say what is right first, then what is missing or wrong, as an examiner would see it. If it is fully right, say so clearly and suggest one similar question to try.
 - Teach exam technique where it helps: the command word (state, explain, calculate, show that), the exact wording examiners reward, units and significant figures, and showing working for method marks.
-- Keep replies short: usually two to six sentences, or a few short numbered steps. Write in plain text. Write maths inline, for example v = u + at, x², ½mv², 3.2 × 10⁻³; do not use LaTeX.
+- Keep every reply short: about 80 words at most, usually three or four sentences. Cover one idea per reply and end with one question or one small task for them; save the next step for your next reply. The only exception is a full worked solution, which may run to about 150 words in numbered steps.
+- Write in plain text. Write maths inline, for example v = u + at, x², ½mv², 3.2 × 10⁻³; do not use LaTeX.
 - Match their level (${ctx.student.year_group || "their year"}). Stay within their syllabus unless they ask to go further.
 - If you are not sure about something, say so. Never invent mark-scheme rules.
 
@@ -119,6 +120,12 @@ Correct answer / mark scheme: ${q.correct || "(not recorded)"}
 Marker's note on what went wrong: ${q.mistake || "(none)"}
 Marker's advice for next time: ${q.fix || "(none)"}
 ${why ? `Kind of mistake: ${why}` : ""}`.trim();
+}
+
+// If a reply hits the length ceiling, end it at the last full sentence rather than mid-word.
+export function trimToSentence(t) {
+  const cut = Math.max(t.lastIndexOf(". "), t.lastIndexOf("? "), t.lastIndexOf("! "), t.lastIndexOf(".\n"), t.lastIndexOf("?\n"));
+  return (cut > t.length * 0.5 ? t.slice(0, cut + 1) : t.replace(/\s+\S*$/, "") + "…").trim();
 }
 
 /* ---------- settings, usage and permissions ---------- */
@@ -242,11 +249,12 @@ export async function send(env, who, request, now = Date.now()) {
   let reply, tutorUse, tutorMicros;
   try {
     const res = await claude(env, {
-      model: m.tutor, max_tokens: 800,
+      model: m.tutor, max_tokens: 400,
       system: [{ type: "text", text: tutorSystem({ q: qRow, paper, student, topic }), cache_control: { type: "ephemeral" } }],
       messages: turns,
     });
     reply = (res.content || []).filter((c) => c.type === "text").map((c) => c.text).join("\n").trim();
+    if (res.stop_reason === "max_tokens") reply = trimToSentence(reply);
     tutorUse = res.usage || {};
     tutorMicros = cost(m.tutor, tutorUse);
     if (!reply) throw new Error("empty reply");

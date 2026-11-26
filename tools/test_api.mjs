@@ -35,7 +35,8 @@ const fakeClaude = http.createServer((req, res) => {
     }
     if (kind === "check") return send({ content: [{ type: "tool_use", id: "t2", name: "verdict", input: { verdict: /BADWORD/.test(last) ? "block" : "ok" } }], usage: { input_tokens: 250, output_tokens: 8 } });
     if (/boom/.test(last)) return send({ error: { type: "overloaded_error" } }, 529);
-    send({ content: [{ type: "text", text: /makebad/.test(last) ? "BADWORD reply" : "Hint " + b.messages.length + ": which mark-scheme point did you miss?" }], usage: { input_tokens: 1500, output_tokens: 120, cache_read_input_tokens: 0 } });
+    if (/longreply/.test(last)) return send({ content: [{ type: "text", text: "First idea is here. Second idea follows on. Third idea is cut off half way thro" }], stop_reason: "max_tokens", usage: { input_tokens: 1500, output_tokens: 400 } });
+    send({ content: [{ type: "text", text: /makebad/.test(last) ? "BADWORD reply" : "Hint " + b.messages.length + ": which mark-scheme point did you miss?" }], stop_reason: "end_turn", usage: { input_tokens: 1500, output_tokens: 120, cache_read_input_tokens: 0 } });
   });
 });
 await new Promise((r) => fakeClaude.listen(8798, "127.0.0.1", r));
@@ -185,6 +186,7 @@ try {
     JSON.stringify(tc.body.system).includes(zq.pr.slice(0, 40).replace(/"/g, '\\"')) && JSON.stringify(tc.body.system).includes("Guide; don't hand over") && JSON.stringify(tc.body.system).includes("ZK") && !tc.body.tools);
   const thr = r.body.threadId;
   r = await ask(kid, { threadId: thr, message: "Is it 12%?" });
+  check("tutor replies are kept short (80-word rule and a 400-token ceiling)", tc.body.max_tokens <= 400 && JSON.stringify(tc.body.system).includes("about 80 words at most"));
   check("follow-up keeps the conversation", r.status === 200 && claudeCalls.filter((c) => c.kind === "tutor").pop().body.messages.length === 3);
   const before = tutorCalls();
   r = await ask(kid, { threadId: thr, message: "who won the football last night" });
@@ -202,7 +204,9 @@ try {
   const pv = await call("/api/chat/thread/" + thr, parent), kv = await call("/api/chat/thread/" + thr, kid);
   check("parent can read the whole chat, including the held-back reply", pv.body.messages.some((m) => m.withheld === "BADWORD reply") && pv.body.messages.length === 12, String(pv.body.messages && pv.body.messages.length));
   check("the child does not see the held-back reply", kv.status === 200 && !JSON.stringify(kv.body).includes("BADWORD"));
-  const n0 = pv.body.messages.length;
+  r = await ask(kid, { threadId: thr, message: "longreply please" });
+  check("a reply cut off by the ceiling ends at a full sentence", r.body.messages[1].content === "First idea is here. Second idea follows on.", r.body.messages[1].content);
+  const n0 = pv.body.messages.length + 2;
   check("if Claude is down, nothing is saved and the child is told", (await ask(kid, { threadId: thr, message: "boom" })).body.error === "tutor_unavailable" && (await call("/api/chat/thread/" + thr, parent)).body.messages.length === n0);
   check("a child cannot chat about a sibling's question", (await ask(kid, { studentId: "s1", paper: "c24", q: mq.q, message: "hi" })).status === 404);
   r = await ask(parent, { studentId: "s1", paper: "c24", q: mq.q, message: "Explain the idea" });
@@ -211,7 +215,7 @@ try {
   check("empty and over-long messages refused", (await ask(kid, { threadId: thr, message: " " })).status === 400 && (await ask(kid, { threadId: thr, message: "x".repeat(1300) })).status === 400);
   check("unknown question refused", (await ask(kid, { studentId: "s2", paper: "zk1", q: "Q999", message: "hi" })).body.error === "question_not_found");
   const st = await call("/api/chat/settings?studentId=s2", parent);
-  check("usage is counted (blocked and failed attempts do not count)", st.body.usage.today === 6 && st.body.usage.monthCents >= 0, JSON.stringify(st.body.usage));
+  check("usage is counted (blocked and failed attempts do not count)", st.body.usage.today === 7 && st.body.usage.monthCents >= 0, JSON.stringify(st.body.usage));
   await setChat(parent, { studentId: "s2", monthly_cap_cents: 0 });
   check("the monthly spending cap stops the chat", (await ask(kid, { threadId: thr, message: "more" })).body.error === "monthly_cap");
   check("tutor settings changes are logged", (await call("/api/family", parent)).body.recent.some((x) => x.action === "chat_settings"));
