@@ -31,7 +31,7 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 httpd = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Quiet, directory=site))
 port = httpd.server_address[1]
 threading.Thread(target=httpd.serve_forever, daemon=True).start()
-TABS = ['overview', 'profile', 'roadmap', 'dates', 'alevel', 'qlog', 'notes', 'sat', 'maths', 'log', 'sources', 'family']
+TABS = ['today', 'overview', 'profile', 'roadmap', 'badges', 'potd', 'ks3', 'formulas', 'reading', 'report', 'apps', 'dates', 'alevel', 'qlog', 'notes', 'sat', 'maths', 'log', 'sources', 'family']
 BAD = ('undefined', 'NaN', '[object Object]', 'Invalid Date')
 fails = []
 
@@ -93,7 +93,8 @@ def install_api(pg, role='parent', student='s_zk'):
                 sid = b['studentId']
                 if sid not in visible: route.fulfill(status=404, content_type='application/json', body='{"error":"not_found"}'); return
                 tid = 'thr%d' % (len(st['threads']) + 1)
-                t = st['threads'][tid] = {'id': tid, 'sid': sid, 'ref': '%s:%s#%s' % (sid, b['paper'], b['q']), 'title': b['paper'] + ' · ' + b['q'], 'msgs': [], 'flagged': 0}
+                if b.get('essay'): t = st['threads'][tid] = {'id': tid, 'sid': sid, 'kind': 'essay', 'ref': b['essay'], 'title': 'Essay · draft', 'msgs': [], 'flagged': 0}
+                else: t = st['threads'][tid] = {'id': tid, 'sid': sid, 'kind': 'question', 'ref': '%s:%s#%s' % (sid, b['paper'], b['q']), 'title': b['paper'] + ' · ' + b['q'], 'msgs': [], 'flagged': 0}
             mine = {'id': len(t['msgs']) + 1, 'role': 'student', 'content': b['message'], 'mine': True, 'flag': None}
             if 'football' in b['message']:
                 rep_ = {'id': len(t['msgs']) + 2, 'role': 'notice', 'content': 'I can only help with school subjects and studying.', 'flag': 'off_topic'}
@@ -103,7 +104,7 @@ def install_api(pg, role='parent', student='s_zk'):
             out = {'threadId': t['id'], 'messages': [mine, rep_], 'usage': {'today': st['sent'], 'limit': 30}}
         elif path == 'api/chat/threads':
             sid = req.url.split('studentId=')[1]
-            out = {'threads': [{'id': t['id'], 'title': t['title'], 'context_ref': t['ref'], 'flagged': t['flagged'], 'notices': sum(1 for m in t['msgs'] if m['role'] == 'notice'),
+            out = {'threads': [{'id': t['id'], 'title': t['title'], 'context_kind': t['kind'], 'context_ref': t['ref'], 'flagged': t['flagged'], 'notices': sum(1 for m in t['msgs'] if m['role'] == 'notice'),
                                 'updated_at': '2026-11-26 12:00:00', 'n': len(t['msgs'])} for t in st['threads'].values() if t['sid'] == sid]}
         elif path.startswith('api/chat/thread/'):
             t = st['threads'].get(path.rsplit('/', 1)[1])
@@ -131,7 +132,15 @@ def install_api(pg, role='parent', student='s_zk'):
 
 
 def tabs_shown(pg):
-    return [b.get_attribute('data-tab') for b in pg.locator('#tabs [data-tab]').all()]
+    return [t for b in pg.locator('#tabs [data-sec]').all() for t in b.get_attribute('data-tabs').split()]
+
+
+def go(pg, tab):
+    """Open a page the way a person does: its section in the top bar, then the page in the row below."""
+    pg.click(f'#tabs [data-sec][data-tabs~="{tab}"]')
+    if pg.locator(f'#subtabs [data-tab="{tab}"]').count():
+        pg.click(f'#subtabs [data-tab="{tab}"]')
+    pg.wait_for_timeout(60)
 
 
 def wait_saved(pg):
@@ -157,9 +166,9 @@ try:
             pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' and not (api404 and 'status of 404' in m.text) else None)
             pg.on('response', lambda r: api404.append(r.url) if (r.status == 404 and '/api/' in r.url) else (errs.append(f'{r.status} {r.url}') if r.status >= 400 else None))
             pg.goto(f'http://127.0.0.1:{port}/?today={today}', wait_until='networkidle')
-            pg.wait_for_selector('#tabs [data-tab]')
+            pg.wait_for_selector('#tabs [data-sec]')
             for t in TABS:
-                pg.click(f'[data-tab="{t}"]')
+                go(pg, t)
                 pg.wait_for_timeout(120)
                 txt = pg.inner_text(f'#t-{t}')
                 if len(txt.strip()) < 40:
@@ -171,15 +180,15 @@ try:
                     os.makedirs(shots, exist_ok=True)
                     pg.screenshot(path=os.path.join(shots, f'{today}-{width}-{t}.png'), full_page=True)
             if today == '2027-09-20':
-                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(150); o = pg.inner_text('#t-overview')
+                go(pg, 'overview'); pg.wait_for_timeout(150); o = pg.inner_text('#t-overview')
                 if 'mk · year 13' not in o.lower() or 'next application deadline' not in o.lower() or 'Princeton and Rutgers–NB' not in o:
                     fails.append('2027-09-20: MK should be in Year 13 with the next application deadline counting down: ' + o[:300])
-                pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(150)
+                go(pg, 'roadmap'); pg.wait_for_timeout(150)
                 if pg.locator('#t-roadmap .rm-stage').count() != 1 + 6:
                     fails.append('2027-09-20: roadmap should have Year 13 for MK and Years 8-13 for ZK: %d' % pg.locator('#t-roadmap .rm-stage').count())
             if today == '2026-11-16':
                 # forms and toggles
-                pg.click('[data-tab="sat"]'); pg.wait_for_timeout(400)
+                go(pg, 'sat'); pg.wait_for_timeout(400)
                 pg.fill('form[data-form="sat"] [name="rw"]', '640'); pg.fill('form[data-form="sat"] [name="m"]', '700')
                 pg.click('form[data-form="sat"] button[type="submit"]'); pg.wait_for_timeout(400)
                 pg.fill('form[data-form="sat"] [name="date"]', '2026-12-20')
@@ -187,7 +196,7 @@ try:
                 pg.click('form[data-form="sat"] button[type="submit"]')
                 if '1420' not in pg.inner_text('#t-sat') or pg.locator('#satChart circle').count() != 2:
                     fails.append('SAT score did not appear in table and chart: circles=%d has1420=%s' % (pg.locator('#satChart circle').count(), '1420' in pg.inner_text('#t-sat')))
-                pg.click('[data-tab="alevel"]'); pg.wait_for_timeout(400)
+                go(pg, 'alevel'); pg.wait_for_timeout(400)
                 pg.click('[data-act="topic"][data-k="WPH11:0"][data-v="2"]')
                 pg.click('[data-act="topic"][data-k="WPH11:1"][data-v="1"]')
                 pg.fill('form[data-form="paper"] [name="paper"]', 'Jan 2024'); pg.fill('form[data-form="paper"] [name="pct"]', '72')
@@ -247,29 +256,29 @@ try:
                     fails.append('added question did not appear')
                 if 'Fixed so far' not in pg.inner_text('#t-qlog') or n_open.startswith('41 of'):
                     pass
-                pg.click('[data-tab="maths"]'); pg.wait_for_timeout(400)
+                go(pg, 'maths'); pg.wait_for_timeout(400)
                 if 'marked work' not in pg.inner_text('#t-maths').lower() or '37' not in pg.inner_text('#t-maths'):
                     fails.append('ZK marked-work section missing')
                 pg.fill('form[data-form="bprac"] [name="label"]', 'AMC 8 2024'); pg.fill('form[data-form="bprac"] [name="score"]', '17')
                 pg.click('form[data-form="bprac"] button[type="submit"]')
                 if '17 / 25' not in pg.inner_text('#t-maths'):
                     fails.append('practice paper did not appear')
-                pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(200)
+                go(pg, 'roadmap'); pg.wait_for_timeout(200)
                 pg.locator('#t-roadmap input[data-act="ptick"][data-k^="b:"]').first.check(); pg.wait_for_timeout(150)
-                pg.click('[data-tab="log"]'); pg.wait_for_timeout(400)
+                go(pg, 'log'); pg.wait_for_timeout(400)
                 pg.fill('form[data-form="log"] [name="note"]', 'Projectiles, 12 questions')
                 pg.click('form[data-form="log"] button[type="submit"]')
                 pg.click('[data-act="logwho"][data-v="b"]'); pg.click('[data-act="logwho"][data-v="a"]')
                 if 'Projectiles' not in pg.inner_text('#t-log'):
                     fails.append('study session did not appear')
-                pg.click('[data-tab="dates"]'); pg.wait_for_timeout(400)
+                go(pg, 'dates'); pg.wait_for_timeout(400)
                 pg.click('[data-act="dwho"][data-v="b"]')
                 if 'AMC 8' not in pg.inner_text('#t-dates') or 'SAT: first sitting' in pg.inner_text('#t-dates'):
                     fails.append('date filter by student failed')
                 pg.click('[data-act="dwho"][data-v="all"]')
                 wait_saved(pg)
-                pg.reload(wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
-                pg.click('[data-tab="overview"]')
+                pg.reload(wait_until='networkidle'); pg.wait_for_selector('#tabs [data-sec]')
+                go(pg, 'overview')
                 ov = pg.inner_text('#t-overview')
                 if '1 / ' not in ov and '1420' not in ov:
                     fails.append('saved progress did not survive a reload')
@@ -286,13 +295,13 @@ try:
                 if 'Focus area: Multiple choice' not in pg.inner_text('#t-qlog') or not pg.inner_text('#qCount').startswith('40 of'):
                     fails.append('focus link did not filter the question log: ' + pg.inner_text('#qCount'))
                 pg.click('[data-act="qfocusx"]'); pg.wait_for_timeout(200)
-                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(300)
+                go(pg, 'overview'); pg.wait_for_timeout(300)
                 pg.click('[data-act="qsoon"][data-v="a:0"]'); pg.wait_for_timeout(400)
                 if not pg.inner_text('#qCount').startswith('60 of'):
                     fails.append('Physics redo link did not open the 60 lost parts: ' + pg.inner_text('#qCount'))
                 # key notes: self-test flips, grades, re-queues a missed card, saves, and survives a reload
-                pg.click('[data-tab="notes"]'); pg.wait_for_timeout(300)
-                if '149' not in pg.inner_text('#t-notes'):
+                go(pg, 'notes'); pg.wait_for_timeout(300)
+                if '171' not in pg.inner_text('#t-notes') or 'Mark-scheme phrases' not in pg.inner_text('#t-notes'):
                     fails.append('key notes: card total missing')
                 pg.click('[data-act="ntu"][data-v="WST01"]'); pg.wait_for_timeout(150)
                 if '37' not in pg.inner_text('#ntDeckLine'):
@@ -339,11 +348,11 @@ try:
                 t = tabs_shown(pg)
                 if 'maths' in t or 'family' in t or 'alevel' not in t or 'notes' not in t:
                     fails.append('MK view: wrong tabs ' + str(t))
-                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(200)
+                go(pg, 'overview'); pg.wait_for_timeout(200)
                 ov = pg.inner_text('#t-overview'); hd = pg.inner_text('.pf-head')
                 if 'ZK · Year 7' in ov or 'ZK next' in hd or 'MK · Year 12' not in ov or 'exactly as MK sees it' not in hd:
                     fails.append('MK view: overview or header shows ZK, or the view note is missing')
-                pg.click('[data-tab="qlog"]'); pg.wait_for_timeout(300)
+                go(pg, 'qlog'); pg.wait_for_timeout(300)
                 if 'Whose questions' in pg.inner_text('#t-qlog') or 'of 208 questions' not in pg.inner_text('#qCount'):
                     fails.append('MK view: question log should show only MK (208 with the one added): ' + pg.inner_text('#qCount'))
                 pg.select_option('[data-act="view"]', 'b'); pg.wait_for_timeout(300)
@@ -352,22 +361,22 @@ try:
                     fails.append('ZK view: wrong tabs ' + str(t))
                 if 'of 39 questions' not in pg.inner_text('#qCount') or 'Whose questions' in pg.inner_text('#t-qlog'):
                     fails.append('ZK view: question log should show only ZK: ' + pg.inner_text('#qCount'))
-                pg.click('[data-tab="overview"]'); pg.wait_for_timeout(200)
+                go(pg, 'overview'); pg.wait_for_timeout(200)
                 if 'MK · Year 12' in pg.inner_text('#t-overview') or 'MK next' in pg.inner_text('.pf-head'):
                     fails.append('ZK view: overview or header shows MK')
-                pg.click('[data-tab="log"]'); pg.wait_for_timeout(200)
+                go(pg, 'log'); pg.wait_for_timeout(200)
                 pg.fill('form[data-form="log"] [name="note"]', 'Parent logged this as ZK')
                 pg.click('form[data-form="log"] button[type="submit"]'); wait_saved(pg)
                 if not any('Parent logged this as ZK' in (r.get('note') or '') and r.get('who') == 'b' for r in store['progress']['s_zk'].get('log', [])):
                     fails.append('ZK view: a session logged by the parent was not saved to ZK')
-                pg.reload(wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
+                pg.reload(wait_until='networkidle'); pg.wait_for_selector('#tabs [data-sec]')
                 if 'maths' not in tabs_shown(pg) or 'alevel' in tabs_shown(pg):
                     fails.append('the chosen view did not survive a reload')
                 pg.select_option('[data-act="view"]', ''); pg.wait_for_timeout(300)
                 if 'family' not in tabs_shown(pg) or 'maths' not in tabs_shown(pg) or 'alevel' not in tabs_shown(pg):
                     fails.append('family view: tabs missing ' + str(tabs_shown(pg)))
                 # family page: link and remove a child's sign-in
-                pg.click('[data-tab="family"]'); pg.wait_for_selector('form[data-form="link"]')
+                go(pg, 'family'); pg.wait_for_selector('form[data-form="link"]')
                 pg.locator('form[data-form="link"]').nth(1).locator('[name="email"]').fill('ZK.Test@Example.com')
                 pg.locator('form[data-form="link"]').nth(1).locator('button[type="submit"]').click(); pg.wait_for_timeout(300)
                 fam = pg.inner_text('#t-family')
@@ -379,7 +388,7 @@ try:
                 if 'Family set up' not in pg.inner_text('#t-family'):
                     fails.append('family page: recent changes missing')
                 # AI tutor: open from a question, use a starter, get guided steps, off-topic note, reopen keeps the chat
-                pg.click('[data-tab="qlog"]'); pg.click('[data-act="qwho"][data-v="a"]'); pg.wait_for_timeout(300)
+                go(pg, 'qlog'); pg.click('[data-act="qwho"][data-v="a"]'); pg.wait_for_timeout(300)
                 if pg.locator('#qList .sc-tutor').count() < 100:
                     fails.append('tutor: "Ask the tutor" missing on MK\'s questions for a parent: %d' % pg.locator('#qList .sc-tutor').count())
                 first_q = pg.locator('#qList .sc-tutor').first.get_attribute('data-k')
@@ -403,7 +412,7 @@ try:
                     fails.append('tutor: New chat did not start fresh')
                 pg.click('[data-act="chatclose"]')
                 # parent controls: switch the tutor on for MK, read the chat
-                pg.click('[data-tab="family"]'); pg.wait_for_selector('form[data-form="chatset"]')
+                go(pg, 'family'); pg.wait_for_selector('form[data-form="chatset"]')
                 f = pg.locator('form[data-form="chatset"]').first
                 f.locator('[name="enabled"]').select_option('1'); f.locator('[name="daily_limit"]').select_option('20')
                 f.locator('button[type="submit"]').click(); pg.wait_for_timeout(400)
@@ -414,7 +423,7 @@ try:
                     fails.append('tutor: parent could not read the chat')
                 if shots:
                     for t in TABS:
-                        pg.click(f'[data-tab="{t}"]'); pg.wait_for_timeout(120)
+                        go(pg, t); pg.wait_for_timeout(120)
                         pg.screenshot(path=os.path.join(shots, f'filled-{t}.png'), full_page=True)
             fails.extend(f'{today}: {e}' for e in errs)
             ctx.close()
@@ -425,14 +434,14 @@ try:
         pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
         pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
         gst = install_api(pg, 'parent')
-        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-26', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
-        ov = pg.inner_text('#t-overview')
+        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-26', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-sec]')
+        go(pg, 'overview'); ov = pg.inner_text('#t-overview')
         if "MK's goal: A in Physics, A in Chemistry, A in Maths" not in ov or pg.locator('#t-overview .gm-row').count() != 3:
             fails.append('goals: overview summary missing')
         figs = [x.inner_text() for x in pg.locator('#t-overview .gm-fig').all()]
         if figs != ['+21 marks to an A', '+13 marks to an A', '+10 marks to an A']:
             fails.append('goals: gaps to an A wrong: ' + str(figs))
-        pg.select_option('[data-act="view"]', 'a'); pg.click('[data-tab="goals"]'); pg.wait_for_timeout(300)
+        pg.select_option('[data-act="view"]', 'a'); go(pg, 'goals'); pg.wait_for_timeout(300)
         g = pg.inner_text('#t-goals')
         if pg.locator('#t-goals .gp-card').count() != 3 or 'Where you stand' not in g:
             fails.append('goals: MK view should show three path charts')
@@ -452,7 +461,7 @@ try:
         if pg.evaluate("location.hash") != '#qlog' or int(pg.inner_text('#qCount').split(' ')[0]) >= 207:
             fails.append('goals: "See the questions" did not open the question log')
         # ZK has no goal: set one, see the path
-        pg.select_option('[data-act="view"]', 'b'); pg.click('[data-tab="goals"]'); pg.wait_for_timeout(300)
+        pg.select_option('[data-act="view"]', 'b'); go(pg, 'goals'); pg.wait_for_timeout(300)
         if 'No goal set yet' not in pg.inner_text('#t-goals'):
             fails.append('goals: ZK should start with no goal')
         pg.select_option('#t-goals select[name="g_Maths"]', '80'); pg.click('#t-goals form[data-form="goals"] button[type="submit"]'); pg.wait_for_timeout(300)
@@ -469,13 +478,13 @@ try:
         pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
         pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
         pst = install_api(pg, 'parent')
-        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-26', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
-        pg.select_option('[data-act="view"]', 'a'); pg.click('[data-tab="profile"]'); pg.wait_for_timeout(250)
+        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-26', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-sec]')
+        pg.select_option('[data-act="view"]', 'a'); go(pg, 'profile'); pg.wait_for_timeout(250)
         t = pg.inner_text('#t-profile').lower()
         for want in ('Your profile', 'Pearson Edexcel International', 'US grade 11 (junior year)', 'Princeton University', 'Rutgers University–New Brunswick', 'university from fall 2028', 'Mathematics, Physics, Chemistry', 'Rules checked 26 Nov 2026'):
             if want.lower() not in t:
                 fails.append('profile: MK missing ' + want)
-        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        go(pg, 'roadmap'); pg.wait_for_timeout(250)
         r = pg.inner_text('#t-roadmap')
         if pg.locator('#t-roadmap .rm-stage').count() != 2 or 'Path to Princeton and Rutgers–NB' not in r:
             fails.append('roadmap: MK should have two school years and both universities: %d' % pg.locator('#t-roadmap .rm-stage').count())
@@ -488,37 +497,37 @@ try:
         pd = pst['progress']['s_mk'].get('pathdone', {})
         if list(pd) != ['a:2026:us:recs'] or pst['progress']['s_zk'].get('pathdone') or '1 / ' not in pg.locator('#t-roadmap .rm-stage').first.inner_text():
             fails.append('roadmap: tick not saved to MK: ' + json.dumps(pd))
-        pg.click('[data-tab="dates"]'); pg.wait_for_timeout(250); d = pg.inner_text('#t-dates')
+        go(pg, 'dates'); pg.wait_for_timeout(250); d = pg.inner_text('#t-dates')
         if 'Princeton: single-choice early action deadline' not in d or 'Rutgers–NB: early action deadline' not in d or 'roadmap' not in d.lower():
             fails.append('key dates: dates from the roadmap missing')
         if d.count('SAT: first sitting') != 1 or 'First SAT (or ACT) sitting' in d:
             fails.append('key dates: the first SAT appears twice')
-        pg.click('[data-tab="overview"]'); pg.wait_for_timeout(250)
+        go(pg, 'overview'); pg.wait_for_timeout(250)
         if 'this year on the roadmap' not in pg.inner_text('#t-overview').lower() or 'roadmap steps done' not in pg.inner_text('#t-overview').lower():
             fails.append('overview: roadmap section or stat missing')
         # dropping Physics shows the gap and how to cover it; universities survive the save
-        pg.click('[data-tab="profile"]'); pg.click('#t-profile [data-act="profedit"]'); pg.wait_for_timeout(200)
+        go(pg, 'profile'); pg.click('#t-profile [data-act="profedit"]'); pg.wait_for_timeout(200)
         f = '#t-profile form[data-form="profile"] '
         pg.fill(f + '[name="subjects"]', 'Mathematics, Chemistry, History'); pg.click(f + 'button[type="submit"]'); pg.wait_for_timeout(300); wait_saved(pg)
         sp = pst['progress']['s_mk'].get('profile', {}).get('a', {})
         if sp.get('subjects') != 'Mathematics, Chemistry, History' or [u.get('id') for u in sp.get('unis', [])] != ['princeton', 'rutgers'] or sp.get('track') != 'ial' or sp.get('interests') != ['astro']:
             fails.append('profile: MK save wrong: ' + json.dumps(sp)[:300])
-        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        go(pg, 'roadmap'); pg.wait_for_timeout(250)
         if pg.locator('#t-roadmap .rm-list li.warn', has_text='Physics is not in the current subjects').count() != 1 or 'AP Physics' not in pg.inner_text('#t-roadmap') or 'missing: physics' not in pg.inner_text('#t-roadmap').lower():
             fails.append('roadmap: dropping Physics should flag it')
         # ZK: seven school years; another university added by hand gets its own deadline
-        pg.select_option('[data-act="view"]', 'b'); pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        pg.select_option('[data-act="view"]', 'b'); go(pg, 'roadmap'); pg.wait_for_timeout(250)
         z = pg.inner_text('#t-roadmap')
         if pg.locator('#t-roadmap .rm-stage').count() != 7 or pg.locator('#t-roadmap .rm-stage[open]').count() != 2 or 'Jan 2028' not in z or 'Keep Mathematics for mathematics' in z:
             fails.append('roadmap: ZK should have seven years, two open, AMC 8 in Jan 2028: %d' % pg.locator('#t-roadmap .rm-stage').count())
-        pg.click('[data-tab="profile"]'); pg.click('#t-profile [data-act="profedit"]'); pg.wait_for_timeout(200)
+        go(pg, 'profile'); pg.click('#t-profile [data-act="profedit"]'); pg.wait_for_timeout(200)
         pg.select_option(f + '[name="u0_id"]', 'other'); pg.fill(f + '[name="u0_name"]', 'MIT'); pg.select_option(f + '[name="u0_round"]', 'ed')
         pg.fill(f + '[name="u0_due"]', '2032-11-01'); pg.select_option(f + '[name="u0_tier"]', 'reach'); pg.select_option(f + '[name="citizen"]', 'us')
         pg.click(f + 'button[type="submit"]'); pg.wait_for_timeout(300); wait_saved(pg)
         zp = pst['progress']['s_zk'].get('profile', {}).get('b', {})
         if zp.get('unis') != [{'name': 'MIT', 'c': 'us', 'round': 'ed', 'due': '2032-11-01', 'tier': 'reach'}] or zp.get('citizen') != 'us' or 'b' in pst['progress']['s_mk'].get('profile', {}):
             fails.append('profile: ZK university not saved to ZK only: ' + json.dumps(zp)[:300])
-        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(250)
+        go(pg, 'roadmap'); pg.wait_for_timeout(250)
         pg.locator('#t-roadmap .rm-stage').nth(6).locator('summary').click(); pg.wait_for_timeout(150)
         z = pg.inner_text('#t-roadmap')
         if 'Path to MIT' not in z or 'MIT: early decision deadline' not in z or '1 Nov 2032' not in z or 'date from the profile' not in z:
@@ -526,6 +535,126 @@ try:
         if 'Binding' not in z:
             fails.append('roadmap: early decision should say it is binding')
         fails.extend('profile/roadmap: ' + e for e in errs)
+        ctx.close()
+
+        # ---- daily habit: Today, redo with spacing, focus timer, check-in, badges, mocks, SAT areas, formulas, applications ----
+        ctx = br.new_context(viewport={'width': 1280, 'height': 900}); pg = ctx.new_page(); errs = []
+        pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
+        pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
+        hst = install_api(pg, 'parent')
+        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-26', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-sec]')
+        if len(tabs_shown(pg)) < 15 or pg.locator('#tabs [data-sec]').count() != 5:
+            fails.append('navigation: parent should see five sections: ' + str(tabs_shown(pg)))
+        pg.select_option('[data-act="view"]', 'a'); go(pg, 'today'); pg.wait_for_timeout(250)
+        td = pg.inner_text('#t-today')
+        if ', MK' not in td or pg.locator('#t-today .td-tasks:not(.extra) > li').count() != 3 or 'Flashcards' not in td or 'Focus session: 45 minutes' not in td or 'day streak' not in td.lower():
+            fails.append('today: MK should see three tasks, a ring and a streak: ' + td[:300])
+        if pg.locator('#tabs [data-sec]').count() != 4:
+            fails.append('navigation: a child sees four sections (no Family)')
+        # redo a question from Today: it is saved as fixed and comes back in a week
+        pg.click('#t-today [data-act="tgo"][data-v="redo"]'); pg.wait_for_selector('.td-redo')
+        pg.click('[data-act="tqshow"]'); pg.click('[data-act="tqrate"][data-v="2"]'); pg.wait_for_timeout(250); wait_saved(pg)
+        sp, dy = hst['progress']['s_mk'].get('spaced', {}), hst['progress']['s_mk'].get('days', {})
+        if len(sp) != 1 or list(sp.values())[0].get('d') != '2026-12-03' or dy.get('a:2026-11-26', {}).get('r') != 1 or list(hst['progress']['s_mk'].get('redo', {}).values()) != [2]:
+            fails.append('today: redo not saved with its next date: ' + json.dumps(sp) + json.dumps(dy))
+        if '1 / 2' not in pg.inner_text('#t-today'):
+            fails.append('today: redo progress should show 1 / 2')
+        # focus timer: a finished session logs itself
+        pg.click('#t-today [data-act="tgo"][data-v="focus"]'); pg.wait_for_selector('#tmLeft')
+        pg.evaluate("(function(){var t=JSON.parse(localStorage.getItem('sc1:timer'));t.start=Date.now()-46*60000;localStorage.setItem('sc1:timer',JSON.stringify(t));})()")
+        pg.wait_for_timeout(1600); wait_saved(pg)
+        lg = [r for r in hst['progress']['s_mk'].get('log', []) if r.get('note') == 'Focus timer']
+        if len(lg) != 1 or lg[0]['min'] != 45 or lg[0]['who'] != 'a' or pg.locator('#tmLeft').count():
+            fails.append('focus timer: finished session not logged: ' + json.dumps(lg))
+        # check-in
+        pg.click('#t-today [data-act="ckin"][data-f="s"][data-v="7"]'); pg.wait_for_timeout(200); wait_saved(pg)
+        if hst['progress']['s_mk'].get('days', {}).get('a:2026-11-26', {}).get('s') != 7:
+            fails.append('check-in: sleep not saved')
+        go(pg, 'badges'); pg.wait_for_timeout(200); bd = pg.inner_text('#t-badges')
+        if 'First step' not in bd or 'earned' not in bd.lower() or not hst['progress']['s_mk'].get('badges', {}).get('a:start'):
+            fails.append('badges: first badge not earned or saved: ' + bd[:200])
+        # a timed paper feeds Goals and gets a personal-best check
+        go(pg, 'mock'); pg.select_option('form[data-form="mockstart"] [name="k"]', 'WPH11'); pg.fill('form[data-form="mockstart"] [name="label"]', 'June 2023')
+        pg.click('form[data-form="mockstart"] button[type="submit"]'); pg.wait_for_selector('#mkLeft')
+        pg.click('[data-act="mockfinish"]'); pg.fill('form[data-form="mockres"] [name="score"]', '52'); pg.click('form[data-form="mockres"] button[type="submit"]'); pg.wait_for_timeout(300); wait_saved(pg)
+        pp = [r for r in hst['progress']['s_mk'].get('papers', []) if r.get('mock')]
+        if len(pp) != 1 or pp[0]['score'] != 52 or pp[0]['code'] != 'WPH11' or 'June 2023' not in pg.inner_text('#t-mock'):
+            fails.append('mock: paper not saved: ' + json.dumps(pp))
+        go(pg, 'goals'); pg.wait_for_timeout(250)
+        phys = pg.locator('#t-goals .gp-card').filter(has_text='Path to A in Physics')
+        if phys.locator('.gp-pt').count() != 4 + 7 or '52' not in phys.inner_text():
+            fails.append('mock: the timed paper should be the 4th paper on the Physics path: %d' % phys.locator('.gp-pt').count())
+        # SAT: misses by area show where the points go
+        go(pg, 'sat'); pg.fill('form[data-form="sat"] [name="rw"]', '650'); pg.fill('form[data-form="sat"] [name="m"]', '700')
+        pg.click('form[data-form="sat"] summary')
+        for k, n in (('ii', '2'), ('cs', '5'), ('ei', '1'), ('sec', '3'), ('alg', '1'), ('adv', '4'), ('psda', '0'), ('geo', '2')):
+            pg.fill(f'form[data-form="sat"] [name="dom_{k}"]', n)
+        pg.click('form[data-form="sat"] button[type="submit"]'); pg.wait_for_timeout(300)
+        top = [x.inner_text().split('\n')[0] for x in pg.locator('#t-sat .sd-bars li.top .n').all()]
+        if top != ['Craft and Structure', 'Advanced Math']:
+            fails.append('SAT: weakest areas wrong: ' + str(top))
+        # formulas and practicals
+        go(pg, 'formulas'); pg.wait_for_timeout(200); fm = pg.inner_text('#t-formulas')
+        if 'Learn by heart'.lower() not in fm.lower() or 'Young modulus' not in fm or 'CP8' not in fm:
+            fails.append('formulas: content missing')
+        pg.click('#t-formulas [data-act="topic"][data-k="CP:WPH11:CP1"][data-v="2"]'); pg.wait_for_timeout(200); wait_saved(pg)
+        if hst['progress']['s_mk'].get('topics', {}).get('CP:WPH11:CP1') != 2:
+            fails.append('practicals: tick not saved to MK')
+        # applications: an activity with the character limits, an essay, and feedback from the tutor
+        go(pg, 'apps'); pg.wait_for_timeout(200)
+        pg.click('#t-apps [data-act="apadd"][data-v="act"]'); f = '#t-apps form[data-form="apact"] '
+        pg.fill(f + '[name="org"]', 'Dubai Astronomy Group'); pg.fill(f + '[name="desc"]', 'Ran monthly telescope nights for 30 younger students')
+        if '52 / 150' not in pg.inner_text('#t-apps'):
+            fails.append('applications: character counter not updating')
+        pg.fill(f + '[name="hrs"]', '3'); pg.fill(f + '[name="wks"]', '30'); pg.click(f + 'button[type="submit"]'); pg.wait_for_timeout(200)
+        pg.click('#t-apps [data-act="apadd"][data-v="essay"]'); e = '#t-apps form[data-form="apessay"] '
+        pg.fill(e + '[name="text"]', ' '.join(['word'] * 120)); pg.click(e + 'button[type="submit"]'); pg.wait_for_timeout(250); wait_saved(pg)
+        ap = hst['progress']['s_mk'].get('apps', {}).get('a', {})
+        if [x.get('org') for x in ap.get('acts', [])] != ['Dubai Astronomy Group'] or len(ap.get('essays', [])) != 1 or '120 / 650 words' not in pg.inner_text('#t-apps'):
+            fails.append('applications: not saved: ' + json.dumps(ap)[:300])
+        pg.click('#t-apps [data-act="essaychat"]'); pg.wait_for_selector('#chat .ch-chips')
+        pg.locator('#chat [data-act="chatchip"]').first.click(); pg.wait_for_selector('#chat .ch-m.tutor ol')
+        th = [t for t in hst['threads'].values() if t.get('kind') == 'essay']
+        if len(th) != 1 or 'essay feedback' not in pg.inner_text('#chat .ch-hd').lower():
+            fails.append('applications: essay feedback chat did not start')
+        pg.click('[data-act="chatclose"]')
+        # ZK: daily problem, a perfect quick set, the topic map, reading
+        pg.select_option('[data-act="view"]', 'b'); go(pg, 'potd'); pg.wait_for_timeout(200)
+        right = pg.evaluate("(function(){var P=window.PRACTICE.problems,i=(((Math.round((Date.UTC(2026,10,26)-Date.UTC(2026,0,1))/86400000))%P.length)+P.length)%P.length;return P[i].a;})()")
+        pg.click(f'#t-potd [data-act="potdans"][data-v="{right}"]'); pg.wait_for_timeout(250); wait_saved(pg)
+        if 'Correct!' not in pg.inner_text('#t-potd') or hst['progress']['s_zk'].get('days', {}).get('b:2026-11-26', {}).get('p') != 1:
+            fails.append('daily problem: correct answer not recorded')
+        go(pg, 'mock'); pg.select_option('form[data-form="mockstart"] [name="k"]', 'set'); pg.click('form[data-form="mockstart"] button[type="submit"]'); pg.wait_for_selector('.mk-qs')
+        ans = pg.evaluate("(function(){var r=JSON.parse(localStorage.getItem('sc1:mockrun')),P=window.PRACTICE.problems;return r.set.map(function(id){return [id,P.filter(function(p){return p.id===id;})[0].a];});})()")
+        for qid_, a_ in ans:
+            pg.click(f'#t-mock [data-act="qsans"][data-k="{qid_}"][data-v="{a_}"]')
+        pg.click('[data-act="qsdone"]'); pg.wait_for_timeout(300); wait_saved(pg)
+        qs = [r for r in hst['progress']['s_zk'].get('bprac', []) if r.get('kind') == 'Quick set']
+        if len(qs) != 1 or qs[0]['score'] != 10 or 'Quick set: 10 / 10' not in pg.inner_text('#t-mock') or not hst['progress']['s_zk'].get('badges', {}).get('b:set10'):
+            fails.append('quick set: perfect score not saved or badged: ' + json.dumps(qs))
+        go(pg, 'ks3'); pg.click('#t-ks3 [data-act="ks3"][data-k="n1"][data-v="2"]'); pg.wait_for_timeout(200); wait_saved(pg)
+        if hst['progress']['s_zk'].get('skills', {}).get('b:ks3:n1') != 2 or '1 / 45' not in pg.inner_text('#t-ks3').replace('\n', ' '):
+            fails.append('topic map: rating not saved to ZK')
+        go(pg, 'reading'); r = '#t-reading form[data-form="reading"] '
+        pg.fill(r + '[name="title"]', 'The Number Devil'); pg.fill(r + '[name="min"]', '20'); pg.click(r + 'button[type="submit"]'); pg.wait_for_timeout(200)
+        pg.select_option(r + '[name="kind"]', 'book'); pg.fill(r + '[name="title"]', 'The Number Devil'); pg.select_option(r + '[name="stars"]', '5'); pg.click(r + 'button[type="submit"]'); pg.wait_for_timeout(200)
+        q = '#t-reading form[data-form="report"] '
+        pg.fill(q + '[name="subj"]', 'English'); pg.fill(q + '[name="term"]', 'Term 1 2026–27'); pg.fill(q + '[name="grade"]', 'Exceeding'); pg.click(q + 'button[type="submit"]'); pg.wait_for_timeout(200); wait_saved(pg)
+        rd = hst['progress']['s_zk'].get('reading', []); rp = hst['progress']['s_zk'].get('reports', [])
+        if [x['kind'] for x in rd] != ['session', 'book'] or any(x['who'] != 'b' for x in rd) or [x['grade'] for x in rp] != ['Exceeding'] or hst['progress']['s_mk'].get('reading'):
+            fails.append('reading and reports: not saved to ZK only')
+        go(pg, 'today'); pg.wait_for_timeout(200)
+        if 'Read for 15 minutes' in pg.inner_text('#t-today') or pg.locator('#t-today .td-tasks:not(.extra) li.done').count() < 1:
+            fails.append('today: ZK reading extra should be done and the daily problem ticked')
+        # reminders: the next deadlines are worked out and saved for the server to send
+        rem = hst['progress']['s_zk'].get('remind', {})
+        if not any(k.startswith('b:2026-12-29:') for k in rem) or not any(k.startswith('b:2027-01-04:') for k in rem):
+            fails.append('reminders: AMC 8 registration reminders missing: ' + json.dumps(rem)[:200])
+        # the weekly report for parents
+        pg.select_option('[data-act="view"]', ''); go(pg, 'report'); pg.wait_for_timeout(250); wr = pg.inner_text('#t-report')
+        if 'Days studied'.lower() not in wr.lower() or 'The Number Devil' not in wr or 'Quick set' not in wr or 'Physics Unit 1' not in wr or 'Reminders on this device' not in wr:
+            fails.append('weekly report: content missing: ' + wr[:300])
+        fails.extend('daily habit: ' + e for e in errs)
         ctx.close()
 
         # ---- a child signing in on their own device: sees only their own work, and old progress moves online ----
@@ -538,9 +667,9 @@ try:
         pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
         pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
         kid = install_api(pg, 'student', 's_zk')
-        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-16', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
+        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-16', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-sec]')
         t = tabs_shown(pg)
-        if t != ['overview', 'profile', 'roadmap', 'goals', 'dates', 'qlog', 'maths', 'log', 'sources']:
+        if t != ['today', 'overview', 'qlog', 'potd', 'mock', 'maths', 'ks3', 'goals', 'badges', 'log', 'reading', 'roadmap', 'dates', 'profile', 'sources']:
             fails.append('student ZK: wrong tabs ' + str(t))
         if pg.locator('[data-act="view"]').count():
             fails.append('student ZK: should not have the view switcher')
@@ -550,18 +679,18 @@ try:
         zk = kid['progress']['s_zk']
         if [r['id'] for r in zk.get('bprac', [])] != ['x1'] or [r['id'] for r in zk.get('log', [])] != ['l1']:
             fails.append('student ZK: old progress from this device did not move to the account correctly: ' + json.dumps(zk)[:200])
-        pg.click('[data-tab="roadmap"]'); pg.wait_for_timeout(200)
-        if 'Princeton' in pg.inner_text('#t-roadmap') or pg.locator('#t-roadmap .rm-stage').count() != 7 or 'Your profile' not in (pg.click('[data-tab="profile"]') or pg.inner_text('#t-profile')):
+        go(pg, 'roadmap'); pg.wait_for_timeout(200)
+        if 'Princeton' in pg.inner_text('#t-roadmap') or pg.locator('#t-roadmap .rm-stage').count() != 7 or 'Your profile' not in (go(pg, 'profile') or pg.inner_text('#t-profile')):
             fails.append('student ZK: profile or roadmap shows the wrong child')
         if kid['forbidden'] or set(kid['progress']['s_mk']) - {'goals', 'profile'}:
             fails.append('student ZK: tried to save to MK: ' + str(kid['forbidden']))
-        pg.click('[data-tab="maths"]'); pg.wait_for_timeout(200)
+        go(pg, 'maths'); pg.wait_for_timeout(200)
         if 'Old AMC practice' not in pg.inner_text('#t-maths'):
             fails.append('student ZK: own practice paper missing')
-        pg.click('[data-tab="log"]'); pg.wait_for_timeout(200)
+        go(pg, 'log'); pg.wait_for_timeout(200)
         if 'ZK old session' not in pg.inner_text('#t-log') or 'MK old session' in pg.inner_text('#t-log'):
             fails.append('student ZK: study log shows the wrong child')
-        pg.click('[data-tab="qlog"]'); pg.wait_for_timeout(200)
+        go(pg, 'qlog'); pg.wait_for_timeout(200)
         if 'of 39 questions' not in pg.inner_text('#qCount'):
             fails.append('student ZK: question log wrong: ' + pg.inner_text('#qCount'))
         if pg.locator('#qList .sc-tutor').count() != 39:

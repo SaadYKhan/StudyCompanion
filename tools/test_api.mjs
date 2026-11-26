@@ -5,7 +5,9 @@
 import { spawn, execFileSync } from "node:child_process";
 import http from "node:http";
 import { writeFileSync, rmSync, readFileSync } from "node:fs";
-import { webcrypto as crypto } from "node:crypto";
+import { webcrypto as crypto, createECDH } from "node:crypto";
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
 
 const W = process.env.WRANGLER || "wrangler";
 const PORT = 8799;
@@ -19,11 +21,17 @@ const other = await crypto.subtle.generateKey(
   { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]);
 const jwk = await crypto.subtle.exportKey("jwk", publicKey);
 writeFileSync(new URL("../.dev.vars", import.meta.url), `TEST_JWKS='${JSON.stringify({ keys: [{ ...jwk, kid: "test1", alg: "RS256", use: "sig" }] })}'\n` +
-  `ANTHROPIC_API_KEY=test-key\nANTHROPIC_BASE_URL=http://127.0.0.1:8798\n`);
+  `ANTHROPIC_API_KEY=test-key\nANTHROPIC_BASE_URL=http://127.0.0.1:8798\nPUSH_ALLOW_HTTP=1\n`);
 
 // A stand-in for Claude's API: the screen and the check answer by keyword; the tutor gives a hint.
-const claudeCalls = [];
+const claudeCalls = [], pushes = [];
 const fakeClaude = http.createServer((req, res) => {
+  // a stand-in push service: records each message; /push/gone answers as an expired device would
+  if (req.url.startsWith("/push/")) {
+    const chunks = []; req.on("data", (d) => chunks.push(d));
+    req.on("end", () => { pushes.push({ url: req.url, headers: req.headers, body: Buffer.concat(chunks) }); res.writeHead(req.url === "/push/gone" ? 410 : 201); res.end(); });
+    return;
+  }
   let raw = ""; req.on("data", (d) => (raw += d)); req.on("end", () => {
     const b = JSON.parse(raw || "{}"), sys = JSON.stringify(b.system || ""), last = JSON.stringify(b.messages[b.messages.length - 1].content);
     const kind = sys.includes("You screen messages") ? "screen" : sys.includes("You check an AI tutor") ? "check" : "tutor";
@@ -230,6 +238,54 @@ try {
   const left = JSON.parse(execFileSync(W, ["d1", "execute", "studycompanion-db", "--local", "--json", "--command", "SELECT (SELECT COUNT(*) FROM chat_messages WHERE thread_id='thr_old') m, (SELECT COUNT(*) FROM chat_threads WHERE id='thr_old') t, (SELECT COUNT(*) FROM chat_messages WHERE thread_id='" + thr + "') keep"], { stdio: "pipe" }).toString());
   const row = left[0].results[0];
   check("the daily clean-up deletes chats older than 90 days and keeps recent ones", row.m === 0 && row.t === 0 && row.keep > 0, JSON.stringify(row));
+
+  // ---- essay feedback: the tutor reads the saved draft and comments without writing ----
+  await put("/api/progress/s1/apps", parent, { a: { essays: [{ id: "e1", title: "Personal essay", text: "When I first looked through a telescope at Saturn, I was nine.", lim: 650 }] } });
+  const er = await post("/api/chat", parent, { studentId: "s1", essay: "e1", message: "Is the opening strong?" });
+  const esys = JSON.stringify(claudeCalls.filter((c) => c.kind === "tutor").pop().body.system);
+  check("essay feedback: the tutor sees the saved draft and the no-writing rule", er.status === 200 && esys.includes("looked through a telescope at Saturn") && esys.includes("Comment; never write"), JSON.stringify(er.body));
+  const eth = await call("/api/chat/threads?studentId=s1", parent);
+  check("essay feedback: the chat is filed as an essay", (eth.body.threads || []).some((t) => t.context_kind === "essay" && t.context_ref === "e1"));
+  check("essay feedback: an unknown draft is refused", (await post("/api/chat", parent, { studentId: "s1", essay: "nope", message: "hi" })).body.error === "essay_not_found");
+  check("essay feedback: a child cannot open a sibling's essay", (await post("/api/chat", kid, { studentId: "s1", essay: "e1", message: "hi" })).status === 404);
+
+  // ---- reminders: Web Push, encrypted for each device ----
+  const pk = await call("/api/push/key", parent);
+  check("push: the worker makes and shares its public key", pk.status === 200 && Buffer.from(pk.body.key || "", "base64url").length === 65, JSON.stringify(pk.body));
+  check("push: the same key every time", (await call("/api/push/key", kid)).body.key === pk.body.key);
+  const ecdh = createECDH("prime256v1"); ecdh.generateKeys();
+  const authSecret = crypto.getRandomValues(new Uint8Array(16));
+  const dev_ = (name) => ({ endpoint: "http://127.0.0.1:8798/push/" + name, keys: { p256dh: b64u(ecdh.getPublicKey()), auth: b64u(authSecret) } });
+  check("push: a bad subscription is refused", (await post("/api/push/subscribe", kid, { endpoint: "ftp://x", keys: {} })).status === 400);
+  check("push: the child's and the parent's devices subscribe", (await post("/api/push/subscribe", kid, dev_("kid"))).status === 200 && (await post("/api/push/subscribe", parent, dev_("parent"))).status === 200);
+  const ece = require(process.env.HTTP_ECE || "/tmp/ece/node_modules/http_ece");
+  const open_ = (p) => JSON.parse(ece.decrypt(p.body, { version: "aes128gcm", privateKey: ecdh, authSecret: Buffer.from(authSecret) }).toString());
+  pushes.length = 0;
+  const tst = await post("/api/push/test", kid, {});
+  check("push: a test goes to the child's device only", tst.body.sent === 1 && pushes.length === 1 && pushes[0].url === "/push/kid", JSON.stringify(tst.body));
+  let msg0 = null; try { msg0 = open_(pushes[0]); } catch (e) { msg0 = { err: e.message }; }
+  check("push: the message decrypts on the device (reference implementation)", msg0 && /Reminders are working/.test(msg0.body || ""), JSON.stringify(msg0));
+  const va = /^vapid t=([^,]+), k=(.+)$/.exec(pushes[0].headers.authorization || ""), jwt = va ? va[1].split(".") : [];
+  const vkey = await crypto.subtle.importKey("raw", Buffer.from(pk.body.key, "base64url"), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+  const vok = va && await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, vkey, Buffer.from(jwt[2], "base64url"), new TextEncoder().encode(jwt[0] + "." + jwt[1]));
+  const vclaims = va ? JSON.parse(Buffer.from(jwt[1], "base64url").toString()) : {};
+  check("push: signed with the worker's key, for this push service", vok && va[2] === pk.body.key && vclaims.aud === "http://127.0.0.1:8798" && vclaims.exp > Date.now() / 1000 && pushes[0].headers["content-encoding"] === "aes128gcm");
+  const today = new Date(Date.now() + 4 * 3600000).toISOString().slice(0, 10);
+  await put("/api/progress/s2/remind", kid, { ["b:" + today + ":x1"]: { t: "AMC 8 centre registration is tomorrow (5 Jan)." }, ["b:2099-01-01:x2"]: { t: "not today" } });
+  pushes.length = 0;
+  const sch2 = await fetch(base + "/cdn-cgi/handler/scheduled?cron=7+12+*+*+*");
+  if (!sch2.ok) await fetch(base + "/__scheduled?cron=7+12+*+*+*");
+  for (let i = 0; i < 20 && pushes.length < 2; i++) await new Promise((r) => setTimeout(r, 200));
+  const km = pushes.find((p) => p.url === "/push/kid"), pm = pushes.find((p) => p.url === "/push/parent");
+  const kmsg = km ? open_(km) : {}, pmsg = pm ? open_(pm) : {};
+  check("daily run: the child gets today's reminder and a nudge", /AMC 8 centre registration/.test(kmsg.body || "") && /Today's list is waiting|streak/.test(kmsg.body || "") && !/not today/.test(kmsg.body || ""), JSON.stringify(kmsg));
+  check("daily run: the parent gets the reminder with the child's name", /ZK: AMC 8 centre registration/.test(pmsg.body || ""), JSON.stringify(pmsg));
+  await post("/api/push/subscribe", kid, dev_("gone")); pushes.length = 0;
+  const t2 = await post("/api/push/test", kid, {});
+  const subsLeft = JSON.parse(execFileSync(W, ["d1", "execute", "studycompanion-db", "--local", "--json", "--command", "SELECT COUNT(*) n FROM push_subs WHERE user_id='u2'"], { stdio: "pipe" }).toString())[0].results[0].n;
+  check("push: a device the push service says is gone is removed", t2.body.sent === 1 && subsLeft === 1, JSON.stringify(t2.body) + " left " + subsLeft);
+  await post("/api/push/unsubscribe", kid, { endpoint: dev_("kid").endpoint });
+  check("push: after turning reminders off, nothing is sent", (await post("/api/push/test", kid, {})).body.sent === 0);
 } finally {
   dev.kill();
   fakeClaude.close();

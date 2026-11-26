@@ -1,7 +1,7 @@
 /* Key notes: self-test cards for MK's AS units.
    Each card: id (never reuse or renumber: progress is saved against it), u (unit code), t (topic),
    k: "mine" = a rule from a mark she lost on a marked paper (src says which), "know" = must know by heart,
-   "exam" = exam technique. q = front of the card, a = back.
+   "phr" = mark-scheme phrasing, "exam" = exam technique. q = front of the card, a = back.
    The Physics and Maths papers come with a formula list, so those cards test when to use a formula,
    definitions and traps rather than memorising equations. Chemistry gives only a periodic table. */
 window.CARDS = {
@@ -314,6 +314,29 @@ window.CARDS = {
     { id: "s36", u: "WST01", t: "Exam technique", k: "exam",
       q: "Where to write the answer.", a: "Under the part it answers (e.g. P(V > 104.9) = 0.025 goes under (a), even if you then use it in (b))." },
     { id: "s37", u: "WST01", t: "Exam technique", k: "exam",
-      q: "Accuracy in S1.", a: "Keep full calculator values through the working; round only the final answer (3 s.f. unless told otherwise)." }
+      q: "Accuracy in S1.", a: "Keep full calculator values through the working; round only the final answer (3 s.f. unless told otherwise)." },
+    /* ---------------- Mark-scheme phrases: the exact wording examiners reward ---------------- */
+    { id: "w01", u: "WCH11", t: "Intermolecular forces", k: "phr", q: "Why do boiling points rise along the alkanes?", a: "More electrons, so stronger London forces between the molecules, which need more energy to overcome. (Say 'between molecules'; covalent bonds do not break.)" },
+    { id: "w02", u: "WCH11", t: "Intermolecular forces", k: "phr", q: "Why does a branched alkane boil lower than its straight-chain isomer?", a: "Fewer points of contact between molecules, so weaker London forces, which need less energy to overcome." },
+    { id: "w03", u: "WCH11", t: "Bonding", k: "phr", q: "How is a sigma (σ) bond formed?", a: "Head-on (end-on) overlap of orbitals, with the electron density between the two nuclei." },
+    { id: "w04", u: "WCH11", t: "Bonding", k: "phr", q: "How is a pi (π) bond formed?", a: "Sideways overlap of p orbitals, with electron density above and below the line between the nuclei." },
+    { id: "w05", u: "WCH11", t: "Alkenes", k: "phr", q: "Why are alkenes more reactive than alkanes?", a: "The π bond is weaker than a σ bond, and its high electron density attracts electrophiles." },
+    { id: "w06", u: "WCH11", t: "Isomerism", k: "phr", q: "The two conditions for E/Z isomerism.", a: "Restricted rotation about the C=C double bond, and each carbon of the C=C has two different groups attached." },
+    { id: "w07", u: "WCH11", t: "Isomerism", k: "phr", q: "Define structural isomers.", a: "Compounds with the same molecular formula but different structural formulae." },
+    { id: "w08", u: "WCH11", t: "Mechanisms", k: "phr", q: "Define a free radical.", a: "A species with an unpaired electron." },
+    { id: "w09", u: "WCH11", t: "Mechanisms", k: "phr", q: "Define an electrophile.", a: "An electron-pair acceptor." },
+    { id: "w10", u: "WCH11", t: "Organic basics", k: "phr", q: "Define a homologous series.", a: "Compounds with the same functional group and general formula; each member differs by CH₂; similar chemical properties and a trend in physical properties." },
+    { id: "w11", u: "WCH11", t: "Bonding", k: "phr", q: "Why do ionic compounds conduct when molten or dissolved, but not as solids?", a: "When molten or dissolved the ions are free to move and carry charge; in the solid they are fixed in the lattice." },
+    { id: "w12", u: "WCH11", t: "Bonding", k: "phr", q: "Why does a giant covalent substance such as diamond melt so high?", a: "Many strong covalent bonds must be broken, which needs a lot of energy." },
+    { id: "w13", u: "WCH11", t: "Exam technique", k: "phr", q: "What counts as an observation?", a: "Something you see, hear or smell: 'effervescence' or 'bubbles', 'the solution changes from orange to colourless'. Naming a product ('hydrogen forms') is not an observation." },
+    { id: "w14", u: "WCH11", t: "Periodicity", k: "phr", q: "Why does atomic radius decrease across a period?", a: "Nuclear charge increases while electrons go into the same shell with similar shielding, so the outer electrons are pulled closer." },
+    { id: "w15", u: "WPH11", t: "Fluids", k: "phr", q: "Explain why a falling object reaches terminal velocity.", a: "As speed increases, drag increases until drag (plus upthrust) equals the weight. The resultant force is then zero, so there is no acceleration and the velocity is constant." },
+    { id: "w16", u: "WPH11", t: "Fluids", k: "phr", q: "Why does a floating object stay where it is?", a: "Upthrust equals its weight, so the resultant force is zero: the forces are balanced." },
+    { id: "w17", u: "WPH11", t: "Fluids", k: "phr", q: "State what upthrust equals.", a: "Upthrust equals the weight of fluid displaced." },
+    { id: "w18", u: "WPH11", t: "Forces", k: "phr", q: "A Newton's third law pair: the four things that make it one.", a: "Equal in size, opposite in direction, the same type of force, and acting on different objects." },
+    { id: "w19", u: "WPH11", t: "Projectiles", k: "phr", q: "Why is a projectile's horizontal velocity constant?", a: "No horizontal force acts on it (air resistance is negligible), so there is no horizontal acceleration." },
+    { id: "w20", u: "WPH11", t: "Materials", k: "phr", q: "Limit of proportionality vs elastic limit.", a: "Limit of proportionality: beyond it, extension is no longer proportional to force. Elastic limit: beyond it, the material does not return to its original length when the force is removed." },
+    { id: "w21", u: "WPH11", t: "Motion", k: "phr", q: "Define a vector quantity.", a: "A quantity with both magnitude and direction. A scalar has magnitude only." },
+    { id: "w22", u: "WPH11", t: "Energy", k: "phr", q: "Why is an efficiency always less than 100%?", a: "Some of the input energy is transferred to the surroundings as wasted thermal energy (and sound), for example through friction." }
   ]
 };

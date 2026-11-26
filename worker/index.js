@@ -14,20 +14,26 @@
 //   POST /api/chat                    tutor chat about one marked question (see chat.js)
 //   GET  /api/chat/threads            a child's chats;  GET /api/chat/thread/:id  one chat
 //   GET  /api/chat/settings           tutor settings and usage for a child;  PUT: parents change them
+//   GET  /api/push/key, POST /api/push/subscribe | unsubscribe | test   reminders on a device (see push.js)
 
 import legacy from "./legacy.json";
 import * as chat from "./chat.js";
+import * as push from "./push.js";
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" };
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
 
 // Progress the site keeps per child. Anything else is refused.
-export const PROGRESS_KINDS = ["route", "papers", "sat", "cards", "topics", "bprac", "road", "log", "myq", "fdone", "redo", "goals", "profile", "pathdone"];
+export const PROGRESS_KINDS = ["route", "papers", "sat", "cards", "topics", "bprac", "road", "log", "myq", "fdone", "redo", "goals", "profile", "pathdone",
+  "days", "badges", "spaced", "skills", "reading", "reports", "apps", "remind"];
 const MAX_PROGRESS_BYTES = 300_000;
 
 export default {
-  // Daily: delete chats older than 90 days.
-  async scheduled(event, env, ctx) { ctx.waitUntil(chat.cleanup(env)); },
+  // 02:17 UTC: delete chats older than 90 days. 12:07 UTC (16:07 in Dubai): reminders.
+  async scheduled(event, env, ctx) {
+    if (event.cron === "7 12 * * *") ctx.waitUntil(push.daily(env, event.scheduledTime));
+    else ctx.waitUntil(chat.cleanup(env));
+  },
 
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -45,6 +51,7 @@ export default {
       const who = await whoIs(env, ident);
       if (!who) return json({ error: "not_linked" }, 403);
 
+      if (path.startsWith("/api/push/")) { const r = await push.route(env, who, request, path, method); if (r) return r; }
       if (path === "/api/data" && method === "GET") return json(await data(env, who, url.searchParams.get("since")));
       if (path === "/api/progress" && method === "GET") return json(await progress(env, who));
       const pm = /^\/api\/progress\/([\w-]+)\/([a-z]+)$/.exec(path);
