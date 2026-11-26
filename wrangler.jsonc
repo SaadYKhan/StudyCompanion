@@ -4,6 +4,8 @@
   "name": "studycompanion",
   "main": "worker/index.js",
   "compatibility_date": "2025-06-01",
+  // Keep variables and secrets added in the Cloudflare dashboard (such as ANTHROPIC_API_KEY) when deploying from GitHub.
+  "keep_vars": true,
   "assets": {
     "directory": "./site",
     "binding": "ASSETS",
