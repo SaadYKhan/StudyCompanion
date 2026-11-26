@@ -436,6 +436,46 @@ details.sc-add[open] summary::after { content: " −"; }
 .ch-transcript { flex-basis: 100%; display: flex; flex-direction: column; gap: 8px; margin: 8px 0 4px; padding: 10px; border: 1px solid var(--pf-line); border-radius: var(--pf-radius); }
 @media (max-width: 600px) { .sc-chat { border-left: 0; } }
 @media print { .sc-chat { display: none !important; } }
+/* Goals: grade-band meters and the path charts */
+.gm-card .pf-ch { align-items: flex-start; }
+.gm-row { margin: 14px 0 4px; }
+.gm-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.gm-name { color: var(--pf-ivory); font-size: 14px; font-weight: 500; }
+.gm-fig { font-size: 13px; color: var(--pf-steel-2); white-space: nowrap; }
+.gm-fig b { color: var(--pf-gold-hi); font-size: 16px; font-weight: 600; }
+.gm-track { position: relative; height: 18px; margin-bottom: 16px; }
+.gm-end { position: absolute; top: 21px; font-size: 10.5px; color: var(--pf-steel); }
+.gm-end.lo { left: 0; } .gm-end.hi { right: 0; }
+.gm-bands { display: flex; height: 100%; border-radius: 9px; overflow: hidden; background: var(--pf-line); }
+.gm-seg { height: 100%; font-size: 10.5px; font-weight: 600; line-height: 18px; text-align: center; }
+.gm-bands .band + .band { box-shadow: inset 2px 0 0 var(--pf-card); }
+.gm-now { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--pf-ivory); box-shadow: 0 0 0 2px var(--pf-card); }
+.gm-prev { position: absolute; top: 25px; width: 8px; height: 8px; margin: 0 0 0 -4px; border-radius: 50%; background: var(--pf-card); box-shadow: 0 0 0 2px var(--pf-steel); }
+.gm-sub { margin-top: 6px; font-size: 12px; color: var(--pf-steel); }
+.gm-edit { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--pf-line); }
+.gp-grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.gp-svg { display: block; width: 100%; height: auto; margin: 4px 0; overflow: visible; }
+.gp-ax { fill: var(--pf-steel); font-size: 12px; }
+.gp-ax.ex { fill: var(--pf-gold-hi); font-weight: 600; }
+.gp-ref { fill: var(--pf-table-head); font-size: 12px; }
+.gp-val { fill: var(--pf-ivory); font-size: 13px; font-weight: 600; }
+.gp-pt { outline: none; }
+.gp-pt:focus circle:last-child { stroke: var(--pf-gold-hi); }
+.gp-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 2px 0 4px; font-size: 12px; color: var(--pf-steel-2); }
+.gp-legend .ln { display: inline-block; width: 18px; height: 2px; margin-right: 6px; vertical-align: middle; border-radius: 1px; }
+.gp-legend .ln.dash { background: repeating-linear-gradient(90deg, #7186ad 0 5px, transparent 5px 9px); }
+.gp-say { margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: var(--pf-steel-2); }
+.gp-say b { color: var(--pf-ivory); }
+.gp-gain { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--pf-line); }
+.gp-h { margin-bottom: 6px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--pf-gold-hi); }
+.gp-gain ul { list-style: none; margin: 0; padding: 0; }
+.gp-gain li { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--pf-line); font-size: 13px; color: var(--pf-ivory); }
+.gp-gain li span:first-child { flex: 1; }
+.gp-l { color: var(--pf-steel); font-size: 12px; white-space: nowrap; }
+.gp-table { margin-top: 10px; font-size: 12.5px; }
+.gp-table summary { cursor: pointer; color: var(--pf-gold-hi); }
+.sc-tip { position: absolute; z-index: 70; max-width: 260px; padding: 6px 9px; font-size: 12px; color: var(--pf-ivory); background: var(--pf-popover); border: 1px solid var(--pf-popover-border); border-radius: var(--pf-radius); pointer-events: none; box-shadow: var(--pf-shadow-popover); }
+.sc-tip[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -463,6 +503,7 @@ details.sc-add[open] summary::after { content: " −"; }
   <section class="pf-tab" id="t-log" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-sources" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-family" role="tabpanel" hidden></section>
+  <section class="pf-tab" id="t-goals" role="tabpanel" hidden></section>
 
   <aside class="sc-chat" id="chat" role="dialog" aria-label="AI tutor" hidden></aside>
 
@@ -708,7 +749,7 @@ function rHead() {
 }
 
 /* ---------- tabs ---------- */
-var TABS = [['overview', 'Overview'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['notes', 'Key notes'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources'], ['family', 'Family']];
+var TABS = [['overview', 'Overview'], ['goals', 'Goals'], ['dates', 'Key dates'], ['alevel', 'A Level'], ['qlog', 'Question log'], ['notes', 'Key notes'], ['sat', 'SAT & admissions'], ['maths', 'ZK maths'], ['log', 'Study log'], ['sources', 'Sources'], ['family', 'Family']];
 var R = {};
 function setTab(id, push) {
   if (!R[id] || !tabAllowed(id)) id = 'overview';
@@ -731,6 +772,8 @@ R.overview = function () {
   }).filter(function (x) { return x && !isPast(x.e) && (x.c.id === 'asfirst' ? canSee('a') : (x.e.who || []).some(canSee)); }).slice(0, 4);
   var html = '<div class="pf-over">Countdown</div><div class="pf-kpis">' +
     tiles.map(function (x) { return countKpi(x.c.l, x.e.d, x.c.s, x.e.end); }).join('') + '</div>';
+  var gs = kids().map(goalsSummaryHtml).join('');
+  if (gs) html += '<div class="pf-over">Goals</div>' + gs;
   html += focusHtml();
   html += '<div class="pf-over">Coming up</div><div class="pf-grid">';
   kids().forEach(function (w) {
@@ -1536,7 +1579,7 @@ R.sources = function () {
    each child's own view; a child only ever has their own view. Progress (cards, ratings,
    logs, ticks) is saved per child in the database and kept in this browser as a copy. */
 var ACCT = null, IS_PARENT = false, VIEW = null, STU = {}, SYNC_ON = false, DATA_UPD = null, DATA_SIG = '';
-var SYNC_KINDS = ['route', 'papers', 'sat', 'cards', 'topics', 'bprac', 'road', 'log', 'myq', 'fdone', 'redo'];
+var SYNC_KINDS = ['route', 'papers', 'sat', 'cards', 'topics', 'bprac', 'road', 'log', 'myq', 'fdone', 'redo', 'goals'];
 var OWNER = { route: 'a', papers: 'a', sat: 'a', cards: 'a', topics: 'a', bprac: 'b', road: 'b' };   // whole value belongs to one child
 var ARR = { papers: 1, sat: 1, bprac: 1, log: 1, myq: 1 };                                          // lists; log and myq carry .who
 var SERVER = {}, DIRTY = {}, FIRST = {}, SYNCST = { state: 'ok', at: null, err: '', checked: null, checkErr: false }, FLUSH_T = null;
@@ -1571,7 +1614,7 @@ function isEmpty(v) { return v == null || (Array.isArray(v) ? !v.length : typeof
 function ownerOf(k, key, item) {
   if (OWNER[k]) return OWNER[k];
   if (ARR[k]) return (item && item.who) || 'a';
-  if (k === 'fdone') return String(key).split(':')[0];
+  if (k === 'fdone' || k === 'goals') return String(key).split(':')[0];
   if (k === 'redo') {
     var p = String(key).split(':')[0];
     if (p === 'mine') { var mq = (sget('myq', []) || []).filter(function (q) { return qid(q) === key; })[0]; return mq ? (mq.who || 'a') : 'a'; }
@@ -1923,6 +1966,209 @@ function tutorFamilyHtml(sid, name) {
   return h + '</div>';
 }
 
+/* ---------- Goals: where each child stands, and the path to the target ----------
+   Goals are saved per child (progress kind "goals", keys like "a:Physics"):
+   { kind: 'grade', target: 'A' } for IAL subjects, judged against recent Pearson boundaries,
+   or { kind: 'pct', target: 80 } for anything else. */
+var GRADES = ['A', 'B', 'C', 'D'];
+var BAND = { D: '#6b5629', C: '#8a6d33', B: '#ab8a40', A: '#d0a956' };   // one-hue ramp, validated on the dark card
+var BAND_INK = { D: '#f5f0e5', C: '#f5f0e5', B: '#0a1631', A: '#0a1631' };
+var C_ACTUAL = '#bf9746', C_PLAN = '#7186ad';
+var GOAL_SUBJ = { Physics: 'WPH11', Chemistry: 'WCH11', Maths: 'WST01' };
+var GOALOPEN = {};
+
+function avgOf(list, k) { var v = list.map(function (b) { return b[k]; }).filter(function (x) { return x != null; }); return v.length ? Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length) : null; }
+// Grade boundaries to aim at: recent series only (June 2022 was graded generously and is left out).
+function gradeRef(subj) {
+  var A = D.assessment || {}, b, max, note;
+  if (subj === 'Physics' && A.physics) { b = A.physics.bounds.filter(function (x) { return x.s !== 'June 2022'; }); max = 80; note = 'average of Pearson\'s Unit 1 boundaries, ' + b[0].s + ' to ' + b[b.length - 1].s; }
+  else if (subj === 'Chemistry' && A.juneBounds) { b = A.juneBounds; max = 80; note = 'average of the June Unit 1 boundaries, ' + b[0].s.replace('June ', '') + '–' + b[b.length - 1].s.replace('June ', ''); }
+  else if (subj === 'Maths' && A.maths) { b = A.maths.bounds.filter(function (x) { return x.s !== 'June 2022'; }); max = 75; note = 'S1 boundaries, ' + b.map(function (x) { return x.s; }).join(', ') + ' (the latest published we have)'; }
+  else return null;
+  var r = { max: max, A: avgOf(b, 'a'), B: avgOf(b, 'b'), C: avgOf(b, 'c'), D: avgOf(b, 'd'), note: note, unit: GOAL_SUBJ[subj] };
+  var ex = (D.alevel.papers || []).filter(function (p) { return p.code === r.unit; })[0];
+  r.exam = ex ? ex.d : null;
+  return r;
+}
+function scoreOf(p) { var m = /^\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/.exec((p && p.score) || ''); return m ? { m: +m[1], x: +m[2] } : null; }
+// The child's fully marked papers in a subject, in the order they sat them.
+function attempts(w, subj) {
+  return Object.keys(QL.papers).filter(function (k) { var p = QL.papers[k]; return p.who === w && p.subj === subj && scoreOf(p); })
+    .map(function (k) { var p = QL.papers[k], s = scoreOf(p); return { code: k, label: p.label, m: s.m, x: s.x, short: shortPaper(p.label) }; });
+}
+function shortPaper(l) {
+  var m = /(Jan|Feb|Mar|Apr|May|June?|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})/i.exec(l || '');
+  return m ? m[1].slice(0, 3) + ' ' + m[2].slice(2) : (l || '').split('·').pop().trim().slice(0, 10);
+}
+function goalsFor(w) {
+  var g = sget('goals', {}), out = {};
+  Object.keys(g).forEach(function (k) { var i = k.indexOf(':'); if (k.slice(0, i) === w && g[k] && g[k].target) out[k.slice(i + 1)] = g[k]; });
+  return out;
+}
+function goalSubjects(w) {
+  var seen = {};
+  Object.keys(QL.papers).forEach(function (k) { var p = QL.papers[k]; if (p.who === w && scoreOf(p)) seen[p.subj] = 1; });
+  return Object.keys(seen);
+}
+function gradeOf(v, r) { for (var i = 0; i < GRADES.length; i++) if (r[GRADES[i]] != null && v >= r[GRADES[i]]) return GRADES[i]; return 'below ' + GRADES.filter(function (g) { return r[g] != null; }).pop(); }
+// Everything a goal needs: the yardstick, the attempts, the gap and the plan to the exam.
+function goalModel(w, subj, goal) {
+  var at = attempts(w, subj); if (!at.length) return null;
+  var last = at[at.length - 1], r = goal.kind === 'grade' && gradeable(w, subj) ? gradeRef(subj) : null;
+  if (goal.kind === 'grade' && !r) return null;
+  var max = r ? r.max : last.x, aim = r ? r[goal.target] : Math.round(goal.target / 100 * max);
+  if (aim == null) return null;
+  var m = { w: w, subj: subj, goal: goal, at: at, last: last, ref: r, max: max, aim: aim, gap: Math.max(0, aim - last.m), plan: [] };
+  if (r && r.exam && daysTo(r.exam) > 0) {
+    var days = daysTo(r.exam), n = Math.max(1, Math.min(8, Math.floor(days / 21)));
+    for (var i = 1; i <= n; i++) {
+      var d = i === n ? r.exam : addDays(TODAY, 21 * i);
+      m.plan.push({ d: d, v: Math.round(last.m + (Math.max(aim, last.m) - last.m) * i / n), exam: i === n });
+    }
+    m.weeks = Math.max(1, Math.round(days / 7));
+  }
+  return m;
+}
+// Grade goals only where the papers are the IAL units we have boundaries for.
+function gradeable(w, subj) { return Object.keys(QL.papers).some(function (k) { var p = QL.papers[k]; return p.who === w && p.subj === subj && GOAL_SUBJ[subj] && p.unit === GOAL_SUBJ[subj]; }); }
+function kidName(w) { return (STU[w] && STU[w].name) || (D.students[w] ? D.students[w].label.split(' · ')[0] : w); }
+function goalLabel(subj, goal) { return goal.kind === 'grade' ? goal.target + ' in ' + subj : goal.target + '% in ' + subj; }
+
+/* the meter: grade bands as a track, her latest score as the marker */
+function meterRow(m) {
+  var r = m.ref, max = m.max, lowBand = r ? Math.min.apply(null, GRADES.map(function (g) { return r[g]; }).filter(function (v) { return v != null; })) : m.aim;
+  var lo = Math.max(0, Math.floor((Math.min(lowBand, Math.min.apply(null, m.at.map(function (a) { return a.m; }))) - 0.12 * max) / 10) * 10);
+  var pct = function (v) { return Math.max(0, Math.min(100, 100 * (v - lo) / (max - lo))); };
+  var segs = '', from = lo;
+  if (r) {
+    GRADES.slice().reverse().forEach(function (g) {
+      if (r[g] == null) return;
+      if (r[g] > from) segs += '<span class="gm-seg" style="width:' + (pct(r[g]) - pct(from)) + '%"></span>';
+      var nextG = GRADES[GRADES.indexOf(g) - 1], to = nextG ? r[nextG] : max;
+      segs += '<span class="gm-seg band" style="width:' + (pct(to) - pct(r[g])) + '%;background:' + BAND[g] + ';color:' + BAND_INK[g] + '" title="' + g + ': ' + r[g] + (nextG ? '–' + (to - 1) : '+') + ' marks">' + (pct(to) - pct(r[g]) > 5 ? g : '') + '</span>';
+      from = to;
+    });
+  } else {
+    segs = '<span class="gm-seg" style="width:' + pct(m.aim) + '%"></span><span class="gm-seg band" style="width:' + (100 - pct(m.aim)) + '%;background:' + BAND.A + ';color:' + BAND_INK.A + '">' + (100 - pct(m.aim) > 12 ? 'Goal' : '') + '</span>';
+  }
+  var earlier = m.at.slice(0, -1).map(function (a) { return '<span class="gm-prev" style="left:' + pct(a.m) + '%" title="' + esc(a.label) + ': ' + a.m + ' / ' + a.x + '"></span>'; }).join('');
+  var done = m.last.m >= m.aim;
+  return '<div class="gm-row"><div class="gm-top"><span class="gm-name">' + esc(goalLabel(m.subj, m.goal)) + '</span>' +
+    '<span class="gm-fig">' + (done ? '<span class="pf-badge ok">Reached</span>' : '<b>+' + m.gap + '</b> marks to ' + esc(m.goal.kind === 'grade' ? 'an ' + m.goal.target : 'the goal')) + '</span></div>' +
+    '<div class="gm-track" role="img" aria-label="' + esc(m.subj + ': latest ' + m.last.m + ' out of ' + m.max + '; goal ' + m.aim + '; ' + (done ? 'reached' : m.gap + ' marks to go')) + '"><span class="gm-bands">' + segs + '</span>' + earlier +
+    '<span class="gm-now" style="left:' + pct(m.last.m) + '%" title="Latest: ' + esc(m.last.label) + ', ' + m.last.m + ' / ' + m.last.x + '"></span>' +
+    '<span class="gm-end lo">' + lo + '</span><span class="gm-end hi">' + max + '</span></div>' +
+    '<div class="gm-sub">Latest ' + m.last.m + ' / ' + m.last.x + ' (' + esc(m.last.short) + ' paper)' + (m.at.length > 1 ? ' · earlier ' + m.at.slice(0, -1).map(function (a) { return a.m; }).join(', ') : '') +
+    ' · goal ' + m.aim + (m.ref ? ' (' + (m.ref.B != null && m.goal.target === 'A' ? 'B from ' + m.ref.B + ', ' : '') + 'A from ' + m.ref.A + ')' : '') + '</div></div>';
+}
+
+/* the path: papers so far (gold), then the steps to the goal by the exam (dashed grey) */
+function pathChart(m) {
+  var W = 400, H = 230, L = 28, Rm = 60, T = 14, B = 34, iw = W - L - Rm, ih = H - T - B;
+  var pts = m.at.map(function (a) { return { v: a.m, lab: a.short, tip: a.label + ': ' + a.m + ' / ' + a.x, past: true }; })
+    .concat(m.plan.map(function (p) { return { v: p.v, lab: p.exam ? 'Exam' : fmtS(p.d), tip: (p.exam ? 'Exam, ' + fmt(p.d) : 'Paper around ' + fmt(p.d)) + ': aim for ' + p.v, past: false, exam: p.exam }; }));
+  var vals = pts.map(function (p) { return p.v; }).concat([m.aim], m.ref && m.ref.B != null && m.goal.target === 'A' ? [m.ref.B] : []);
+  var lo = Math.max(0, Math.floor((Math.min.apply(null, vals) - 8) / 10) * 10), step = m.max - lo > 50 ? 20 : 10;
+  var n = pts.length, X = function (i) { return L + (n === 1 ? iw / 2 : iw * i / (n - 1)); }, Y = function (v) { return T + ih - ih * (v - lo) / (m.max - lo); };
+  var s = '<svg class="gp-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc('Path to ' + goalLabel(m.subj, m.goal) + ': papers so far ' + m.at.map(function (a) { return a.m; }).join(', ') + ' out of ' + m.max + '; goal ' + m.aim + (m.ref && m.ref.exam ? ' by ' + fmt(m.ref.exam) : '')) + '">';
+  for (var v = lo; v <= m.max; v += step) s += '<line x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--pf-chart-grid)" stroke-width="1"/><text x="' + (L - 6) + '" y="' + (Y(v) + 3.5) + '" text-anchor="end" class="gp-ax">' + v + '</text>';
+  var refs = !m.ref ? [['Goal', m.aim]] : [[m.goal.target, m.aim]].concat(m.goal.target === 'A' && m.ref.B != null ? [['B', m.ref.B]] : []);
+  refs.forEach(function (rf) { s += '<line x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(rf[1]) + '" y2="' + Y(rf[1]) + '" stroke="var(--pf-chart-reference)" stroke-width="1"/><text x="' + (W - Rm + 6) + '" y="' + (Y(rf[1]) + 3.5) + '" class="gp-ref">' + (rf[0] === 'Goal' ? 'Goal ' : rf[0] + ' from ') + rf[1] + '</text>'; });
+  var np = m.at.length;
+  if (m.plan.length) s += '<line x1="' + ((X(np - 1) + X(np)) / 2) + '" x2="' + ((X(np - 1) + X(np)) / 2) + '" y1="' + T + '" y2="' + (T + ih) + '" stroke="var(--pf-chart-axis)" stroke-width="1"/><text x="' + ((X(np - 1) + X(np)) / 2 + 4) + '" y="' + (T + 10) + '" class="gp-ax">today</text>';
+  if (m.plan.length) s += '<polyline fill="none" stroke="' + C_PLAN + '" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round" points="' + pts.slice(np - 1).map(function (p, i) { return X(np - 1 + i) + ',' + Y(p.v); }).join(' ') + '"/>';
+  if (np > 1) s += '<polyline fill="none" stroke="' + C_ACTUAL + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="' + m.at.map(function (a, i) { return X(i) + ',' + Y(a.m); }).join(' ') + '"/>';
+  pts.forEach(function (p, i) {
+    var x = X(i), y = Y(p.v), tip = esc(p.tip);
+    s += '<g class="gp-pt" tabindex="0" data-tip="' + tip + '"><circle cx="' + x + '" cy="' + y + '" r="12" fill="transparent"/>' +
+      (p.past ? '<circle cx="' + x + '" cy="' + y + '" r="5" fill="' + C_ACTUAL + '" stroke="var(--pf-card)" stroke-width="2"/>'
+        : '<circle cx="' + x + '" cy="' + y + '" r="4" fill="var(--pf-card)" stroke="' + C_PLAN + '" stroke-width="2"/>') + '</g>';
+    // Label every point if there is room; otherwise every other one, always keeping the latest paper and the exam.
+    var roomy = n < 2 || iw / (n - 1) >= 44;
+    var show = p.exam || i === np - 1 || roomy || (p.past ? (np - 1 - i) % 2 === 0 : (i - np) % 2 === 1 && i !== n - 2);
+    if (show) s += '<text x="' + x + '" y="' + (H - B + 18) + '" text-anchor="middle" class="gp-ax' + (p.exam ? ' ex' : '') + '">' + esc(p.lab) + '</text>';
+  });
+  var lastPt = pts[np - 1];
+  s += '<text x="' + X(np - 1) + '" y="' + (Y(lastPt.v) - 10) + '" text-anchor="middle" class="gp-val">' + lastPt.v + '</text>';
+  if (m.plan.length && pts[n - 1].v !== m.aim) { var e = pts[n - 1]; s += '<text x="' + X(n - 1) + '" y="' + (Y(e.v) - 10) + '" text-anchor="middle" class="gp-val">' + e.v + '</text>'; }
+  return s + '</svg>';
+}
+function pathCard(m) {
+  var g = m.goal, r = m.ref, lost = topicLoss(m);
+  var h = '<div class="pf-card gp-card"><div class="pf-ch"><div><h2>Path to ' + esc(goalLabel(m.subj, g)) + '</h2>' +
+    '<p class="pf-note">' + (r ? 'Goal ' + m.aim + ' / ' + m.max + ', the ' + esc(r.note) + '.' : 'Goal ' + m.aim + ' / ' + m.max + '.') + '</p></div></div>' +
+    '<div class="gp-legend"><span><i class="ln" style="background:' + C_ACTUAL + '"></i>Your papers so far</span>' + (m.plan.length ? '<span><i class="ln dash"></i>Path to the goal (aims, not predictions)</span>' : '') + '</div>' +
+    pathChart(m);
+  if (m.last.m >= m.aim) h += '<p class="gp-say"><b>You are at the goal.</b> Keep each paper above ' + m.aim + ' so a harder paper does not drop you below it.</p>';
+  else if (m.plan.length) h += '<p class="gp-say"><b>' + m.gap + ' marks to go in about ' + m.weeks + ' weeks</b>, ' + (m.gap / m.weeks >= 0.75 && m.gap / m.weeks < 1.5 ? 'about one mark a week' : m.gap / m.weeks < 0.75 ? 'about one mark every ' + Math.round(m.weeks / m.gap) + ' weeks' : 'about ' + (Math.round(10 * m.gap / m.weeks) / 10) + ' marks a week') + '. Sitting a past paper every three weeks, aim for about <b>' + m.plan[0].v + '</b> on the next one.</p>';
+  else h += '<p class="gp-say"><b>' + m.gap + ' marks to go.</b></p>';
+  if (lost.length) h += '<div class="gp-gain"><div class="gp-h">Where the marks are</div><ul>' + lost.map(function (t) {
+    return '<li><span>' + esc(t.n) + '</span><span class="gp-l">about ' + t.per + ' a paper</span><button class="sc-qlink" data-act="goaltopic" data-w="' + m.w + '" data-k="' + esc(t.k) + '">See the questions</button></li>'; }).join('') +
+    '</ul><p class="pf-note" style="margin:6px 0 0">Marks lost per paper on these topics, across ' + m.at.length + ' paper' + (m.at.length === 1 ? '' : 's') + '. Winning back half of them would close most of the gap.</p></div>';
+  h += '<details class="gp-table"><summary>Show the numbers</summary><table class="pf-table"><thead><tr><th>' + (m.plan.length ? 'Paper or step' : 'Paper') + '</th><th class="r">Marks</th>' + (r ? '<th>Grade</th>' : '') + '</tr></thead><tbody>' +
+    m.at.map(function (a) { return '<tr><td>' + esc(a.label) + '</td><td class="r">' + a.m + ' / ' + a.x + '</td>' + (r ? '<td>' + esc(gradeOf(a.m, r)) + '</td>' : '') + '</tr>'; }).join('') +
+    m.plan.map(function (p) { return '<tr><td>' + (p.exam ? 'Exam, ' : 'Aim, paper around ') + esc(fmt(p.d)) + '</td><td class="r">' + p.v + ' / ' + m.max + '</td>' + (r ? '<td>' + esc(gradeOf(p.v, r)) + '</td>' : '') + '</tr>'; }).join('') +
+    '</tbody></table></details></div>';
+  return h;
+}
+function topicLoss(m) {
+  var codes = m.at.map(function (a) { return a.code; }), by = {};
+  QL.q.forEach(function (q) { if (codes.indexOf(q.p) >= 0 && q.x != null && q.m != null && q.x > q.m) { by[q.t] = (by[q.t] || 0) + (q.x - q.m); } });
+  return Object.keys(by).map(function (k) { return { k: k, n: qTopic(k).n, per: Math.round(by[k] / codes.length) }; })
+    .filter(function (t) { return t.per >= 1; }).sort(function (a, b) { return b.per - a.per; }).slice(0, 3);
+}
+function goalModels(w) {
+  var g = goalsFor(w);
+  return Object.keys(g).map(function (subj) { return goalModel(w, subj, g[subj]); }).filter(Boolean);
+}
+function goalFreshness(w) {
+  var u = STU[w] && STU[w].updated; if (!u) return '';
+  var age = -daysTo(u.slice(0, 10));
+  return age > 28 ? '<p class="pf-note sc-fammsg bad">No new marked paper for ' + Math.round(age / 7) + ' weeks, so this picture may be out of date. Sit a past paper and send it for marking.</p>'
+    : '<p class="pf-note">Based on marked papers up to ' + esc(fmt(u.slice(0, 10))) + '.</p>';
+}
+function goalForm(w) {
+  var g = goalsFor(w), subs = goalSubjects(w);
+  if (!subs.length) return '<p class="pf-empty">No marked papers yet, so there is nothing to measure a goal against.</p>';
+  return '<form class="sc-form" data-form="goals"><input type="hidden" name="w" value="' + w + '">' + subs.map(function (subj) {
+    var cur = g[subj], ref = gradeable(w, subj), val = cur ? (cur.kind === 'grade' ? cur.target : String(cur.target)) : '';
+    var opts = ref ? [['', 'No goal'], ['A', 'A'], ['B', 'B'], ['C', 'C']] : [['', 'No goal'], ['60', '60%'], ['70', '70%'], ['80', '80%'], ['90', '90%']];
+    return '<label>' + esc(subj) + '<select class="pf-select" name="g_' + esc(subj) + '" data-kind="' + (ref ? 'grade' : 'pct') + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
+  }).join('') + '<button class="pf-btn" type="submit">Save goals</button></form>';
+}
+function goalsSummaryHtml(w) {
+  var ms = goalModels(w); if (!ms.length) return '';
+  var reached = ms.filter(function (m) { return m.last.m >= m.aim; }).length;
+  return '<div class="pf-card gm-card"><div class="pf-ch"><div><h2>' + esc(kidName(w)) + '\'s goal: ' + esc(ms.map(function (m) { return goalLabel(m.subj, m.goal); }).join(', ')) + '</h2>' +
+    '<p class="pf-note">Reached in ' + reached + ' of ' + ms.length + '. The marker is the latest paper; the dots are earlier ones.</p></div>' +
+    '<button class="pf-btn ghost" data-act="tab" data-tab="goals">See the path</button></div>' + ms.map(meterRow).join('') + '</div>';
+}
+R.goals = function () {
+  var el = document.getElementById('t-goals'), h = '';
+  kids().forEach(function (w) {
+    var name = esc(kidName(w)), ms = goalModels(w), open = GOALOPEN[w] || !ms.length;
+    h += '<div class="pf-over">' + (kids().length > 1 ? name + ' · ' : '') + 'Goals</div>';
+    h += '<div class="pf-card gm-card"><div class="pf-ch"><div><h2>' + (ms.length ? 'Where ' + (VIEW || !IS_PARENT ? 'you stand' : name + ' stands') : 'No goal set yet') + '</h2>' + goalFreshness(w) + '</div>' +
+      (ms.length ? '<button class="sc-qlink" data-act="goaledit" data-w="' + w + '">' + (open ? 'Close' : 'Change goals') + '</button>' : '') + '</div>' +
+      ms.map(meterRow).join('') + (open ? '<div class="gm-edit">' + (ms.length ? '' : '<p class="pf-note">Pick a target for each subject. Grade targets use recent Pearson boundaries; other subjects use a percentage.</p>') + goalForm(w) + '</div>' : '') + '</div>';
+    if (ms.length) h += '<div class="pf-grid gp-grid">' + ms.map(pathCard).join('') + '</div>';
+  });
+  el.innerHTML = h;
+};
+/* hover and keyboard focus show the point's value */
+(function () {
+  var tip = null;
+  function show(g) {
+    if (!tip) { tip = document.createElement('div'); tip.className = 'sc-tip'; tip.setAttribute('role', 'status'); document.body.appendChild(tip); }
+    var r = g.getBoundingClientRect(); tip.textContent = g.getAttribute('data-tip'); tip.hidden = false;
+    tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, Math.max(8, r.left + r.width / 2 - tip.offsetWidth / 2)) + 'px';
+    tip.style.top = (r.top + window.scrollY - tip.offsetHeight - 8) + 'px';
+  }
+  function hide() { if (tip) tip.hidden = true; }
+  document.addEventListener('mouseover', function (e) { var g = e.target.closest && e.target.closest('.gp-pt'); if (g) show(g); else hide(); });
+  document.addEventListener('focusin', function (e) { var g = e.target.closest && e.target.closest('.gp-pt'); if (g) show(g); else hide(); });
+})();
+
 /* ---------- events ---------- */
 function del(k, id) { sset(k, sget(k, []).filter(function (r) { return r.id !== id; })); refresh(); }
 app.addEventListener('click', function (ev) {
@@ -1930,6 +2176,8 @@ app.addEventListener('click', function (ev) {
   var a = b.getAttribute('data-act'), v = b.getAttribute('data-v');
   if (a === 'tab') return setTab(b.getAttribute('data-tab'), true);
   if (a === 'retryboot') return boot();
+  if (a === 'goaledit') { var gw = b.getAttribute('data-w'); GOALOPEN[gw] = !GOALOPEN[gw]; return R.goals(); }
+  if (a === 'goaltopic') { sset('qwho', b.getAttribute('data-w')); sset('qf', { subj: 'all', paper: 'all', res: 'all', topic: b.getAttribute('data-k'), why: 'all', chk: '', sort: 'paper' }); sset('qtext', ''); setTab('qlog', true); window.scrollTo(0, 0); return; }
   if (a === 'chat') return openChat(b.getAttribute('data-k'));
   if (a === 'chatclose') return closeChat();
   if (a === 'chatnew') return CHAT && openChat(CHAT.id, true);
@@ -2016,6 +2264,15 @@ app.addEventListener('submit', function (ev) {
   var f = ev.target, kind = f.getAttribute('data-form'); if (!kind) return; ev.preventDefault();
   var fd = new FormData(f), g = function (k) { return String(fd.get(k) || '').trim(); };
   if (kind === 'chat') return sendChat(g('m'));
+  if (kind === 'goals') {
+    var gw2 = g('w'), all = {}, cur = sget('goals', {});
+    Object.keys(cur).forEach(function (k) { if (k.indexOf(gw2 + ':') !== 0) all[k] = cur[k]; });
+    Array.prototype.forEach.call(f.querySelectorAll('select[name^="g_"]'), function (sel) {
+      if (!sel.value) return;
+      all[gw2 + ':' + sel.name.slice(2)] = sel.getAttribute('data-kind') === 'grade' ? { kind: 'grade', target: sel.value } : { kind: 'pct', target: Number(sel.value) };
+    });
+    sset('goals', all); GOALOPEN[gw2] = false; return refresh();
+  }
   if (kind === 'chatset') {
     var csid = g('sid'), cs = { studentId: csid, enabled: g('enabled') === '1', daily_limit: Number(g('daily_limit')), quiet_from: g('quiet_from'), quiet_to: g('quiet_to'), monthly_cap_cents: Number(g('cap')) };
     return api('PUT', '/api/chat/settings', cs).then(function () {

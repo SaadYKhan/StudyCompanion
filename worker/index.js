@@ -22,7 +22,7 @@ const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
 
 // Progress the site keeps per child. Anything else is refused.
-export const PROGRESS_KINDS = ["route", "papers", "sat", "cards", "topics", "bprac", "road", "log", "myq", "fdone", "redo"];
+export const PROGRESS_KINDS = ["route", "papers", "sat", "cards", "topics", "bprac", "road", "log", "myq", "fdone", "redo", "goals"];
 const MAX_PROGRESS_BYTES = 300_000;
 
 export default {

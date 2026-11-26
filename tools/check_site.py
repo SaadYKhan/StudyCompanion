@@ -42,7 +42,7 @@ KIDS = {'s_mk': {'id': 's_mk', 'name': 'MK', 'year': 'Year 12', 'code': 'a'}, 's
 
 def install_api(pg, role='parent', student='s_zk'):
     """role 'parent' sees both children; role 'student' sees only `student`. Returns the shared state."""
-    st = {'progress': {'s_mk': {}, 's_zk': {}}, 'puts': [], 'forbidden': [], 'logins': {'s_mk': [], 's_zk': []}, 'n': 0,
+    st = {'progress': {'s_mk': {'goals': {'a:Physics': {'kind': 'grade', 'target': 'A'}, 'a:Chemistry': {'kind': 'grade', 'target': 'A'}, 'a:Maths': {'kind': 'grade', 'target': 'A'}}}, 's_zk': {}}, 'puts': [], 'forbidden': [], 'logins': {'s_mk': [], 's_zk': []}, 'n': 0,
           'chat': {'s_mk': {'enabled': False, 'daily_limit': 30, 'quiet_from': '22:00', 'quiet_to': '06:00', 'monthly_cap_cents': 500},
                    's_zk': {'enabled': True, 'daily_limit': 30, 'quiet_from': '22:00', 'quiet_to': '06:00', 'monthly_cap_cents': 500}},
           'threads': {}, 'sent': 0}
@@ -404,6 +404,51 @@ try:
             fails.extend(f'{today}: {e}' for e in errs)
             ctx.close()
 
+        # ---- goals: where MK stands against an A in each subject, and the path to the exam ----
+        ctx = br.new_context(viewport={'width': 1280, 'height': 900})
+        pg = ctx.new_page(); errs = []
+        pg.on('pageerror', lambda e: errs.append('page error: ' + str(e)))
+        pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
+        gst = install_api(pg, 'parent')
+        pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-26', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
+        ov = pg.inner_text('#t-overview')
+        if "MK's goal: A in Physics, A in Chemistry, A in Maths" not in ov or pg.locator('#t-overview .gm-row').count() != 3:
+            fails.append('goals: overview summary missing')
+        figs = [x.inner_text() for x in pg.locator('#t-overview .gm-fig').all()]
+        if figs != ['+21 marks to an A', '+13 marks to an A', '+10 marks to an A']:
+            fails.append('goals: gaps to an A wrong: ' + str(figs))
+        pg.select_option('[data-act="view"]', 'a'); pg.click('[data-tab="goals"]'); pg.wait_for_timeout(300)
+        g = pg.inner_text('#t-goals')
+        if pg.locator('#t-goals .gp-card').count() != 3 or 'Where you stand' not in g:
+            fails.append('goals: MK view should show three path charts')
+        phys = pg.locator('#t-goals .gp-card').filter(has_text='Path to A in Physics')
+        if phys.locator('.gp-pt').count() != 3 + 7 or 'aim for about 40 on the next one' not in phys.inner_text() or '21 marks to go in about 23 weeks' not in phys.inner_text():
+            fails.append('goals: Physics path wrong: %d points; %s' % (phys.locator('.gp-pt').count(), phys.inner_text()[:300]))
+        gain = phys.locator('.gp-gain').inner_text()
+        if not ('Fluids' in gain and 'forces' in gain and 'about 11 a paper' in gain):
+            fails.append('goals: Physics "where the marks are" should lead with fluids (about 11 a paper), then forces: ' + gain[:200])
+        phys.locator('.gp-pt').first.focus(); pg.wait_for_timeout(100)
+        if not pg.locator('.sc-tip:not([hidden])').count() or '37' in pg.inner_text('.sc-tip') or 'June 2021' not in pg.inner_text('.sc-tip'):
+            fails.append('goals: focusing a point should show its tooltip (first paper, June 2021)')
+        phys.locator('.gp-table summary').click()
+        if phys.locator('.gp-table tbody tr').count() != 10:
+            fails.append('goals: table view should list 3 papers and 7 steps')
+        phys.locator('[data-act="goaltopic"]').first.click(); pg.wait_for_timeout(300)
+        if pg.evaluate("location.hash") != '#qlog' or int(pg.inner_text('#qCount').split(' ')[0]) >= 207:
+            fails.append('goals: "See the questions" did not open the question log')
+        # ZK has no goal: set one, see the path
+        pg.select_option('[data-act="view"]', 'b'); pg.click('[data-tab="goals"]'); pg.wait_for_timeout(300)
+        if 'No goal set yet' not in pg.inner_text('#t-goals'):
+            fails.append('goals: ZK should start with no goal')
+        pg.select_option('#t-goals select[name="g_Maths"]', '80'); pg.click('#t-goals form[data-form="goals"] button[type="submit"]'); pg.wait_for_timeout(300)
+        if pg.locator('#t-goals .gp-card').count() != 1 or '+47 marks to the goal' not in pg.inner_text('#t-goals'):
+            fails.append('goals: setting ZK a goal did not draw his path: ' + pg.inner_text('#t-goals')[:200])
+        wait_saved(pg)
+        if gst['progress']['s_zk'].get('goals') != {'b:Maths': {'kind': 'pct', 'target': 80}} or 'b:Maths' in json.dumps(gst['progress']['s_mk']):
+            fails.append('goals: ZK goal not saved to ZK only: ' + json.dumps(gst['progress']['s_zk'].get('goals')))
+        fails.extend('goals: ' + e for e in errs)
+        ctx.close()
+
         # ---- a child signing in on their own device: sees only their own work, and old progress moves online ----
         ctx = br.new_context(viewport={'width': 1024, 'height': 900})
         ctx.add_init_script('''if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1');
@@ -416,7 +461,7 @@ try:
         kid = install_api(pg, 'student', 's_zk')
         pg.goto(f'http://127.0.0.1:{port}/?today=2026-11-16', wait_until='networkidle'); pg.wait_for_selector('#tabs [data-tab]')
         t = tabs_shown(pg)
-        if t != ['overview', 'dates', 'qlog', 'maths', 'log', 'sources']:
+        if t != ['overview', 'goals', 'dates', 'qlog', 'maths', 'log', 'sources']:
             fails.append('student ZK: wrong tabs ' + str(t))
         if pg.locator('[data-act="view"]').count():
             fails.append('student ZK: should not have the view switcher')
@@ -426,7 +471,7 @@ try:
         zk = kid['progress']['s_zk']
         if [r['id'] for r in zk.get('bprac', [])] != ['x1'] or [r['id'] for r in zk.get('log', [])] != ['l1']:
             fails.append('student ZK: old progress from this device did not move to the account correctly: ' + json.dumps(zk)[:200])
-        if kid['forbidden'] or kid['progress']['s_mk']:
+        if kid['forbidden'] or set(kid['progress']['s_mk']) - {'goals'}:
             fails.append('student ZK: tried to save to MK: ' + str(kid['forbidden']))
         pg.click('[data-tab="maths"]'); pg.wait_for_timeout(200)
         if 'Old AMC practice' not in pg.inner_text('#t-maths'):
