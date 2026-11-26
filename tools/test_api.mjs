@@ -3,6 +3,7 @@
 // It writes .dev.vars (git-ignored) with a test key set, builds a local D1 copy,
 // starts `wrangler dev`, and checks sign-in, permissions and the import.
 import { spawn, execFileSync } from "node:child_process";
+import http from "node:http";
 import { writeFileSync, rmSync, readFileSync } from "node:fs";
 import { webcrypto as crypto } from "node:crypto";
 
@@ -17,7 +18,27 @@ const { publicKey, privateKey } = await crypto.subtle.generateKey(
 const other = await crypto.subtle.generateKey(
   { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]);
 const jwk = await crypto.subtle.exportKey("jwk", publicKey);
-writeFileSync(new URL("../.dev.vars", import.meta.url), `TEST_JWKS='${JSON.stringify({ keys: [{ ...jwk, kid: "test1", alg: "RS256", use: "sig" }] })}'\n`);
+writeFileSync(new URL("../.dev.vars", import.meta.url), `TEST_JWKS='${JSON.stringify({ keys: [{ ...jwk, kid: "test1", alg: "RS256", use: "sig" }] })}'\n` +
+  `ANTHROPIC_API_KEY=test-key\nANTHROPIC_BASE_URL=http://127.0.0.1:8798\n`);
+
+// A stand-in for Claude's API: the screen and the check answer by keyword; the tutor gives a hint.
+const claudeCalls = [];
+const fakeClaude = http.createServer((req, res) => {
+  let raw = ""; req.on("data", (d) => (raw += d)); req.on("end", () => {
+    const b = JSON.parse(raw || "{}"), sys = JSON.stringify(b.system || ""), last = JSON.stringify(b.messages[b.messages.length - 1].content);
+    const kind = sys.includes("You screen messages") ? "screen" : sys.includes("You check an AI tutor") ? "check" : "tutor";
+    claudeCalls.push({ kind, body: b, key: req.headers["x-api-key"], version: req.headers["anthropic-version"] });
+    const send = (o, code = 200) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(o)); };
+    if (kind === "screen") {
+      const c = /hurt myself/i.test(last) ? "safety" : /football|ignore your rules/i.test(last) ? "off_topic" : "study";
+      return send({ content: [{ type: "tool_use", id: "t1", name: "verdict", input: { category: c } }], usage: { input_tokens: 300, output_tokens: 12 } });
+    }
+    if (kind === "check") return send({ content: [{ type: "tool_use", id: "t2", name: "verdict", input: { verdict: /BADWORD/.test(last) ? "block" : "ok" } }], usage: { input_tokens: 250, output_tokens: 8 } });
+    if (/boom/.test(last)) return send({ error: { type: "overloaded_error" } }, 529);
+    send({ content: [{ type: "text", text: /makebad/.test(last) ? "BADWORD reply" : "Hint " + b.messages.length + ": which mark-scheme point did you miss?" }], usage: { input_tokens: 1500, output_tokens: 120, cache_read_input_tokens: 0 } });
+  });
+});
+await new Promise((r) => fakeClaude.listen(8798, "127.0.0.1", r));
 
 async function token(claims, { key = privateKey, kid = "test1" } = {}) {
   const now = Math.floor(Date.now() / 1000);
@@ -43,7 +64,7 @@ d1(["--command", [
   "INSERT INTO memberships (id,family_id,user_id,role,student_id) VALUES ('m3','f2','u3','student','s9')",
 ].join("; ")]);
 
-const dev = spawn(W, ["dev", "--port", String(PORT), "--ip", "127.0.0.1", "--log-level", "warn"], { stdio: ["ignore", "pipe", "pipe"] });
+const dev = spawn(W, ["dev", "--port", String(PORT), "--ip", "127.0.0.1", "--log-level", "warn", "--test-scheduled"], { stdio: ["ignore", "pipe", "pipe"] });
 let log = ""; dev.stdout.on("data", (d) => (log += d)); dev.stderr.on("data", (d) => (log += d));
 const base = `http://127.0.0.1:${PORT}`;
 for (let i = 0; i < 60; i++) { try { await fetch(base + "/"); break; } catch { await new Promise((r) => setTimeout(r, 500)); } }
@@ -142,8 +163,68 @@ try {
   check("a removed child no longer sees anything", ((await call("/api/me", await token({ email: "new.kid@test.local" }))).body.students || []).length === 0);
   check("cannot remove another family's sign-in", (await post("/api/family/unlink", parent, { membershipId: "m3" })).status === 404);
   check("changes are in the recent-changes log", fam.body.recent.some((r) => r.action === "link") && fam.body.recent.some((r) => r.action === "unlink"));
+
+  // ---- tutor chat ----
+  const zq = legacy.q.find((q) => q.p === "zk1"), mq = legacy.q.find((q) => q.p === "c24");
+  const ask = (tok, body) => post("/api/chat", tok, body);
+  const setChat = (tok, body) => call("/api/chat/settings", tok, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  const tutorCalls = () => claudeCalls.filter((c) => c.kind === "tutor").length;
+  const meNow = await call("/api/me", parent);
+  check("tutor is configured, and off for both children by default", meNow.body.chatConfigured === true && meNow.body.students.every((s) => s.chat === false));
+  check("a child cannot chat until a parent turns it on", (await ask(kid, { studentId: "s2", paper: "zk1", q: zq.q, message: "Why did I lose marks?" })).body.error === "chat_off");
+  check("a child cannot change tutor settings", (await setChat(kid, { studentId: "s2", enabled: true })).status === 403);
+  check("bad settings are refused", (await setChat(parent, { studentId: "s2", quiet_from: "25:00" })).status === 400 && (await setChat(parent, { studentId: "s2", daily_limit: 500 })).status === 400);
+  const d = new Date(Date.now() + 4 * 3600_000), hm = (m) => new Date(d.getTime() + m * 60_000).toISOString().slice(11, 16);
+  check("parent turns the tutor on for ZK", (await setChat(parent, { studentId: "s2", enabled: true, daily_limit: 4, quiet_from: hm(-1), quiet_to: hm(5) })).status === 200);
+  check("quiet hours block the child", (await ask(kid, { studentId: "s2", paper: "zk1", q: zq.q, message: "help" })).body.error === "quiet_hours");
+  await setChat(parent, { studentId: "s2", quiet_from: "00:00", quiet_to: "00:00" });
+  let r = await ask(kid, { studentId: "s2", paper: "zk1", q: zq.q, message: "Why did I lose marks?", topic: "Percentages" });
+  const tc = claudeCalls.filter((c) => c.kind === "tutor").pop();
+  check("child gets a tutor reply", r.status === 200 && r.body.messages[1].role === "tutor" && r.body.messages[1].content.startsWith("Hint"), JSON.stringify(r.body));
+  check("tutor sees the marked question, her answer and the coaching rules", tc && tc.key === "test-key" && tc.version === "2023-06-01" &&
+    JSON.stringify(tc.body.system).includes(zq.pr.slice(0, 40).replace(/"/g, '\\"')) && JSON.stringify(tc.body.system).includes("Guide; don't hand over") && JSON.stringify(tc.body.system).includes("ZK") && !tc.body.tools);
+  const thr = r.body.threadId;
+  r = await ask(kid, { threadId: thr, message: "Is it 12%?" });
+  check("follow-up keeps the conversation", r.status === 200 && claudeCalls.filter((c) => c.kind === "tutor").pop().body.messages.length === 3);
+  const before = tutorCalls();
+  r = await ask(kid, { threadId: thr, message: "who won the football last night" });
+  check("off-topic gets a fixed reply and never reaches the tutor", r.body.messages[1].role === "notice" && r.body.messages[1].flag === "off_topic" && tutorCalls() === before);
+  r = await ask(kid, { threadId: thr, message: "ok and this one" });
+  check("fourth message of the day allowed", r.status === 200);
+  check("daily limit stops the fifth", (await ask(kid, { threadId: thr, message: "and now?" })).body.error === "daily_limit");
+  await setChat(parent, { studentId: "s2", daily_limit: 30 });
+  r = await ask(kid, { threadId: thr, message: "I want to hurt myself" });
+  check("a safety concern gets helplines, not tutoring", r.body.messages[1].flag === "safety" && r.body.messages[1].content.includes("999") && r.body.messages[1].content.includes("800 4673") && tutorCalls() === before + 1);
+  const kthreads = await call("/api/chat/threads?studentId=s2", kid);
+  check("the chat is flagged for the parent", kthreads.body.threads[0].flagged === 1);
+  r = await ask(kid, { threadId: thr, message: "makebad please" });
+  check("a reply that fails the check is replaced", r.body.messages[1].flag === "reply_blocked" && !r.body.messages[1].content.includes("BADWORD"));
+  const pv = await call("/api/chat/thread/" + thr, parent), kv = await call("/api/chat/thread/" + thr, kid);
+  check("parent can read the whole chat, including the held-back reply", pv.body.messages.some((m) => m.withheld === "BADWORD reply") && pv.body.messages.length === 12, String(pv.body.messages && pv.body.messages.length));
+  check("the child does not see the held-back reply", kv.status === 200 && !JSON.stringify(kv.body).includes("BADWORD"));
+  const n0 = pv.body.messages.length;
+  check("if Claude is down, nothing is saved and the child is told", (await ask(kid, { threadId: thr, message: "boom" })).body.error === "tutor_unavailable" && (await call("/api/chat/thread/" + thr, parent)).body.messages.length === n0);
+  check("a child cannot chat about a sibling's question", (await ask(kid, { studentId: "s1", paper: "c24", q: mq.q, message: "hi" })).status === 404);
+  r = await ask(parent, { studentId: "s1", paper: "c24", q: mq.q, message: "Explain the idea" });
+  check("a parent can try the tutor even while it is off for that child", r.status === 200);
+  check("a child cannot read a sibling's chat", (await call("/api/chat/thread/" + r.body.threadId, kid)).status === 404 && (await call("/api/chat/threads?studentId=s1", kid)).status === 404);
+  check("empty and over-long messages refused", (await ask(kid, { threadId: thr, message: " " })).status === 400 && (await ask(kid, { threadId: thr, message: "x".repeat(1300) })).status === 400);
+  check("unknown question refused", (await ask(kid, { studentId: "s2", paper: "zk1", q: "Q999", message: "hi" })).body.error === "question_not_found");
+  const st = await call("/api/chat/settings?studentId=s2", parent);
+  check("usage is counted (blocked and failed attempts do not count)", st.body.usage.today === 6 && st.body.usage.monthCents >= 0, JSON.stringify(st.body.usage));
+  await setChat(parent, { studentId: "s2", monthly_cap_cents: 0 });
+  check("the monthly spending cap stops the chat", (await ask(kid, { threadId: thr, message: "more" })).body.error === "monthly_cap");
+  check("tutor settings changes are logged", (await call("/api/family", parent)).body.recent.some((x) => x.action === "chat_settings"));
+  d1(["--command", "INSERT INTO chat_threads (id, student_id, title, updated_at) VALUES ('thr_old','s2','old', datetime('now','-120 days')); INSERT INTO chat_messages (thread_id, role, content, created_at) VALUES ('thr_old','student','old message', datetime('now','-120 days'))"]);
+  const sch = await fetch(base + "/cdn-cgi/handler/scheduled?cron=17+2+*+*+*");
+  if (!sch.ok) await fetch(base + "/__scheduled?cron=17+2+*+*+*");
+  await new Promise((r) => setTimeout(r, 500));
+  const left = JSON.parse(execFileSync(W, ["d1", "execute", "studycompanion-db", "--local", "--json", "--command", "SELECT (SELECT COUNT(*) FROM chat_messages WHERE thread_id='thr_old') m, (SELECT COUNT(*) FROM chat_threads WHERE id='thr_old') t, (SELECT COUNT(*) FROM chat_messages WHERE thread_id='" + thr + "') keep"], { stdio: "pipe" }).toString());
+  const row = left[0].results[0];
+  check("the daily clean-up deletes chats older than 90 days and keeps recent ones", row.m === 0 && row.t === 0 && row.keep > 0, JSON.stringify(row));
 } finally {
   dev.kill();
+  fakeClaude.close();
   rmSync(new URL("../.dev.vars", import.meta.url), { force: true });
 }
 if (failed) { console.log(log.slice(-3000)); process.exit(1); }

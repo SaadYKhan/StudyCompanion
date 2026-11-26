@@ -395,6 +395,47 @@ details.sc-add[open] summary::after { content: " −"; }
 .sc-logins .ls { color: var(--pf-steel); font-size: 12px; flex: 1; }
 .sc-fammsg { border-left: 2px solid var(--pf-gold); padding-left: 10px; }
 .sc-fammsg.bad { border-color: var(--pf-bad); }
+/* AI tutor */
+.sc-tutor { display: inline-flex; align-items: center; gap: 5px; background: none; border: 1px solid var(--pf-gold-lo); color: var(--pf-gold-hi); font-size: 11.5px; border-radius: var(--pf-radius-pill); padding: 2px 10px; cursor: pointer; }
+.sc-tutor:hover { background: var(--pf-gold-tint); border-color: var(--pf-gold); }
+.sc-tutor svg, .sc-chat h2 svg { width: 14px; height: 14px; flex: none; }
+.sc-chat { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); z-index: 60; display: flex; flex-direction: column; background: var(--pf-card); border-left: 1px solid var(--pf-line-2); box-shadow: var(--pf-shadow-popover); }
+.sc-chat[hidden] { display: none; }
+#chat { margin: 0; }   /* not the page's side margins: the panel sits flush against the right edge */
+.sc-chat .ch-hd { padding: 14px 16px 10px; border-bottom: 1px solid var(--pf-line); }
+.sc-chat h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-serif); font-weight: 400; font-size: 19px; color: var(--pf-gold-hi); }
+.sc-chat h2 svg { width: 18px; height: 18px; }
+.sc-chat .ch-x { margin-left: auto; background: none; border: 1px solid var(--pf-line-2); color: var(--pf-ivory); border-radius: var(--pf-radius); width: 30px; height: 30px; cursor: pointer; font-size: 14px; }
+.sc-chat .ch-x:hover { border-color: var(--pf-gold); }
+.sc-chat .ch-sub { margin-top: 4px; font-size: 11.5px; color: var(--pf-steel); }
+.sc-chat .ch-sub b { color: var(--pf-ivory); font-weight: 500; }
+.sc-chat .ch-q { margin-top: 8px; font-size: 12.5px; color: var(--pf-steel-2); }
+.sc-chat .ch-q summary { cursor: pointer; color: var(--pf-gold-hi); }
+.sc-chat .ch-q p { margin: 6px 0 0; line-height: 1.5; }
+.sc-chat .ch-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ch-m { max-width: 90%; padding: 8px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.55; color: var(--pf-ivory); }
+.ch-m.student { align-self: flex-end; background: var(--pf-gold-tint); border: 1px solid var(--pf-gold-lo); }
+.ch-m.student.pending { opacity: .7; }
+.ch-m.tutor { align-self: flex-start; background: var(--pf-card-2); border: 1px solid var(--pf-line-2); }
+.ch-m.notice { align-self: stretch; max-width: none; background: var(--pf-card-2); border: 1px solid var(--pf-warn); }
+.ch-m .who { display: block; margin-bottom: 3px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--pf-steel); }
+.ch-m p { margin: 0 0 6px; } .ch-m p:last-child { margin-bottom: 0; }
+.ch-m ol, .ch-m ul { margin: 4px 0 6px 18px; padding: 0; }
+.ch-withheld { margin-top: 6px; padding: 6px 8px; border: 1px dashed var(--pf-line-2); border-radius: var(--pf-radius-sm); color: var(--pf-steel); font-size: 12px; }
+.ch-typing { align-self: flex-start; color: var(--pf-steel); font-size: 12.5px; font-style: italic; }
+.ch-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ch-chips button { background: none; border: 1px solid var(--pf-gold-lo); color: var(--pf-gold-hi); font-size: 12px; border-radius: var(--pf-radius-pill); padding: 4px 11px; cursor: pointer; }
+.ch-chips button:hover { background: var(--pf-gold-tint); }
+.ch-err { padding: 0 16px 8px; color: var(--pf-warn); font-size: 12.5px; }
+.sc-chat .ch-form { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px 6px; border-top: 1px solid var(--pf-line); }
+.sc-chat textarea { flex: 1; min-height: 42px; max-height: 140px; resize: vertical; font: inherit; font-size: 13.5px; padding: 8px 10px; border: 1px solid var(--pf-line-2); border-radius: var(--pf-radius); background: var(--pf-ink); color: var(--pf-ivory); }
+.sc-chat textarea:focus { outline: none; border-color: var(--pf-gold); }
+.sc-chat .ch-ft { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 14px 10px; font-size: 11.5px; color: var(--pf-steel); }
+.sc-tset { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--pf-line); }
+.sc-tset h3 { margin: 0 0 6px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--pf-gold-hi); font-weight: 500; }
+.ch-transcript { flex-basis: 100%; display: flex; flex-direction: column; gap: 8px; margin: 8px 0 4px; padding: 10px; border: 1px solid var(--pf-line); border-radius: var(--pf-radius); }
+@media (max-width: 600px) { .sc-chat { border-left: 0; } }
+@media print { .sc-chat { display: none !important; } }
 </style>
 </head>
 <body>
@@ -422,6 +463,8 @@ details.sc-add[open] summary::after { content: " −"; }
   <section class="pf-tab" id="t-log" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-sources" role="tabpanel" hidden></section>
   <section class="pf-tab" id="t-family" role="tabpanel" hidden></section>
+
+  <aside class="sc-chat" id="chat" role="dialog" aria-label="AI tutor" hidden></aside>
 
   <footer class="pf-foot">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M12 1.8 22.2 12 12 22.2 1.8 12Z"/><path d="M12 7 17 12 12 17 7 12Z"/></svg>
@@ -855,7 +898,7 @@ R.notes = function () {
   el.innerHTML = h + '</div>' + prog;
 };
 document.addEventListener('keydown', function (e) {
-  if (sget('tab', 'overview') !== 'notes' || !NS || NS.i >= NS.q.length || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (sget('tab', 'overview') !== 'notes' || !NS || NS.i >= NS.q.length || e.metaKey || e.ctrlKey || e.altKey || CHAT || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;
   var t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')) return;
   var showA = NS.flip || ntF().quiz;
   if ((e.key === ' ' || e.key === 'Enter') && !showA) { e.preventDefault(); NS.flip = true; R.notes(); }
@@ -1192,6 +1235,7 @@ function qCard(q) {
     (q.f ? '<div class="fx"><span class="sc-lab gold">' + (st === 'correct' ? 'Keep doing' : 'Next time') + '</span>' + esc(q.f) + '</div>' : '') +
     '<div class="ft">' + (q.w || []).map(function (w) { return '<span class="pf-badge">' + esc(QL.why[w] || w) + '</span>'; }).join('') +
     ((q.also || []).length ? '<span>Also: ' + q.also.map(function (t) { return esc(qTopic(t).n); }).join(', ') + '</span>' : '') +
+    (!mine && tutorOn(qWho(q)) ? '<button class="sc-tutor" data-act="chat" data-k="' + esc(id) + '">' + TUTOR_ICON + 'Ask the tutor</button>' : '') +
     (mine ? '<button class="pf-x" data-act="qdel" data-id="' + esc(id) + '">Delete</button>' : '') +
     (st !== 'correct' ? '<span class="pf-seg sc-redo" role="group" aria-label="Redo this question"><button disabled style="cursor:default;color:var(--pf-steel)">' + (st === 'todo' ? 'Done it?' : 'Redone?') + '</button>' + ['Not yet', 'Shaky', 'Got it'].map(function (l, k) {
       return '<button class="r' + k + '" data-act="redo" data-k="' + esc(id) + '" data-v="' + k + '" aria-pressed="' + (rd === k) + '">' + l + '</button>'; }).join('') + '</span>' : '') +
@@ -1513,7 +1557,7 @@ function api(method, path, body) {
   return fetch(path, init).then(function (r) {
     return r.text().then(function (t) {
       var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) { j = null; }
-      if (!r.ok) { var err = new Error((j && j.error) || ('HTTP ' + r.status)); err.status = r.status; throw err; }
+      if (!r.ok) { var err = new Error((j && j.error) || ('HTTP ' + r.status)); err.status = r.status; err.body = j; throw err; }
       return j;
     });
   });
@@ -1663,7 +1707,7 @@ function renderAcct() {
   box.innerHTML = h; box.hidden = false; renderSyncSt();
 }
 function setView(v) {
-  VIEW = STU[v] ? v : null; setLocal('view', VIEW || null); NS = null; NR = null;
+  VIEW = STU[v] ? v : null; setLocal('view', VIEW || null); NS = null; NR = null; closeChat();
   renderAcct(); renderTabs(); rHead(); setTab(sget('tab', 'overview'), true); window.scrollTo(0, 0);
 }
 function bootMsg(html) { var b = document.getElementById('bootMsg'); if (html == null) { b.hidden = true; b.innerHTML = ''; } else { b.hidden = false; b.innerHTML = html; } }
@@ -1701,7 +1745,8 @@ var AUDIT_TXT = {
   'import': function (d) { return 'Question log saved online (' + (d.questions || 0) + ' questions)'; },
   migrate: function () { return 'Database updated'; },
   link: function (d) { return 'Linked ' + (d.email || 'a sign-in') + ' to ' + (d.student || 'a child'); },
-  unlink: function (d) { return 'Removed ' + (d.email || 'a sign-in') + ' from ' + (d.student || 'a child'); }
+  unlink: function (d) { return 'Removed ' + (d.email || 'a sign-in') + ' from ' + (d.student || 'a child'); },
+  chat_settings: function (d) { return 'AI tutor for ' + (d.student || 'a child') + ': ' + (d.enabled ? 'on' : 'off') + ', ' + d.daily_limit + ' messages a day, quiet ' + d.quiet_from + '–' + d.quiet_to + ', ' + money(d.monthly_cap_cents || 0) + ' a month'; }
 };
 function famCall(path, body, okMsg) {
   return api('POST', path, body).then(function (f) { FAM = f; UNLINK = null; FAMMSG = okMsg; FAMBAD = false; R.family(); }, function (e) {
@@ -1717,6 +1762,7 @@ R.family = function () {
       function (e) { el.innerHTML = '<div class="pf-empty">Could not load the family page (' + esc(e.message) + ').</div>'; });
     return;
   }
+  loadTutorFamily();
   var h = (FAMMSG ? '<p class="pf-note sc-fammsg' + (FAMBAD ? ' bad' : '') + '">' + FAMMSG + '</p>' : '') + '<div class="pf-over">Who can sign in</div><div class="pf-grid">';
   FAM.students.forEach(function (s) {
     h += '<div class="pf-card"><div class="pf-ch"><div><h2>' + esc(s.name) + (s.year ? ' · ' + esc(s.year) : '') + '</h2><p class="pf-note">Signs in with their own email and sees only their own work.</p></div></div>';
@@ -1726,7 +1772,8 @@ R.family = function () {
           : '<button class="sc-qlink" data-act="unlink" data-id="' + esc(l.id) + '">Remove</button>') + '</li>';
     }).join('') + '</ul>' : '<p class="pf-empty" style="padding-top:0">No sign-in linked yet.</p>';
     h += '<form class="sc-form" data-form="link" style="margin-top:6px"><input type="hidden" name="sid" value="' + esc(s.id) + '"><label class="grow">' + esc(s.name) + '\'s email' +
-      '<input class="pf-input" name="email" type="email" required maxlength="200" autocomplete="off" placeholder="name@example.com"></label><button class="pf-btn" type="submit">Link</button></form></div>';
+      '<input class="pf-input" name="email" type="email" required maxlength="200" autocomplete="off" placeholder="name@example.com"></label><button class="pf-btn" type="submit">Link</button></form>' +
+      tutorFamilyHtml(s.id, s.name) + '</div>';
   });
   h += '</div><div class="pf-grid"><div class="pf-card"><h2>Each new sign-in takes two steps</h2><ol class="sc-list">' +
     '<li>Link the email above, so the site knows whose account it is.</li>' +
@@ -1744,6 +1791,138 @@ R.family = function () {
   el.innerHTML = h;
 };
 
+/* ---------- AI tutor chat ----------
+   Opened from a question in the question log. The Worker screens every message, keeps the
+   tutor on studies, and stores the chat so a parent can read it. */
+var CHAT = null, CHATSET = {}, CHATTH = {}, CHATOPEN = {};
+var TUTOR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 9.5h7M8.5 12.5h4"/></svg>';
+var CHIPS = ['Why did I lose marks here?', 'Give me a hint', 'Explain the idea with an example', 'Let me try it again'];
+var CHAT_ERR = {
+  chat_off: 'The tutor is not switched on for you yet. Ask a parent to turn it on.',
+  chat_not_configured: 'The tutor is not set up yet.',
+  quiet_hours: function (e) { return 'The tutor is resting until ' + (e.to || 'the morning') + ' (Dubai time). Try again then.'; },
+  daily_limit: function (e) { return 'You have used today\'s ' + (e.limit || '') + ' messages. The tutor is back tomorrow.'; },
+  monthly_cap: 'This month\'s tutor allowance is used up. Ask a parent.',
+  thread_full: 'This chat is full. Start a new chat to keep going.',
+  tutor_unavailable: 'The tutor could not answer just now. Try again in a moment.',
+  bad_message: 'Messages can be up to 1,200 characters.',
+  question_not_found: 'This question is not saved online yet, so the tutor cannot see it.',
+  read_only: 'This account can read chats but not send them.'
+};
+function tutorOn(w) { return !!(ACCT && ACCT.chatConfigured && STU[w] && (IS_PARENT || STU[w].chat)); }
+function qDbRef(q) { var s = STU[qWho(q)]; return s ? s.id + ':' + q.p + '#' + q.q : ''; }
+function findQ(id) { for (var i = 0; i < QL.q.length; i++) if (qid(QL.q[i]) === id) return QL.q[i]; return null; }
+function stuBySid(sid) { for (var w in STU) if (STU[w].id === sid) return STU[w]; return null; }
+function tutorText(t) {
+  var out = '', list = null, para = [];
+  function endList() { if (list) { out += '</' + list + '>'; list = null; } }
+  function endPara() { if (para.length) { out += '<p>' + para.join('<br>') + '</p>'; para = []; } }
+  esc(t).replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').split('\n').forEach(function (l) {
+    var m;
+    if ((m = /^\s*[-•*]\s+(.*)$/.exec(l))) { endPara(); if (list !== 'ul') { endList(); out += '<ul>'; list = 'ul'; } out += '<li>' + m[1] + '</li>'; }
+    else if ((m = /^\s*\d+[.)]\s+(.*)$/.exec(l))) { endPara(); if (list !== 'ol') { endList(); out += '<ol>'; list = 'ol'; } out += '<li>' + m[1] + '</li>'; }
+    else if (!l.trim()) { endPara(); endList(); }
+    else { endList(); para.push(l); }
+  });
+  endPara(); endList(); return out;
+}
+function chatMsgHtml(m, childName, showWithheld) {
+  var who = m.role === 'tutor' ? 'Tutor' : m.role === 'notice' ? 'Note' : m.mine ? (IS_PARENT ? 'You (parent)' : 'You') : m.byParent ? 'Parent' : esc(childName);
+  return '<div class="ch-m ' + m.role + (m.pending ? ' pending' : '') + '"><span class="who">' + who + '</span>' +
+    (m.role === 'student' ? '<p>' + esc(m.content).replace(/\n/g, '<br>') + '</p>' : tutorText(m.content)) +
+    (showWithheld && m.withheld ? '<div class="ch-withheld"><b>Held back by the check</b> (the child saw the note above instead):<br>' + esc(m.withheld) + '</div>' : '') + '</div>';
+}
+function openChat(id, fresh) {
+  var q = findQ(id); if (!q || !STU[qWho(q)]) return;
+  var w = qWho(q), c = CHAT = { id: id, q: q, w: w, sid: STU[w].id, threadId: null, msgs: [], busy: !fresh, err: '', usage: null, draft: '' };
+  renderChat();
+  if (fresh) return focusChat();
+  api('GET', '/api/chat/threads?studentId=' + encodeURIComponent(c.sid)).then(function (r) {
+    var t = (r.threads || []).filter(function (x) { return x.context_ref === qDbRef(q); })[0];
+    if (!t) return null;
+    c.threadId = t.id;
+    return api('GET', '/api/chat/thread/' + encodeURIComponent(t.id)).then(function (tr) { c.msgs = tr.messages || []; });
+  }).then(function () { if (CHAT === c) { c.busy = false; renderChat(); focusChat(); } },
+    function (e) { if (CHAT === c) { c.busy = false; c.err = 'Could not load earlier chats (' + e.message + ').'; renderChat(); } });
+}
+function closeChat() { CHAT = null; var el = document.getElementById('chat'); el.hidden = true; el.innerHTML = ''; }
+function focusChat() { var t = document.getElementById('chatIn'); if (t && window.innerWidth > 600) t.focus(); }
+function renderChat() {
+  var el = document.getElementById('chat'); if (!CHAT) { el.hidden = true; return; }
+  var c = CHAT, q = c.q, P = qPaper(q), s = STU[c.w];
+  var h = '<div class="ch-hd"><h2>' + TUTOR_ICON + '<span>AI tutor</span><button type="button" class="ch-x" data-act="chatclose" aria-label="Close the tutor">✕</button></h2>' +
+    '<div class="ch-sub"><b>' + esc(q.q) + '</b> · ' + esc(P.label) + (q.x != null ? ' · ' + q.m + ' / ' + q.x : '') + '</div>' +
+    '<div class="ch-sub">An AI, not a person · helps with studying only · ' + (IS_PARENT ? 'chats are on the Family page' : 'your parent can read these chats') + ' · deleted after 90 days</div>' +
+    '<details class="ch-q"><summary>The question</summary><p>' + esc(q.pr) + '</p><p><b>' + (IS_PARENT && !VIEW ? esc(s.name) + '\'s' : 'Your') + ' answer:</b> ' + esc(q.a || '—') + '</p></details></div>';
+  h += '<div class="ch-body" id="chatBody">';
+  if (!c.msgs.length && !c.busy) h += '<div class="ch-m tutor"><span class="who">Tutor</span><p>Hi ' + esc(s.name) + '. Let\'s work through ' + esc(q.q) + ' together. I will give you hints and explain the idea rather than hand you the answer. Where would you like to start?</p></div>' +
+    '<div class="ch-chips">' + CHIPS.map(function (x) { return '<button type="button" data-act="chatchip" data-v="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>';
+  c.msgs.forEach(function (m) { h += chatMsgHtml(m, s.name, false); });
+  if (c.busy) h += '<div class="ch-typing">' + (c.msgs.length ? 'The tutor is thinking…' : 'Loading…') + '</div>';
+  h += '</div>' + (c.err ? '<div class="ch-err" role="alert">' + esc(c.err) + '</div>' : '');
+  h += '<form data-form="chat" class="ch-form"><textarea id="chatIn" name="m" rows="2" maxlength="1200" aria-label="Message the tutor" placeholder="Ask about this question, or try an answer…"' + (c.busy ? ' disabled' : '') + '>' + esc(c.draft) + '</textarea>' +
+    '<button class="pf-btn" type="submit"' + (c.busy ? ' disabled' : '') + '>Send</button></form>';
+  h += '<div class="ch-ft"><span>' + (c.usage ? c.usage.today + ' of ' + c.usage.limit + ' messages today' : 'Enter sends · Shift+Enter for a new line') + '</span>' +
+    (c.threadId && !c.busy ? '<button type="button" class="sc-qlink" data-act="chatnew">New chat</button>' : '') + '</div>';
+  el.innerHTML = h; el.hidden = false;
+  var b = document.getElementById('chatBody'); if (b) b.scrollTop = b.scrollHeight;
+}
+function sendChat(text) {
+  var c = CHAT; if (!c || c.busy) return;
+  text = String(text || '').trim(); if (!text) return;
+  if (text.length > 1200) { c.err = CHAT_ERR.bad_message; return renderChat(); }
+  c.err = ''; c.draft = ''; c.busy = true;
+  c.msgs.push({ role: 'student', content: text, mine: true, pending: true }); renderChat();
+  var body = c.threadId ? { threadId: c.threadId, message: text } : { studentId: c.sid, paper: c.q.p, q: c.q.q, message: text, topic: qTopic(c.q.t).n };
+  api('POST', '/api/chat', body).then(function (r) {
+    if (CHAT !== c) return;
+    c.msgs = c.msgs.filter(function (m) { return !m.pending; }).concat(r.messages || []);
+    c.threadId = r.threadId; c.usage = r.usage; c.busy = false; delete CHATTH[c.sid]; renderChat(); focusChat();
+  }, function (e) {
+    if (CHAT !== c) return;
+    c.msgs = c.msgs.filter(function (m) { return !m.pending; }); c.busy = false; c.draft = text;
+    var f = CHAT_ERR[e.message]; c.err = typeof f === 'function' ? f(e.body || {}) : (f || 'Something went wrong (' + e.message + '). Try again.');
+    renderChat(); focusChat();
+  });
+}
+
+/* parent controls on the Family page */
+function loadTutorFamily() {
+  Object.keys(STU).forEach(function (w) {
+    var sid = STU[w].id;
+    if (!CHATSET[sid]) { CHATSET[sid] = 'loading'; api('GET', '/api/chat/settings?studentId=' + encodeURIComponent(sid)).then(function (r) { CHATSET[sid] = r; famRerender(); }, function () { CHATSET[sid] = 'error'; famRerender(); }); }
+    if (!CHATTH[sid]) { CHATTH[sid] = 'loading'; api('GET', '/api/chat/threads?studentId=' + encodeURIComponent(sid)).then(function (r) { CHATTH[sid] = r.threads || []; famRerender(); }, function () { CHATTH[sid] = 'error'; famRerender(); }); }
+  });
+}
+function famRerender() { if (sget('tab', '') === 'family' && FAM) R.family(); }
+function money(c) { return '$' + (c / 100).toFixed(2); }
+function tutorFamilyHtml(sid, name) {
+  var cs = CHATSET[sid], th = CHATTH[sid], h = '<div class="sc-tset"><h3>AI tutor</h3>';
+  if (!cs || cs === 'loading') return h + '<p class="pf-empty">Loading…</p></div>';
+  if (cs === 'error') return h + '<p class="pf-empty">Could not load the tutor settings.</p></div>';
+  var st = cs.settings, sel = function (name, opts, v) { return '<select class="pf-select" name="' + name + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (String(o[0]) === String(v) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>'; };
+  h += '<p class="pf-note">' + (st.enabled ? '<span class="pf-badge ok">On</span>' : '<span class="pf-badge">Off</span>') + ' Today ' + cs.usage.today + ' of ' + st.daily_limit + ' messages · this month ' + money(cs.usage.monthCents) + ' of ' + money(st.monthly_cap_cents) + '</p>' +
+    (cs.configured ? '' : '<p class="pf-note sc-fammsg bad">The tutor needs a Claude API key added in Cloudflare before it can answer. You can save settings now.</p>') +
+    '<form class="sc-form" data-form="chatset"><input type="hidden" name="sid" value="' + esc(sid) + '">' +
+    '<label>Tutor' + sel('enabled', [[1, 'On'], [0, 'Off']], st.enabled ? 1 : 0) + '</label>' +
+    '<label>Messages a day' + sel('daily_limit', [[10, '10'], [20, '20'], [30, '30'], [50, '50']].concat([10, 20, 30, 50].indexOf(st.daily_limit) < 0 ? [[st.daily_limit, String(st.daily_limit)]] : []), st.daily_limit) + '</label>' +
+    '<label>No chat from<input class="pf-input" type="time" name="quiet_from" value="' + esc(st.quiet_from) + '"></label>' +
+    '<label>until<input class="pf-input" type="time" name="quiet_to" value="' + esc(st.quiet_to) + '"></label>' +
+    '<label>Monthly limit' + sel('cap', [[200, '$2'], [500, '$5'], [1000, '$10'], [2000, '$20']].concat([200, 500, 1000, 2000].indexOf(st.monthly_cap_cents) < 0 ? [[st.monthly_cap_cents, money(st.monthly_cap_cents)]] : []), st.monthly_cap_cents) + '</label>' +
+    '<button class="pf-btn" type="submit">Save</button></form>';
+  h += '<h3 style="margin-top:12px">' + esc(name) + '\'s chats</h3>';
+  if (!th || th === 'loading') h += '<p class="pf-empty">Loading…</p>';
+  else if (th === 'error') h += '<p class="pf-empty">Could not load chats.</p>';
+  else if (!th.length) h += '<p class="pf-empty">No chats yet.</p>';
+  else h += '<ul class="sc-logins">' + th.map(function (t) {
+    var open = CHATOPEN[t.id];
+    return '<li><span class="em">' + esc(t.title || 'Chat') + '</span>' + (t.flagged ? '<span class="pf-badge bad">Safety message shown</span>' : t.notices ? '<span class="pf-badge warn">' + t.notices + ' redirected</span>' : '') +
+      '<span class="ls">' + esc(fmt(String(t.updated_at).slice(0, 10))) + ' · ' + t.n + ' messages</span><button class="sc-qlink" data-act="chatread" data-id="' + esc(t.id) + '">' + (open ? 'Hide' : 'Read') + '</button>' +
+      (open ? '<div class="ch-transcript">' + (open === 'loading' ? '<p class="pf-empty">Loading…</p>' : open.map(function (m) { return chatMsgHtml(m, name, true); }).join('')) + '</div>' : '') + '</li>';
+  }).join('') + '</ul>';
+  return h + '</div>';
+}
+
 /* ---------- events ---------- */
 function del(k, id) { sset(k, sget(k, []).filter(function (r) { return r.id !== id; })); refresh(); }
 app.addEventListener('click', function (ev) {
@@ -1751,6 +1930,16 @@ app.addEventListener('click', function (ev) {
   var a = b.getAttribute('data-act'), v = b.getAttribute('data-v');
   if (a === 'tab') return setTab(b.getAttribute('data-tab'), true);
   if (a === 'retryboot') return boot();
+  if (a === 'chat') return openChat(b.getAttribute('data-k'));
+  if (a === 'chatclose') return closeChat();
+  if (a === 'chatnew') return CHAT && openChat(CHAT.id, true);
+  if (a === 'chatchip') return sendChat(v);
+  if (a === 'chatread') {
+    var tid = b.getAttribute('data-id');
+    if (CHATOPEN[tid]) { delete CHATOPEN[tid]; return R.family(); }
+    CHATOPEN[tid] = 'loading'; R.family();
+    return api('GET', '/api/chat/thread/' + encodeURIComponent(tid)).then(function (r) { CHATOPEN[tid] = r.messages || []; famRerender(); }, function () { delete CHATOPEN[tid]; famRerender(); });
+  }
   if (a === 'syncnow') return flush();
   if (a === 'unlink') { UNLINK = b.getAttribute('data-id'); return R.family(); }
   if (a === 'unlinkx') { UNLINK = null; return R.family(); }
@@ -1826,6 +2015,14 @@ app.addEventListener('change', function (ev) {
 app.addEventListener('submit', function (ev) {
   var f = ev.target, kind = f.getAttribute('data-form'); if (!kind) return; ev.preventDefault();
   var fd = new FormData(f), g = function (k) { return String(fd.get(k) || '').trim(); };
+  if (kind === 'chat') return sendChat(g('m'));
+  if (kind === 'chatset') {
+    var csid = g('sid'), cs = { studentId: csid, enabled: g('enabled') === '1', daily_limit: Number(g('daily_limit')), quiet_from: g('quiet_from'), quiet_to: g('quiet_to'), monthly_cap_cents: Number(g('cap')) };
+    return api('PUT', '/api/chat/settings', cs).then(function () {
+      var kid = stuBySid(csid); if (kid) kid.chat = cs.enabled;
+      delete CHATSET[csid]; FAM = null; FAMMSG = 'Saved the AI tutor settings for ' + esc(kid ? kid.name : 'your child') + '.'; FAMBAD = false; R.family();
+    }, function (e) { FAMMSG = 'Could not save the tutor settings (' + esc(e.message) + ').'; FAMBAD = true; R.family(); });
+  }
   if (kind === 'link') return famCall('/api/family/link', { studentId: g('sid'), email: g('email') }, 'Linked ' + esc(g('email').toLowerCase()) + '. Now add the same email to the Family policy in Cloudflare so it can sign in.');
   if (kind === 'paper') {
     var pct = Math.round(Number(g('pct'))); if (!(pct >= 0 && pct <= 100)) return;
@@ -1851,7 +2048,11 @@ app.addEventListener('submit', function (ev) {
   }
   refresh();
 });
-app.addEventListener('input', function (ev) { if (ev.target.id === 'qSearch') { sset('qtext', ev.target.value); rQList(); } });
+app.addEventListener('input', function (ev) { if (ev.target.id === 'qSearch') { sset('qtext', ev.target.value); rQList(); } if (ev.target.id === 'chatIn' && CHAT) CHAT.draft = ev.target.value; });
+app.addEventListener('keydown', function (ev) {
+  if (ev.target.id === 'chatIn' && ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); sendChat(ev.target.value); }
+  else if (ev.key === 'Escape' && CHAT) closeChat();
+});
 app.addEventListener('toggle', function (ev) { if (ev.target.classList && ev.target.classList.contains('sc-add')) sset('qaddOpen', ev.target.open); }, true);
 var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { var t = sget('tab', 'overview'); if (t === 'sat' || t === 'maths' || t === 'log') R[t](); }, 200); });
 

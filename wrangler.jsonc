@@ -18,5 +18,6 @@
     "ACCESS_AUD": "cff13761920802e28e77690a050dedd7664f94bc7d267cd10f3fd27642d55a9a",
     "ACCESS_TEAM": "royalgroupofcompanies.cloudflareaccess.com"
   },
+  "triggers": { "crons": ["17 2 * * *"] },  // daily 02:17 UTC: delete chats older than 90 days
   "observability": { "enabled": true }
 }

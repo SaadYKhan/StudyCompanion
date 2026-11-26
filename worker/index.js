@@ -11,8 +11,12 @@
 //   POST /api/family/link             parents: link an email to a child as a student sign-in
 //   POST /api/family/unlink           parents: remove a child's linked sign-in
 //   POST /api/import-legacy           parents: one-time copy of the original question log
+//   POST /api/chat                    tutor chat about one marked question (see chat.js)
+//   GET  /api/chat/threads            a child's chats;  GET /api/chat/thread/:id  one chat
+//   GET  /api/chat/settings           tutor settings and usage for a child;  PUT: parents change them
 
 import legacy from "./legacy.json";
+import * as chat from "./chat.js";
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" };
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
@@ -22,6 +26,9 @@ export const PROGRESS_KINDS = ["route", "papers", "sat", "cards", "topics", "bpr
 const MAX_PROGRESS_BYTES = 300_000;
 
 export default {
+  // Daily: delete chats older than 90 days.
+  async scheduled(event, env, ctx) { ctx.waitUntil(chat.cleanup(env)); },
+
   async fetch(request, env) {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
@@ -47,6 +54,13 @@ export default {
       if (path === "/api/family/link" && method === "POST") return linkChild(env, who, request);
       if (path === "/api/family/unlink" && method === "POST") return unlinkChild(env, who, request);
       if (path === "/api/import-legacy" && method === "POST") return importLegacy(env, who);
+
+      if (path === "/api/chat" && method === "POST") return chat.send(env, who, request);
+      if (path === "/api/chat/threads" && method === "GET") return chat.threads(env, who, url);
+      const tm = /^\/api\/chat\/thread\/([\w-]+)$/.exec(path);
+      if (tm && method === "GET") return chat.thread(env, who, tm[1]);
+      if (path === "/api/chat/settings" && method === "GET") return chat.getSettings(env, who, url);
+      if (path === "/api/chat/settings" && method === "PUT") return chat.putSettings(env, who, request, audit);
 
       return json({ error: "not_found" }, 404);
     } catch (err) {
@@ -164,6 +178,8 @@ async function me(env, ident) {
   }
   const byStudent = Object.fromEntries(counts.map((c) => [c.student_id, c]));
   const isParent = students.some((s) => s.role === "parent");
+  const chatOn = {};
+  for (const s of students) chatOn[s.id] = !!(await chat.settingsFor(env, s.id)).enabled;
   const online = students.reduce((n, s) => n + ((byStudent[s.id] || {}).questions || 0), 0);
 
   return {
@@ -176,7 +192,9 @@ async function me(env, ident) {
       papers: (byStudent[s.id] || {}).papers || 0,
       questions: (byStudent[s.id] || {}).questions || 0,
       updated: (byStudent[s.id] || {}).updated || null,
+      chat: chatOn[s.id],
     })),
+    chatConfigured: !!env.ANTHROPIC_API_KEY,
     legacy: { questions: legacy.q.length, updated: legacy.updated, needed: isParent && online < legacy.q.length },
   };
 }

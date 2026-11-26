@@ -42,12 +42,16 @@ KIDS = {'s_mk': {'id': 's_mk', 'name': 'MK', 'year': 'Year 12', 'code': 'a'}, 's
 
 def install_api(pg, role='parent', student='s_zk'):
     """role 'parent' sees both children; role 'student' sees only `student`. Returns the shared state."""
-    st = {'progress': {'s_mk': {}, 's_zk': {}}, 'puts': [], 'forbidden': [], 'logins': {'s_mk': [], 's_zk': []}, 'n': 0}
+    st = {'progress': {'s_mk': {}, 's_zk': {}}, 'puts': [], 'forbidden': [], 'logins': {'s_mk': [], 's_zk': []}, 'n': 0,
+          'chat': {'s_mk': {'enabled': False, 'daily_limit': 30, 'quiet_from': '22:00', 'quiet_to': '06:00', 'monthly_cap_cents': 500},
+                   's_zk': {'enabled': True, 'daily_limit': 30, 'quiet_from': '22:00', 'quiet_to': '06:00', 'monthly_cap_cents': 500}},
+          'threads': {}, 'sent': 0}
     visible = list(KIDS) if role == 'parent' else [student]
 
     def me():
         return {'signedIn': True, 'linked': True, 'isParent': role == 'parent', 'user': {'name': 'SYK' if role == 'parent' else None, 'email': 'x@test.local'},
-                'students': [dict(KIDS[k], role=role, papers=0, questions=0) for k in visible], 'legacy': {'questions': 246, 'needed': False}}
+                'students': [dict(KIDS[k], role=role, papers=0, questions=0, chat=st['chat'][k]['enabled']) for k in visible],
+                'legacy': {'questions': 246, 'needed': False}, 'chatConfigured': True}
 
     def data():
         codes = {KIDS[k]['code'] for k in visible}
@@ -74,6 +78,35 @@ def install_api(pg, role='parent', student='s_zk'):
             if sid not in visible: st['forbidden'].append(path); out, code = {'error': 'not_your_child'}, 403
             else: st['progress'][sid][kind] = json.loads(req.post_data)['value']; st['puts'].append(path); out = {'ok': True}
         elif path == 'api/family' and role == 'parent': out = family()
+        elif path == 'api/chat' and req.method == 'POST':
+            b = json.loads(req.post_data); st['sent'] += 1
+            if b.get('threadId'):
+                t = st['threads'][b['threadId']]
+            else:
+                sid = b['studentId']
+                if sid not in visible: route.fulfill(status=404, content_type='application/json', body='{"error":"not_found"}'); return
+                tid = 'thr%d' % (len(st['threads']) + 1)
+                t = st['threads'][tid] = {'id': tid, 'sid': sid, 'ref': '%s:%s#%s' % (sid, b['paper'], b['q']), 'title': b['paper'] + ' · ' + b['q'], 'msgs': [], 'flagged': 0}
+            mine = {'id': len(t['msgs']) + 1, 'role': 'student', 'content': b['message'], 'mine': True, 'flag': None}
+            if 'football' in b['message']:
+                rep_ = {'id': len(t['msgs']) + 2, 'role': 'notice', 'content': 'I can only help with school subjects and studying.', 'flag': 'off_topic'}
+            else:
+                rep_ = {'id': len(t['msgs']) + 2, 'role': 'tutor', 'content': 'Good question. Think about **what the mark scheme wants**.\n1. Find the original amount\n2. Apply the change once', 'flag': None}
+            t['msgs'] += [mine, rep_]
+            out = {'threadId': t['id'], 'messages': [mine, rep_], 'usage': {'today': st['sent'], 'limit': 30}}
+        elif path == 'api/chat/threads':
+            sid = req.url.split('studentId=')[1]
+            out = {'threads': [{'id': t['id'], 'title': t['title'], 'context_ref': t['ref'], 'flagged': t['flagged'], 'notices': sum(1 for m in t['msgs'] if m['role'] == 'notice'),
+                                'updated_at': '2026-11-26 12:00:00', 'n': len(t['msgs'])} for t in st['threads'].values() if t['sid'] == sid]}
+        elif path.startswith('api/chat/thread/'):
+            t = st['threads'].get(path.rsplit('/', 1)[1])
+            out = {'thread': {'id': t['id']}, 'messages': t['msgs']} if t else None
+            if not t: code = 404
+        elif path == 'api/chat/settings' and req.method == 'GET':
+            sid = req.url.split('studentId=')[1]
+            out = {'configured': True, 'settings': st['chat'][sid], 'usage': {'today': st['sent'], 'monthCents': 3}}
+        elif path == 'api/chat/settings' and req.method == 'PUT' and role == 'parent':
+            b = json.loads(req.post_data); sid = b.pop('studentId'); st['chat'][sid].update(b); out = {'ok': True, 'settings': st['chat'][sid]}
         elif path == 'api/family/link' and role == 'parent':
             b = json.loads(req.post_data)
             if '@' not in b['email']: out, code = {'error': 'bad_email'}, 400
@@ -330,6 +363,40 @@ try:
                     fails.append('family page: removing a sign-in did not work')
                 if 'Family set up' not in pg.inner_text('#t-family'):
                     fails.append('family page: recent changes missing')
+                # AI tutor: open from a question, use a starter, get guided steps, off-topic note, reopen keeps the chat
+                pg.click('[data-tab="qlog"]'); pg.click('[data-act="qwho"][data-v="a"]'); pg.wait_for_timeout(300)
+                if pg.locator('#qList .sc-tutor').count() < 100:
+                    fails.append('tutor: "Ask the tutor" missing on MK\'s questions for a parent: %d' % pg.locator('#qList .sc-tutor').count())
+                first_q = pg.locator('#qList .sc-tutor').first.get_attribute('data-k')
+                pg.locator('#qList .sc-tutor').first.click(); pg.wait_for_selector('#chat:not([hidden]) .ch-chips')
+                head = pg.inner_text('#chat .ch-hd')
+                if 'AI tutor' not in head or 'not a person' not in head:
+                    fails.append('tutor: panel header or AI notice missing')
+                pg.click('[data-act="chatchip"][data-v="Give me a hint"]'); pg.wait_for_selector('#chat .ch-m.tutor ol')
+                body = pg.inner_text('#chatBody')
+                if 'Give me a hint' not in body or pg.locator('#chat .ch-m.tutor ol li').count() != 2 or 'messages today' not in pg.inner_text('#chat .ch-ft'):
+                    fails.append('tutor: hint reply, steps or usage line missing')
+                pg.fill('#chatIn', 'who won the football'); pg.press('#chatIn', 'Enter'); pg.wait_for_selector('#chat .ch-m.notice')
+                pg.keyboard.press('Escape'); pg.wait_for_timeout(150)
+                if pg.locator('#chat:not([hidden])').count():
+                    fails.append('tutor: Escape did not close the panel')
+                pg.click(f'[data-act="chat"][data-k="{first_q}"]'); pg.wait_for_selector('#chat .ch-m.notice')
+                if pg.locator('#chat .ch-m').count() != 4:
+                    fails.append('tutor: reopening did not bring back the chat: %d messages' % pg.locator('#chat .ch-m').count())
+                pg.click('[data-act="chatnew"]'); pg.wait_for_timeout(150)
+                if pg.locator('#chat .ch-chips').count() != 1:
+                    fails.append('tutor: New chat did not start fresh')
+                pg.click('[data-act="chatclose"]')
+                # parent controls: switch the tutor on for MK, read the chat
+                pg.click('[data-tab="family"]'); pg.wait_for_selector('form[data-form="chatset"]')
+                f = pg.locator('form[data-form="chatset"]').first
+                f.locator('[name="enabled"]').select_option('1'); f.locator('[name="daily_limit"]').select_option('20')
+                f.locator('button[type="submit"]').click(); pg.wait_for_timeout(400)
+                if not store['chat']['s_mk']['enabled'] or store['chat']['s_mk']['daily_limit'] != 20 or 'Saved the AI tutor settings for MK' not in pg.inner_text('#t-family'):
+                    fails.append('tutor: parent settings did not save')
+                pg.wait_for_selector('[data-act="chatread"]'); pg.locator('[data-act="chatread"]').first.click(); pg.wait_for_selector('.ch-transcript .ch-m')
+                if 'Give me a hint' not in pg.inner_text('.ch-transcript') or 'you (parent)' not in pg.inner_text('.ch-transcript').lower():
+                    fails.append('tutor: parent could not read the chat')
                 if shots:
                     for t in TABS:
                         pg.click(f'[data-tab="{t}"]'); pg.wait_for_timeout(120)
@@ -370,6 +437,14 @@ try:
         pg.click('[data-tab="qlog"]'); pg.wait_for_timeout(200)
         if 'of 39 questions' not in pg.inner_text('#qCount'):
             fails.append('student ZK: question log wrong: ' + pg.inner_text('#qCount'))
+        if pg.locator('#qList .sc-tutor').count() != 39:
+            fails.append('student ZK: tutor button should be on all 39 questions: %d' % pg.locator('#qList .sc-tutor').count())
+        pg.locator('#qList .sc-tutor').first.click(); pg.wait_for_selector('#chat .ch-chips')
+        pg.fill('#chatIn', 'Why did I lose marks here?'); pg.click('#chat button[type="submit"]'); pg.wait_for_selector('#chat .ch-m.tutor ol')
+        if 'your parent can read these chats' not in pg.inner_text('#chat .ch-hd') or 'you\n' not in pg.inner_text('#chatBody').lower():
+            fails.append('student ZK: chat panel notice or message missing')
+        if list(kid['threads'].values())[0]['sid'] != 's_zk':
+            fails.append('student ZK: chat went to the wrong child')
         fails.extend('student ZK: ' + e for e in errs)
         ctx.close()
         br.close()
